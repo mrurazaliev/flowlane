@@ -4,22 +4,21 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700",
-  secondary: "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
-  ghost: "text-gray-600 hover:bg-gray-100",
+  primary: "bg-asphalt text-white hover:bg-asphalt-2",
+  secondary: "border border-line bg-white text-ink hover:bg-gray-50",
+  ghost: "text-muted hover:bg-gray-100 hover:text-ink",
   danger: "bg-red-600 text-white hover:bg-red-700",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
+  sm: "h-8 px-3 text-[13px] rounded-lg",
+  md: "h-9 px-3.5 text-sm rounded-[9px]",
 };
 
 /** Классы кнопки — можно использовать и для <Link>, чтобы выглядел как кнопка */
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {
   return cn(
-    "inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1",
+    "inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap transition-colors",
     "disabled:pointer-events-none disabled:opacity-50",
     variants[variant],
     sizes[size],
@@ -34,4 +33,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button({ variant, size, className, type = "button", ...props }: ButtonProps) {
   return <button type={type} className={buttonClasses(variant, size, className)} {...props} />;
+}
+
+/** Подсказка горячей клавиши внутри кнопки: <Kbd>C</Kbd> */
+export function Kbd({ children, dark = true }: { children: React.ReactNode; dark?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "ml-1 rounded border px-1.5 text-[11px] leading-4",
+        dark ? "border-[#4a515d] text-faint" : "border-line text-faint",
+      )}
+    >
+      {children}
+    </span>
+  );
 }

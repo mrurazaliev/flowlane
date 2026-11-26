@@ -1,11 +1,11 @@
 "use client";
 
-import { ClipboardList } from "lucide-react";
 import type { Label as LabelType, State, User } from "@/shared/api/types";
 import { Button } from "@/shared/ui/button";
-import { FieldError, Input, Label, Select, Textarea } from "@/shared/ui/form";
+import { Dropdown } from "@/shared/ui/dropdown";
+import { FieldError, Input, Label, Textarea } from "@/shared/ui/form";
+import { memberOptions, priorityOptions, stateOptions } from "@/shared/ui/issue-options";
 import { Modal } from "@/shared/ui/modal";
-import { priorityLabels, priorityOrder } from "@/shared/ui/issue-icons";
 
 interface CreateIssueModalProps {
   open: boolean;
@@ -18,14 +18,14 @@ interface CreateIssueModalProps {
 
 /** D1.8 Создание задачи. Позже: RHF + Zod, POST .../issues, затем invalidate queryKeys.issues.all */
 export function CreateIssueModal({ open, onClose, states, members, labels, defaultStateId }: CreateIssueModalProps) {
-  const defaultState = defaultStateId ?? states.find((s) => s.is_default)?.id ?? states[0]?.id;
+  const defaultState = defaultStateId ?? states.find((s) => s.is_default)?.id ?? states[0]?.id ?? null;
 
   return (
     <Modal
       open={open}
       onClose={onClose}
       title="New task"
-      icon={<ClipboardList className="size-5 text-indigo-600" />}
+      className="max-w-xl"
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
@@ -39,67 +39,50 @@ export function CreateIssueModal({ open, onClose, states, members, labels, defau
     >
       <form id="create-issue-form" className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div>
-          <Label htmlFor="title">Title *</Label>
-          <Input id="title" placeholder="e.g. Fix login redirect" autoFocus />
-          {/* Позже: ошибка из Zod, например "Title is required" */}
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" placeholder="What needs to be done?" />
+          {/* Позже: ошибка из Zod, например "Add a title" */}
           <FieldError />
         </div>
 
         <div>
           <Label htmlFor="description">Description</Label>
-          <Textarea id="description" placeholder="Add details, acceptance criteria…" />
+          <Textarea id="description" placeholder="Details, steps to reproduce, acceptance criteria" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="state">Status</Label>
-            <Select id="state" defaultValue={defaultState}>
-              {states.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+            <Label>Status</Label>
+            <Dropdown value={defaultState} options={stateOptions(states)} ariaLabel="Status" />
           </div>
           <div>
-            <Label htmlFor="priority">Priority</Label>
-            <Select id="priority" defaultValue="none">
-              {priorityOrder.map((p) => (
-                <option key={p} value={p}>
-                  {priorityLabels[p]}
-                </option>
-              ))}
-            </Select>
+            <Label>Priority</Label>
+            <Dropdown value="none" options={priorityOptions()} ariaLabel="Priority" />
           </div>
           <div>
-            <Label htmlFor="assignee">Assignee</Label>
-            <Select id="assignee" defaultValue="">
-              <option value="">Unassigned</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.display_name}
-                </option>
-              ))}
-            </Select>
+            <Label>Assignee</Label>
+            <Dropdown value="none" options={memberOptions(members)} ariaLabel="Assignee" />
           </div>
           <div>
-            <Label htmlFor="due">Due date</Label>
-            <Input id="due" type="date" />
-          </div>
-          <div>
-            <Label htmlFor="labels">Labels</Label>
-            <Select id="labels" defaultValue="">
-              <option value="">No label</option>
-              {labels.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </Select>
+            <Label>Label</Label>
+            <Dropdown
+              value={null}
+              placeholder="No label"
+              ariaLabel="Label"
+              options={labels.map((l) => ({
+                value: l.id,
+                label: l.name,
+                icon: <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />,
+              }))}
+            />
           </div>
           <div>
             <Label htmlFor="start">Start date</Label>
             <Input id="start" type="date" />
+          </div>
+          <div>
+            <Label htmlFor="due">Due date</Label>
+            <Input id="due" type="date" />
           </div>
         </div>
       </form>

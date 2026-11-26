@@ -23,7 +23,7 @@ export function ModuleList() {
   const projectModules = modules.filter((m) => m.project_id === projectId);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
         title="Modules"
         description="Group tasks by feature. One task can be in several modules."

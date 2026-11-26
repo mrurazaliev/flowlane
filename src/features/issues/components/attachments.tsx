@@ -1,50 +1,50 @@
-import { Download, File, FileImage, Trash2, Upload } from "lucide-react";
+import { Download, File, FileImage, Paperclip, Trash2 } from "lucide-react";
 import type { Attachment } from "@/shared/api/types";
-import { formatDate, formatFileSize } from "@/shared/lib/utils";
+import { formatFileSize } from "@/shared/lib/utils";
 
 /**
- * Файлы задачи.
- * Позже: POST /attachments возвращает ссылку для загрузки → отправляем файл по ней.
+ * D1.15 Файлы задачи.
+ * Позже: POST .../attachments → ссылка для загрузки → файл грузится по ней (с прогрессом).
+ * Если загрузка упала — сразу DELETE .../attachments/:id.
  */
 export function Attachments({ attachments }: { attachments: Attachment[] }) {
   return (
-    <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-        Attachments <span className="text-gray-400">({attachments.length})</span>
-      </h3>
+    <section className="mt-8">
+      <div className="mb-2.5 flex items-center gap-2.5">
+        <h3 className="text-[15px] font-semibold">Files</h3>
+        {attachments.length > 0 && <span className="text-[13px] tabular-nums text-muted">{attachments.length}</span>}
+      </div>
 
-      {attachments.length > 0 && (
-        <ul className="mb-3 space-y-2">
-          {attachments.map((file) => {
-            const Icon = file.mime_type.startsWith("image/") ? FileImage : File;
-            return (
-              <li key={file.id} className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2">
-                <Icon className="size-5 shrink-0 text-indigo-500" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">{file.file_name}</p>
-                  <p className="text-xs text-gray-500">
-                    {formatFileSize(file.file_size)} · {file.uploaded_by.display_name} · {formatDate(file.created_at)}
-                  </p>
-                </div>
-                <button className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Download">
+      <div className="flex flex-wrap gap-2.5">
+        {attachments.map((file) => {
+          const Icon = file.mime_type.startsWith("image/") ? FileImage : File;
+          return (
+            <div key={file.id} className="group flex items-center gap-2.5 rounded-[10px] border border-line bg-white py-2 pl-3 pr-2">
+              <Icon className="size-[18px] shrink-0 text-muted" />
+              <div className="min-w-0">
+                <p className="truncate text-[13.5px]">{file.file_name}</p>
+                <p className="text-xs text-muted">
+                  {formatFileSize(file.file_size)}, {file.uploaded_by.display_name}
+                </p>
+              </div>
+              <div className="ml-1 flex opacity-60 group-hover:opacity-100">
+                <button className="rounded p-1 text-muted hover:bg-gray-100 hover:text-ink" aria-label="Download">
                   <Download className="size-4" />
                 </button>
-                <button className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete">
+                <button className="rounded p-1 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Delete">
                   <Trash2 className="size-4" />
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+              </div>
+            </div>
+          );
+        })}
 
-      <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-gray-300 px-4 py-5 text-center hover:border-indigo-400 hover:bg-indigo-50/40">
-        <Upload className="size-5 text-gray-400" />
-        <span className="text-sm text-gray-600">
-          Drop files here or <span className="font-medium text-indigo-600">browse</span>
-        </span>
-        <input type="file" className="hidden" />
-      </label>
-    </div>
+        <label className="flex cursor-pointer items-center gap-2 rounded-[10px] border-[1.5px] border-dashed border-gray-300 px-3.5 py-2.5 text-[13.5px] text-muted hover:border-asphalt hover:text-ink">
+          <Paperclip className="size-4" />
+          Drop files or browse
+          <input type="file" className="hidden" />
+        </label>
+      </div>
+    </section>
   );
 }

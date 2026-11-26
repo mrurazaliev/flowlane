@@ -9,21 +9,23 @@ interface TabsProps<T extends string> {
   className?: string;
 }
 
-/** Простые вкладки-переключатели (состояние хранит родитель) */
+/** Вкладки-переключатели внутри страницы (активная — с жёлтой разметкой снизу) */
 export function Tabs<T extends string>({ tabs, value, onChange, className }: TabsProps<T>) {
   return (
-    <div className={cn("inline-flex rounded-lg bg-gray-100 p-1", className)}>
+    <div role="tablist" className={cn("flex gap-6 border-b border-line", className)}>
       {tabs.map((tab) => (
         <button
           key={tab.value}
+          role="tab"
+          aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            "rounded-md px-3 py-1.5 text-sm font-medium transition",
-            value === tab.value ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-800",
+            "-mb-px border-b-[3px] pb-2.5 font-medium transition-colors",
+            value === tab.value ? "border-marking text-ink" : "border-transparent text-muted hover:text-ink",
           )}
         >
           {tab.label}
-          {tab.count !== undefined && <span className="ml-1.5 text-xs text-gray-400">{tab.count}</span>}
+          {tab.count !== undefined && <span className="ml-1.5 tabular-nums text-faint">{tab.count}</span>}
         </button>
       ))}
     </div>

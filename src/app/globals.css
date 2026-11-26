@@ -1,10 +1,62 @@
 @import "tailwindcss";
 
-/* Системный шрифт: не нужно скачивать с Google Fonts при сборке */
+/*
+ * Дизайн «полосы движения»:
+ *   asphalt — тёмный: сайдбар и главные кнопки
+ *   marking — жёлтая разметка: только там, где «есть движение»
+ *             (активная вкладка, текущий проект, задачи в работе, фокус)
+ */
 @theme {
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-fira), "Segoe UI", system-ui, sans-serif;
+
+  --color-asphalt: #23272f;
+  --color-asphalt-2: #2d323c;
+  --color-asphalt-line: #3a404b;
+  --color-canvas: #f2f3f5;
+  --color-line: #dde1e6;
+  --color-line-soft: #e9ecef;
+  --color-ink: #1e222a;
+  --color-muted: #6a7180;
+  --color-faint: #9aa1ad;
+  --color-marking: #f2b630;
+  --color-marking-soft: #fdf3d9;
+
+  /* Нейтральная шкала проекта (холодный серый вместо стандартного) */
+  --color-gray-50: #f7f8f9;
+  --color-gray-100: #f2f3f5;
+  --color-gray-200: #dde1e6;
+  --color-gray-300: #cdd2d9;
+  --color-gray-400: #9aa1ad;
+  --color-gray-500: #6a7180;
+  --color-gray-600: #4a5160;
+  --color-gray-700: #353b47;
+  --color-gray-800: #262b34;
+  --color-gray-900: #1e222a;
+
+  /* «indigo» в старых классах = фирменные цвета: кнопки — асфальт, акценты — разметка */
+  --color-indigo-50: #fdf3d9;
+  --color-indigo-100: #fbe7b5;
+  --color-indigo-300: #f2b630;
+  --color-indigo-400: #f2b630;
+  --color-indigo-500: #f2b630;
+  --color-indigo-600: #23272f;
+  --color-indigo-700: #1e222a;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-canvas text-ink antialiased;
+  font-size: 14px;
+}
+
+/* Видимый фокус с клавиатуры — жёлтая разметка */
+:focus-visible {
+  outline: 2px solid var(--color-marking);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

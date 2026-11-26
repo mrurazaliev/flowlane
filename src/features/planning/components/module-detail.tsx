@@ -30,7 +30,7 @@ export function ModuleDetail() {
   const lead = members.find((m) => m.id === mod.lead_id);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <Link
         href={`/w/${workspaceSlug}/p/${projectId}/modules`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"

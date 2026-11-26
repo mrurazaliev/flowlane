@@ -13,13 +13,11 @@ export function WorkspaceSwitcher({ workspaceSlug }: { workspaceSlug: string }) 
   return (
     <Link
       href="/workspaces"
-      className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 hover:bg-gray-50"
+      className="flex items-center gap-2.5 rounded-[9px] bg-asphalt-2 px-2.5 py-2 font-medium text-white transition-colors hover:bg-[#353b47]"
     >
-      <span className="flex size-6 items-center justify-center rounded bg-indigo-100 text-xs font-semibold text-indigo-700">
-        {name[0]?.toUpperCase()}
-      </span>
-      <span className="flex-1 truncate text-sm font-medium text-gray-800">{name}</span>
-      <ChevronsUpDown className="size-4 text-gray-400" />
+      <span className="grid size-6 place-items-center rounded-md bg-[#3d4552] text-xs">{name[0]?.toUpperCase()}</span>
+      <span className="flex-1 truncate">{name}</span>
+      <ChevronsUpDown className="size-4 text-faint" />
     </Link>
   );
 }

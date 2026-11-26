@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { SidebarLink } from "@/shared/layout/sidebar-link";
 import { notifications } from "../mocks";
 
 /**
@@ -16,18 +15,12 @@ export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <Link
-      href={href}
-      className={cn(
-        "flex items-center gap-2.5 rounded-md px-2 py-2 text-sm",
-        pathname === href ? "bg-indigo-50 font-medium text-indigo-700" : "text-gray-700 hover:bg-gray-100",
-      )}
-    >
-      <Bell className="size-4" />
+    <SidebarLink href={href} active={pathname === href}>
+      <Bell className="size-4 text-[#8c93a0]" />
       <span className="flex-1">Notifications</span>
       {unreadCount > 0 && (
-        <span className="rounded-full bg-indigo-600 px-1.5 text-xs font-medium text-white">{unreadCount}</span>
+        <span className="rounded-full bg-marking px-1.5 text-xs font-semibold tabular-nums text-asphalt">{unreadCount}</span>
       )}
-    </Link>
+    </SidebarLink>
   );
 }

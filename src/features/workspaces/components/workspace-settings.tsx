@@ -20,7 +20,7 @@ export function WorkspaceSettings() {
   if (!workspace) return <p className="p-6 text-sm text-gray-500">Workspace not found</p>;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader title="Workspace settings" description={workspace.name} />
 
       <div className="max-w-3xl space-y-6">
