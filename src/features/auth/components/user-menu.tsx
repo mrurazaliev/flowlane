@@ -5,12 +5,23 @@ import Link from "next/link";
 import { CircleUser, LogOut } from "lucide-react";
 import { Avatar } from "@/shared/ui/avatar";
 import { useMe } from "../hooks";
+import { useRouter } from "next/navigation";
+import { useLogoutMutation } from "../api";
 
 /** Меню профиля внизу сайдбара (слот в AppShell, Dev 1) */
 export function UserMenu() {
-  const { data: user } = useMe();
+ const { data: user } = useMe();
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const logout = useLogoutMutation();
 
+  if (!user) return null;   // ← после ВСЕХ хуков
+
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSettled: () => router.push("/login"),
+    });
+  };
   return (
     <div className="relative">
       {open && (
@@ -25,9 +36,13 @@ export function UserMenu() {
               <CircleUser className="size-4 text-muted" /> Profile
             </Link>
             {/* Позже: logout() — POST /auth/logout, очистить store, перейти на /login */}
-            <Link href="/login" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-red-600 hover:bg-red-50">
-              <LogOut className="size-4" /> Log out
-            </Link>
+ <button
+  onClick={handleLogout}
+  disabled={logout.isPending}
+  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-red-600 hover:bg-red-50"
+>
+  <LogOut className="size-4" /> {logout.isPending ? "Logging out..." : "Log out"}
+</button>
           </div>
         </>
       )}

@@ -5,3 +5,4 @@ export { ProfileSettings } from "./components/profile-settings";
 export { UserMenu } from "./components/user-menu";
 export { useMe } from "./hooks";
 export { AuthLayout } from "./components/auth-layout";
+export { AuthGuard } from "./components/auth-guard";

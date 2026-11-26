@@ -60,4 +60,3 @@ api.interceptors.response.use(
     }
   }
 )
-)
