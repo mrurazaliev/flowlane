@@ -42,7 +42,7 @@ export function MembersPage() {
       <ul className="max-w-3xl divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
         {members.map((m) => {
           const isOwner = m.role === "owner";
-          const isMe = m.user_id === me.id;
+      const isMe = m.user_id === me?.id;
           return (
             <li key={m.user_id} className="flex items-center gap-3 px-4 py-3">
               <Avatar name={m.user.display_name} size="md" />

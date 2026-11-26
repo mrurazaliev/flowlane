@@ -25,7 +25,7 @@ export function WorkspacePicker() {
             <span className="font-semibold uppercase tracking-wide text-gray-500">
               Your workspaces ({workspaces.length})
             </span>
-            <span className="text-gray-400">{currentUser.email}</span>
+        <span className="text-gray-400">{currentUser?.email}</span>
           </div>
 
           <ul className="space-y-3">

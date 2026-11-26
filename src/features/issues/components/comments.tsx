@@ -54,7 +54,7 @@ export function Discussion({ comments, activity }: { comments: Comment[]; activi
                 ) : (
                   <p className="mt-0.5 whitespace-pre-line leading-relaxed text-gray-700">{entry.item.body}</p>
                 )}
-                {entry.item.author.id === me.id && !entry.item.deleted_at && (
+                {entry.item.author.id === me?.id && !entry.item.deleted_at && (
                   <div className="mt-1 flex gap-3.5 text-[12.5px] text-faint">
                     <button className="hover:text-ink">Edit</button>
                     <button className="hover:text-red-600">Delete</button>
