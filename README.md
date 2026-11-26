@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Management — Frontend
 
-## Getting Started
+Next.js 16 + TypeScript + Tailwind. Бэкенд: `task-management-backend` (Swagger: http://localhost:3000/docs).
 
-First, run the development server:
+## Запуск
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+В `.env` бэкенда: `FRONTEND_URL=http://localhost:5173` (ссылки в письмах-приглашениях).
+Тестовый вход (seed бэкенда): `demo@example.com` / `Demo12345!`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Структура и владельцы
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+  app/            SHARED — только тонкие файлы-роуты Next.js
+  shared/
+    api/          SHARED — client.ts, types.ts, queryKeys.ts, lookups.ts
+    ui/           SHARED — Button, Input, Modal, Badge, Avatar…
+    layout/       SHARED — AppShell со слотами
+    lib/          SHARED — utils.ts, errors.ts
+  features/
+    auth/         Dev 1
+    issues/       Dev 1
+    workspaces/   Dev 2
+    projects/     Dev 2
+    planning/     Dev 2 (cycles + modules)
+    notifications/ Dev 2
+```
 
-## Learn More
+## Правила
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. В `features/<x>/` пишет только владелец.
+2. Другие фичи импортируются только через `index.ts`: `import { IssueList } from "@/features/issues"`.
+3. `shared/` и `app/` меняются маленьким отдельным PR, который проверяет второй разработчик.
+4. Ветки: `dev1/<задача>`, `dev2/<задача>` → Pull Request в `main` → review → merge.
+5. Моки лежат в `features/<x>/mocks.ts` (и `shared/api/mocks.ts` для `lookups.ts`). Подключили API — удалили свои моки.

@@ -1,0 +1,7 @@
+// Публичный API фичи workspaces (Dev 2).
+export { WorkspacePicker } from "./components/workspace-picker";
+export { WorkspaceSwitcher } from "./components/workspace-switcher";
+export { WorkspaceSettings } from "./components/workspace-settings";
+export { MembersPage } from "./components/members-page";
+export { AcceptInvite } from "./components/accept-invite";
+export { WorkspaceNav } from "./components/workspace-nav";
