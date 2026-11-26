@@ -28,7 +28,7 @@ export function MembersPage() {
   const { data: me } = useMe();
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
         title="Members"
         description={workspace?.name}
@@ -55,7 +55,7 @@ export function MembersPage() {
 
               {/* Роль владельца и свою роль менять нельзя */}
               {isOwner || isMe ? (
-                <Badge tone={isOwner ? "indigo" : "gray"}>{m.role}</Badge>
+                <Badge tone={isOwner ? "marking" : "gray"}>{m.role}</Badge>
               ) : (
                 <Select defaultValue={m.role} className="h-9 w-28">
                   {editableRoles.map((r) => (

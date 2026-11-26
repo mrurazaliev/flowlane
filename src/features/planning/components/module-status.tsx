@@ -11,7 +11,7 @@ export const moduleStatusLabels: Record<ModuleStatus, string> = {
 
 const tones = {
   backlog: "gray",
-  in_progress: "amber",
+  in_progress: "marking",
   paused: "blue",
   completed: "green",
   cancelled: "red",

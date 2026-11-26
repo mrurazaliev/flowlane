@@ -14,7 +14,7 @@ import { formatDateRange } from "@/shared/lib/utils";
 import { cycles } from "../mocks";
 import { CreateCycleModal } from "./create-cycle-modal";
 
-const statusTone = { active: "green", upcoming: "blue", completed: "gray" } as const;
+const statusTone = { active: "marking", upcoming: "blue", completed: "green" } as const;
 
 export function CycleList() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
@@ -27,7 +27,7 @@ export function CycleList() {
   const count = (s: CycleStatus) => projectCycles.filter((c) => c.status === s).length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
         title="Cycles"
         description="Time-boxed sprints. Status is calculated from the dates."

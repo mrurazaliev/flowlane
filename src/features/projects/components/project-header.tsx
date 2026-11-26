@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useProject } from "@/shared/api/lookups";
+import { useProject, useProjectMembers, useWorkspace } from "@/shared/api/lookups";
+import { AvatarStack } from "@/shared/ui/avatar";
 import { cn } from "@/shared/lib/utils";
 
-/** Шапка проекта: название + вкладки Issues / Board / Cycles / Modules / Settings */
+/** Шапка проекта: путь, название, команда и вкладки (активная — жёлтая разметка) */
 export function ProjectHeader() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const pathname = usePathname();
+  const { data: workspace } = useWorkspace(workspaceSlug);
   const { data: project } = useProject(workspaceSlug, projectId);
+  const { data: members } = useProjectMembers(workspaceSlug, projectId);
 
   const base = `/w/${workspaceSlug}/p/${projectId}`;
   const tabs = [
@@ -21,11 +24,19 @@ export function ProjectHeader() {
   ];
 
   return (
-    <header className="border-b border-gray-200 bg-white px-6 pt-4">
-      <p className="text-xs text-gray-500">{project?.identifier}</p>
-      <h1 className="text-xl font-semibold text-gray-900">{project?.name ?? "Project not found"}</h1>
+    <header className="border-b border-line bg-white px-4 pt-4 md:px-7">
+      <p className="text-[13px] text-muted">
+        {workspace?.name} / <span className="font-medium text-ink">{project?.name}</span>
+      </p>
+      <div className="mt-1 flex items-center gap-3">
+        <h1 className="text-[22px] font-semibold tracking-tight md:text-[26px]">{project?.name ?? "Project not found"}</h1>
+        {project && <span className="rounded-md border border-line px-1.5 text-xs text-muted">{project.identifier}</span>}
+        <div className="ml-auto hidden md:block">
+          <AvatarStack names={members.map((m) => m.user.display_name)} />
+        </div>
+      </div>
 
-      <nav className="mt-3 flex gap-5">
+      <nav className="mt-3 flex gap-5 overflow-x-auto md:gap-7">
         {tabs.map((tab) => {
           const active = pathname.startsWith(tab.href);
           return (
@@ -33,8 +44,8 @@ export function ProjectHeader() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "-mb-px border-b-2 pb-2.5 text-sm font-medium",
-                active ? "border-indigo-600 text-indigo-700" : "border-transparent text-gray-500 hover:text-gray-800",
+                "shrink-0 border-b-[3px] pb-3 font-medium transition-colors",
+                active ? "border-marking text-ink" : "border-transparent text-muted hover:text-ink",
               )}
             >
               {tab.label}
@@ -47,5 +58,5 @@ export function ProjectHeader() {
 }
 
 export function ProjectHeaderSkeleton() {
-  return <div className="h-[109px] border-b border-gray-200 bg-white" />;
+  return <div className="h-[118px] border-b border-line bg-white" />;
 }

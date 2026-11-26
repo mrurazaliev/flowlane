@@ -25,14 +25,14 @@ function SettingsLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex flex-1 gap-6 overflow-y-auto p-6">
-      <nav className="w-48 shrink-0 space-y-0.5">
+    <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:flex-row md:px-7">
+      <nav className="flex shrink-0 gap-1 overflow-x-auto md:w-48 md:flex-col md:gap-0.5">
         {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             className={cn(
-              "block rounded-md px-3 py-2 text-sm",
+              "block shrink-0 rounded-lg px-3 py-2 text-sm",
               pathname === link.href ? "bg-indigo-50 font-medium text-indigo-700" : "text-gray-600 hover:bg-gray-100",
             )}
           >

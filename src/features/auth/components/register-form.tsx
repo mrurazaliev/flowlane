@@ -4,31 +4,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
-import { Logo } from "@/shared/ui/logo";
 
+/** D1.1 Регистрация. Позже: RHF + Zod, POST /auth/register; с ?invite=<token> — сразу в workspace */
 export function RegisterForm() {
   const router = useRouter();
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col items-center text-center">
-        <Logo withText={false} />
-        <h1 className="mt-4 text-2xl font-semibold text-gray-900">Create your account</h1>
-        <p className="mt-1 text-sm text-gray-500">Start organizing work with your team</p>
-      </div>
+    <>
+      <h1 className="text-[26px] font-semibold tracking-tight">Create an account</h1>
+      <p className="mb-7 mt-1.5 text-muted">Start organizing work with your team.</p>
 
       <form
-        className="mt-6 space-y-4"
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
-          // Позже: register() через API
           router.push("/workspaces");
         }}
       >
         <ErrorBanner />
 
         <div>
-          <Label htmlFor="name">Display name</Label>
+          <Label htmlFor="name">Your name</Label>
           <Input id="name" placeholder="Alex Rivera" autoComplete="name" />
           <FieldError />
         </div>
@@ -41,22 +37,22 @@ export function RegisterForm() {
 
         <div>
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="••••••••" autoComplete="new-password" />
+          <Input id="password" type="password" autoComplete="new-password" />
           <FieldHint>At least 8 characters</FieldHint>
           <FieldError />
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="mt-2 h-[46px] w-full text-[15px] font-semibold">
           Create account
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
+        <Link href="/login" className="font-semibold text-ink underline decoration-marking decoration-2 underline-offset-[3px]">
           Log in
         </Link>
       </p>
-    </div>
+    </>
   );
 }

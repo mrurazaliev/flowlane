@@ -1,49 +1,64 @@
-import { Calendar } from "lucide-react";
+import { CalendarDays, CornerDownRight, MessageSquare } from "lucide-react";
 import type { Issue } from "@/shared/api/types";
 import { Avatar } from "@/shared/ui/avatar";
-import { cn, formatDate } from "@/shared/lib/utils";
+import { LabelChip } from "@/shared/ui/badge";
 import { PriorityIcon } from "@/shared/ui/issue-icons";
+import { cn, formatDate } from "@/shared/lib/utils";
 
 interface IssueCardProps {
   issue: Issue;
   identifier: string; // "WEB"
   isDone?: boolean;
+  subTasks?: { done: number; total: number };
+  commentCount?: number;
   onClick?: () => void;
 }
 
-export function IssueCard({ issue, identifier, isDone, onClick }: IssueCardProps) {
-  const label = issue.labels[0]?.label;
+export function IssueCard({ issue, identifier, isDone, subTasks, commentCount, onClick }: IssueCardProps) {
   const assignee = issue.assignees[0]?.user;
 
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition hover:border-gray-300 hover:shadow"
+      className="w-full rounded-[11px] border border-line bg-white px-[13px] pb-[11px] pt-3 text-left shadow-[0_1px_0_rgba(30,34,42,.04)] transition-[border-color,box-shadow] hover:border-gray-300 hover:shadow-[0_4px_14px_-6px_rgba(30,34,42,.18)]"
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-gray-500">
-          {identifier}-{issue.sequence_id}
-        </span>
-        {label && (
-          <span className="flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-600">
-            <span className="size-1.5 rounded-full" style={{ backgroundColor: label.color }} />
-            {label.name}
-          </span>
-        )}
+      <div className="flex items-center text-xs text-muted">
+        {identifier}-{issue.sequence_id}
+        <PriorityIcon priority={issue.priority} className="ml-auto" />
       </div>
 
-      <p className={cn("mt-1.5 text-sm font-medium text-gray-900", isDone && "text-gray-400 line-through")}>
+      <p className={cn("mb-2.5 mt-1.5 text-[14.5px] font-medium leading-snug", isDone ? "text-muted" : "text-ink")}>
         {issue.title}
       </p>
 
-      <div className="mt-3 flex items-center gap-3">
-        <PriorityIcon priority={issue.priority} />
+      {issue.labels.length > 0 && (
+        <div className="mb-2.5 flex flex-wrap gap-1">
+          {issue.labels.map(({ label }) => (
+            <LabelChip key={label.id} name={label.name} color={label.color} />
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 text-xs tabular-nums text-muted">
+        {/* Позже: если срок прошёл и задача не закрыта — красный текст */}
         {issue.due_date && (
-          <span className="flex items-center gap-1 text-xs text-gray-500">
-            <Calendar className="size-3.5" />
+          <span className="flex items-center gap-1">
+            <CalendarDays className="size-3.5" />
             {formatDate(issue.due_date)}
           </span>
         )}
+        {subTasks && subTasks.total > 0 && (
+          <span className="flex items-center gap-1">
+            <CornerDownRight className="size-3.5" />
+            {subTasks.done}/{subTasks.total}
+          </span>
+        )}
+        {commentCount ? (
+          <span className="flex items-center gap-1">
+            <MessageSquare className="size-3.5" />
+            {commentCount}
+          </span>
+        ) : null}
         {assignee && <Avatar name={assignee.display_name} src={assignee.avatar_url} className="ml-auto" />}
       </div>
     </button>

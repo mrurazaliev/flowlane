@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FolderOpen, Plus } from "lucide-react";
+import type { Issue } from "@/shared/api/types";
 import { useLabels, useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
-import { Button } from "@/shared/ui/button";
-import { issues as allIssues } from "../mocks";
+import { Button, Kbd } from "@/shared/ui/button";
+import { issues as allIssues, comments } from "../mocks";
 import { BoardColumn } from "./board-column";
 import { CreateIssueModal } from "./create-issue-modal";
 import { IssueFilters } from "./issue-filters";
 
 /**
- * D1.9 Kanban board: колонки = статусы проекта.
+ * D1.9 Kanban board: колонки = статусы проекта («полосы движения»).
  * Позже: useIssues() вместо моков; drag (dnd-kit) → PATCH state_id сразу (optimistic), при ошибке откат.
  */
 export function Board() {
@@ -26,7 +27,16 @@ export function Board() {
   const { data: labels } = useLabels(workspaceSlug, projectId);
   const issues = allIssues.filter((i) => i.project_id === projectId);
 
-  if (!project) return <p className="p-6 text-sm text-gray-500">Project not found</p>;
+  if (!project) return <p className="p-7 text-muted">Project not found</p>;
+
+  const doneStateIds = new Set(states.filter((s) => s.group === "completed").map((s) => s.id));
+  const meta = (issue: Issue) => {
+    const children = issues.filter((i) => i.parent_id === issue.id);
+    return {
+      subTasks: { done: children.filter((c) => doneStateIds.has(c.state_id)).length, total: children.length },
+      commentCount: comments.filter((c) => c.issue_id === issue.id).length,
+    };
+  };
 
   const openCreate = (stateId?: string) => {
     setCreateInState(stateId);
@@ -35,22 +45,26 @@ export function Board() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Поиск, фильтры и создание задачи */}
-      <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3">
-        <IssueFilters members={members} labels={labels} states={states} />
-        <Button onClick={() => openCreate()}>
-          <Plus className="size-4" /> New task
-        </Button>
-      </div>
+      <IssueFilters
+        members={members}
+        labels={labels}
+        states={states}
+        actions={
+          <Button onClick={() => openCreate()}>
+            <Plus className="size-4" strokeWidth={2.2} /> New task <Kbd>C</Kbd>
+          </Button>
+        }
+      />
 
-      {/* Колонки */}
-      <div className="relative flex flex-1 gap-4 overflow-x-auto p-6">
-        {states.map((state) => (
+      <div className="relative flex min-h-0 flex-1 snap-x overflow-x-auto px-2 md:px-3">
+        {states.map((state, index) => (
           <BoardColumn
             key={state.id}
+            first={index === 0}
             state={state}
             issues={issues.filter((i) => i.state_id === state.id)}
             identifier={project.identifier}
+            meta={meta}
             onIssueClick={(issue) => router.push(`/w/${workspaceSlug}/p/${projectId}/issues/${issue.id}`)}
             onAddClick={() => openCreate(state.id)}
           />
@@ -58,15 +72,15 @@ export function Board() {
 
         {/* Пустой проект */}
         {issues.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="pointer-events-auto w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg">
-              <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+            <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-line bg-white p-8 text-center shadow-[0_24px_60px_-24px_rgba(30,34,42,.35)]">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-marking-soft text-[#8a6410]">
                 <FolderOpen className="size-6" />
               </span>
-              <h2 className="mt-4 text-lg font-semibold text-gray-900">No tasks yet — create your first task</h2>
-              <p className="mt-1 text-sm text-gray-500">Tasks track bugs, features and chores for this project.</p>
+              <h2 className="mt-4 text-lg font-semibold tracking-tight">No tasks yet</h2>
+              <p className="mt-1 text-muted">Create the first task and it will appear in its lane.</p>
               <Button className="mt-5" onClick={() => openCreate()}>
-                <Plus className="size-4" /> Create task
+                <Plus className="size-4" /> Create a task
               </Button>
             </div>
           </div>

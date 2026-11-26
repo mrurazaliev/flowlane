@@ -49,7 +49,7 @@ export function StatesSettings({ workspaceSlug, projectId }: { workspaceSlug: st
                   <GripVertical className="size-4 cursor-grab text-gray-300" />
                   <span className="size-3 rounded-full" style={{ backgroundColor: state.color }} />
                   <span className="text-sm text-gray-900">{state.name}</span>
-                  {state.is_default && <Badge tone="indigo">Default</Badge>}
+                  {state.is_default && <Badge tone="marking">Default</Badge>}
                   <div className="ml-auto flex gap-1">
                     <button className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Edit">
                       <Pencil className="size-4" />

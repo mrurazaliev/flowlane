@@ -1,55 +1,80 @@
+"use client";
+
 import { Send } from "lucide-react";
 import type { Comment } from "@/shared/api/types";
-import { Avatar } from "@/shared/ui/avatar";
 import { useMe } from "@/features/auth";
+import { Avatar } from "@/shared/ui/avatar";
 import { formatDate } from "@/shared/lib/utils";
 
-export function Comments({ comments }: { comments: Comment[] }) {
-  const { data: currentUser } = useMe();
+interface ActivityItem {
+  id: string;
+  actor: string;
+  text: string;
+  created_at: string;
+}
+
+/**
+ * D1.13 Комментарии + D1.14 история изменений одной лентой по времени.
+ * Позже: GET .../comments и .../activity; edit/delete — только свои (или admin); @mention.
+ */
+export function Discussion({ comments, activity }: { comments: Comment[]; activity: ActivityItem[] }) {
+  const { data: me } = useMe();
+
+  const feed = [
+    ...activity.map((a) => ({ kind: "activity" as const, at: a.created_at, item: a })),
+    ...comments.map((c) => ({ kind: "comment" as const, at: c.created_at, item: c })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
 
   return (
-    <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-        Comments <span className="text-gray-400">({comments.length})</span>
-      </h3>
+    <section className="mt-8">
+      <h3 className="mb-3 text-[15px] font-semibold">Discussion</h3>
 
-      <ul className="space-y-4">
-        {comments.length === 0 && <li className="text-sm text-gray-400">No comments yet.</li>}
-        {comments.map((comment) => (
-          <li key={comment.id} className="flex gap-3">
-            <Avatar name={comment.author.display_name} src={comment.author.avatar_url} size="md" />
-            <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-medium text-gray-900">{comment.author.display_name}</span>
-                <span className="text-xs text-gray-400">{formatDate(comment.created_at)}</span>
+      <ol className="space-y-4">
+        {feed.map((entry) =>
+          entry.kind === "activity" ? (
+            <li key={entry.item.id} className="flex items-center gap-2.5 pl-2 text-[13px] text-muted">
+              <span className="size-1.5 rounded-full bg-gray-300" />
+              <span>
+                <span className="font-medium text-ink">{entry.item.actor}</span> {entry.item.text}, {formatDate(entry.at)}
+              </span>
+            </li>
+          ) : (
+            <li key={entry.item.id} className="flex gap-3">
+              <Avatar name={entry.item.author.display_name} src={entry.item.author.avatar_url} size="md" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px]">
+                  <span className="font-semibold">{entry.item.author.display_name}</span>
+                  <span className="ml-2 text-[12.5px] text-muted">
+                    {formatDate(entry.item.created_at)}
+                    {entry.item.updated_at !== entry.item.created_at && ", edited"}
+                  </span>
+                </p>
+                {entry.item.deleted_at ? (
+                  <p className="mt-0.5 italic text-faint">This comment was deleted</p>
+                ) : (
+                  <p className="mt-0.5 whitespace-pre-line leading-relaxed text-gray-700">{entry.item.body}</p>
+                )}
+                {entry.item.author.id === me.id && !entry.item.deleted_at && (
+                  <div className="mt-1 flex gap-3.5 text-[12.5px] text-faint">
+                    <button className="hover:text-ink">Edit</button>
+                    <button className="hover:text-red-600">Delete</button>
+                  </div>
+                )}
               </div>
-              {comment.deleted_at ? (
-                <p className="mt-1 text-sm italic text-gray-400">This comment was deleted</p>
-              ) : (
-                <p className="mt-1 whitespace-pre-line text-sm text-gray-700">{comment.body}</p>
-              )}
-              {/* Свои комментарии можно редактировать и удалять. Позже: id из useMe() */}
-              {comment.author.id === currentUser.id && !comment.deleted_at && (
-                <div className="mt-1.5 flex gap-3 text-xs">
-                  <button className="text-gray-500 hover:text-gray-800">Edit</button>
-                  <button className="text-gray-500 hover:text-red-600">Delete</button>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ),
+        )}
+      </ol>
 
-      <form onSubmit={(e) => e.preventDefault()} className="mt-4 flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5 pl-3 focus-within:border-indigo-500">
-        <input placeholder="Write a comment…" className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400" />
-        <button
-          type="submit"
-          className="flex size-8 items-center justify-center rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-          aria-label="Send comment"
-        >
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="mt-5 flex items-center gap-2 rounded-xl border border-line bg-white p-2 pl-3.5 focus-within:border-asphalt focus-within:ring-[3px] focus-within:ring-marking-soft"
+      >
+        <input placeholder="Write a comment… use @ to mention" className="flex-1 bg-transparent outline-none placeholder:text-faint" />
+        <button type="submit" className="grid size-8 place-items-center rounded-lg bg-asphalt text-white hover:bg-asphalt-2" aria-label="Send comment">
           <Send className="size-4" />
         </button>
       </form>
-    </div>
+    </section>
   );
 }

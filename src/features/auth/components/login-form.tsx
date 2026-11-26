@@ -4,28 +4,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import { ErrorBanner, FieldError, Input, Label } from "@/shared/ui/form";
-import { Logo } from "@/shared/ui/logo";
 
+/** D1.2 Вход. Позже: RHF + Zod, POST /auth/login, после входа — на страницу, куда шёл пользователь */
 export function LoginForm() {
   const router = useRouter();
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col items-center text-center">
-        <Logo withText={false} />
-        <h1 className="mt-4 text-2xl font-semibold text-gray-900">Flowlane</h1>
-        <p className="mt-1 text-sm text-gray-500">Sign in to your workspace</p>
-      </div>
+    <>
+      <h1 className="text-[26px] font-semibold tracking-tight">Log in</h1>
+      <p className="mb-7 mt-1.5 text-muted">Welcome back. Use your work email.</p>
 
       <form
-        className="mt-6 space-y-4"
+        className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
-          // Позже: login() через API, при ошибке — показать ErrorBanner
           router.push("/workspaces");
         }}
       >
-        {/* Позже: <ErrorBanner>Invalid email or password</ErrorBanner> */}
+        {/* Позже: <ErrorBanner>{errorText(error)}</ErrorBanner> */}
         <ErrorBanner />
 
         <div>
@@ -36,21 +32,24 @@ export function LoginForm() {
 
         <div>
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+          <Input id="password" type="password" autoComplete="current-password" />
           <FieldError />
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="mt-2 h-[46px] w-full text-[15px] font-semibold">
           Log in
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-indigo-600 hover:underline">
-          Create account
+      <p className="mt-6 text-center text-muted">
+        New here?{" "}
+        <Link
+          href="/register"
+          className="font-semibold text-ink underline decoration-marking decoration-2 underline-offset-[3px]"
+        >
+          Create an account
         </Link>
       </p>
-    </div>
+    </>
   );
 }
