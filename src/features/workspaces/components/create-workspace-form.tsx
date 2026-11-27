@@ -1,44 +1,111 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { isAxiosError } from "axios";
+import { errorText } from "@/shared/lib/errors";
 import { Button } from "@/shared/ui/button";
-import { FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
+import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
+import { useCreateWorkspaceMutation } from "../api";
+
+const createWorkspaceSchema = z.object({
+  name: z.string().trim().min(1, "Enter a workspace name").max(100, "Use at most 100 characters"),
+  slug: z.string()
+    .trim()
+    .min(2, "Use at least 2 characters")
+    .max(50, "Use at most 50 characters")
+    .regex(/^[a-z0-9-]+$/, "Use lowercase letters, digits and hyphens only"),
+});
+
+type CreateWorkspaceFormData = z.infer<typeof createWorkspaceSchema>;
 
 export function CreateWorkspaceForm() {
   const router = useRouter();
+  const createWorkspace = useCreateWorkspaceMutation();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateWorkspaceFormData>({ resolver: zodResolver(createWorkspaceSchema) });
+
+  async function onSubmit(input: CreateWorkspaceFormData) {
+    try {
+      const workspace = await createWorkspace.mutateAsync(input);
+      router.push(`/w/${workspace.slug}/projects`);
+    } catch (error) {
+      const response = isAxiosError(error) ? error.response : undefined;
+      if (response?.status === 409) {
+        setError(
+          "slug",
+          { type: "server", message: "This workspace URL is already taken" },
+          { shouldFocus: true },
+        );
+        return;
+      }
+
+      setError("root.server", {
+        type: "server",
+        message: errorText(response?.data, "Could not create the workspace. Please try again."),
+      });
+    }
+  }
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-6">
       <h2 className="text-base font-semibold text-gray-900">Create new workspace</h2>
       <p className="mt-1 text-sm text-gray-500">A shared space for your team and its projects.</p>
 
-      <form
-        className="mt-5 space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          // Позже: createWorkspace() через API, затем переход на /{slug}
-          router.push("/w/demo/projects");
-        }}
-      >
+      <form className="mt-5 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        {errors.root?.server?.message && (
+          <div role="alert">
+            <ErrorBanner>{errors.root.server.message}</ErrorBanner>
+          </div>
+        )}
+
         <div>
           <Label htmlFor="ws-name">Workspace name</Label>
-          <Input id="ws-name" placeholder="Acme Corp" />
-          <FieldError />
+          <Input
+            id="ws-name"
+            placeholder="Acme Corp"
+            readOnly={isSubmitting}
+            invalid={!!errors.name}
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? "ws-name-error" : undefined}
+            {...register("name")}
+          />
+          {errors.name && (
+            <div id="ws-name-error"><FieldError>{errors.name.message}</FieldError></div>
+          )}
         </div>
 
         <div>
           <Label htmlFor="ws-slug">Workspace URL</Label>
           <div className="flex items-center rounded-md border border-gray-200 bg-gray-50 pl-3 focus-within:border-indigo-500">
             <span className="text-sm text-gray-400">flowlane.app/</span>
-            <input id="ws-slug" placeholder="acme-corp" className="h-10 flex-1 bg-transparent px-1 text-sm outline-none" />
+            <input
+              id="ws-slug"
+              placeholder="acme-corp"
+              className="h-10 flex-1 bg-transparent px-1 text-sm outline-none"
+              readOnly={isSubmitting}
+              aria-invalid={!!errors.slug}
+              aria-describedby="ws-slug-feedback"
+              {...register("slug")}
+            />
           </div>
-          <FieldHint>Lowercase letters, digits and hyphens only</FieldHint>
-          {/* Позже: ошибка 409 от бэкенда → "Slug is already taken" */}
-          <FieldError />
+          <div id="ws-slug-feedback" aria-live="polite">
+            {errors.slug ? (
+              <FieldError>{errors.slug.message}</FieldError>
+            ) : (
+              <FieldHint>Lowercase letters, digits and hyphens only</FieldHint>
+            )}
+          </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Create workspace
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Creating workspace..." : "Create workspace"}
         </Button>
       </form>
     </section>
