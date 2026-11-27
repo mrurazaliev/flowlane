@@ -1,4 +1,5 @@
 import { CalendarDays, CornerDownRight, MessageSquare } from "lucide-react";
+import type { DragEventHandler, KeyboardEventHandler } from "react";
 import type { Issue } from "@/shared/api/types";
 import { Avatar } from "@/shared/ui/avatar";
 import { LabelChip } from "@/shared/ui/badge";
@@ -12,15 +13,33 @@ interface IssueCardProps {
   subTasks?: { done: number; total: number };
   commentCount?: number;
   onClick?: () => void;
+  draggable?: boolean;
+  dragging?: boolean;
+  onDragStart?: DragEventHandler<HTMLButtonElement>;
+  onDragEnd?: DragEventHandler<HTMLButtonElement>;
+  onKeyDown?: KeyboardEventHandler<HTMLButtonElement>;
 }
 
-export function IssueCard({ issue, identifier, isDone, subTasks, commentCount, onClick }: IssueCardProps) {
+export function IssueCard({
+  issue, identifier, isDone, subTasks, commentCount, onClick,
+  draggable, dragging, onDragStart, onDragEnd, onKeyDown,
+}: IssueCardProps) {
   const assignee = issue.assignees[0]?.user;
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="w-full rounded-[11px] border border-line bg-white px-[13px] pb-[11px] pt-3 text-left shadow-[0_1px_0_rgba(30,34,42,.04)] transition-[border-color,box-shadow] hover:border-gray-300 hover:shadow-[0_4px_14px_-6px_rgba(30,34,42,.18)]"
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onKeyDown={onKeyDown}
+      aria-keyshortcuts={draggable ? "Alt+ArrowLeft Alt+ArrowRight" : undefined}
+      className={cn(
+        "w-full rounded-[11px] border border-line bg-white px-[13px] pb-[11px] pt-3 text-left shadow-[0_1px_0_rgba(30,34,42,.04)] transition-[border-color,box-shadow] hover:border-gray-300 hover:shadow-[0_4px_14px_-6px_rgba(30,34,42,.18)]",
+        draggable && "cursor-grab",
+        dragging && "cursor-grabbing opacity-50",
+      )}
     >
       <div className="flex items-center text-xs text-muted">
         {identifier}-{issue.sequence_id}

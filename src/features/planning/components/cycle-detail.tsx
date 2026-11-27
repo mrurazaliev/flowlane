@@ -3,14 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
-import { AddIssuesModal, IssueList } from "@/features/issues";
-import { useProject } from "@/shared/api/lookups";
+import { ArrowLeft } from "lucide-react";
+import { useProjectAccess } from "@/features/projects/use-project-access";
 import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { PageSkeleton } from "@/shared/ui/page";
 import { ProgressBar } from "@/shared/ui/progress-bar";
 import { formatDateRange } from "@/shared/lib/utils";
-import { cycles } from "../mocks";
+import { useCycle } from "../api";
+import { planningErrorText } from "../planning-form";
+import { CycleModal } from "./cycle-modal";
+import { PlanningActions } from "./planning-actions";
+import { PlanningTasks } from "./planning-tasks";
 
 export function CycleDetail() {
   const { workspaceSlug, projectId, cycleId } = useParams<{
@@ -18,13 +21,13 @@ export function CycleDetail() {
     projectId: string;
     cycleId: string;
   }>();
-  const [addOpen, setAddOpen] = useState(false);
-
-  // Позже: useCycle(cycleId) и useIssues(projectId, { cycle: cycleId })
-  const cycle = cycles.find((c) => c.id === cycleId);
-  const { data: project } = useProject(workspaceSlug, projectId);
-  if (!cycle || !project) return <p className="p-6 text-sm text-gray-500">Cycle not found</p>;
-
+  const [editOpen, setEditOpen] = useState(false);
+  const { canWrite } = useProjectAccess(workspaceSlug);
+  const { data: cycle, isPending, error } = useCycle({ workspaceSlug, projectId }, cycleId);
+  if (isPending) return <PageSkeleton />;
+  if (!cycle || cycle.project_id !== projectId) {
+    return <p className="p-6 text-sm text-gray-500" role="alert">{planningErrorText(error, "Cycle not found.")}</p>;
+  }
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
@@ -36,15 +39,16 @@ export function CycleDetail() {
       </Link>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold text-gray-900">{cycle.name}</h1>
           <Badge tone={cycle.status === "active" ? "marking" : cycle.status === "upcoming" ? "blue" : "green"}>
             {cycle.status}
           </Badge>
           <span className="text-sm text-gray-500">{formatDateRange(cycle.start_date, cycle.end_date)}</span>
-          <Button className="ml-auto" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus className="size-4" /> Add existing tasks
-          </Button>
+          {canWrite && (
+            <PlanningActions workspaceSlug={workspaceSlug} projectId={projectId} kind="cycles"
+              id={cycle.id} name={cycle.name} onEdit={() => setEditOpen(true)} />
+          )}
         </div>
         {cycle.description && <p className="mt-1 text-sm text-gray-500">{cycle.description}</p>}
 
@@ -59,21 +63,12 @@ export function CycleDetail() {
         )}
       </section>
 
-      {/* По ТЗ: список задач цикла — общий компонент Dev 1 */}
-      <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Tasks</h2>
-        <IssueList workspaceSlug={workspaceSlug} projectId={projectId} filter={{ cycle: cycle.id }} />
-      </section>
-
-      <AddIssuesModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        title={`Add tasks to ${cycle.name}`}
-        hint="Tasks that are already in another cycle will be moved to this one."
-        workspaceSlug={workspaceSlug}
-        projectId={projectId}
-        exclude={{ cycle: cycle.id }}
-      />
+      <PlanningTasks workspaceSlug={workspaceSlug} projectId={projectId} kind="cycles"
+        id={cycle.id} name={cycle.name} canWrite={canWrite} />
+      {canWrite && editOpen && (
+        <CycleModal workspaceSlug={workspaceSlug} projectId={projectId}
+          cycle={cycle} onClose={() => setEditOpen(false)} />
+      )}
     </div>
   );
 }

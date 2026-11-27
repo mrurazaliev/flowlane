@@ -34,7 +34,8 @@ export function IssueList({ workspaceSlug, projectId, filter = {}, groupBy = "st
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
 
-const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, filter);
+const showAll = !!(filter.cycle || filter.module);
+const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, filter, { allPages: showAll });
 
 if (isLoading) return <p className="p-4 text-muted">Loading tasks...</p>;
 if (isError) return <p className="p-4 text-red-600">Could not load tasks</p>;
@@ -91,7 +92,7 @@ if (issues.length === 0) {
                   <span className="hidden w-16 text-right tabular-nums text-muted sm:block">
                     {issue.due_date ? formatDate(issue.due_date) : ""}
                   </span>
-                  {issue.assignees[0] ? (
+                  {issue.assignees[0]?.user ? (
                     <Avatar name={issue.assignees[0].user.display_name} src={issue.assignees[0].user.avatar_url} />
                   ) : (
                     <span className="size-6 rounded-full border border-dashed border-gray-300" />
@@ -103,10 +104,12 @@ if (issues.length === 0) {
         </section>
       ))}
 
-      <div className="flex justify-center">
-        {/* Позже: показываем, только если в ответе есть next_cursor */}
-        <Button variant="secondary">Load more</Button>
-      </div>
+      {!showAll && (
+        <div className="flex justify-center">
+          {/* Позже: показываем, только если в ответе есть next_cursor */}
+          <Button variant="secondary">Load more</Button>
+        </div>
+      )}
     </div>
   );
 }

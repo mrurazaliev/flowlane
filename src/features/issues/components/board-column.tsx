@@ -1,3 +1,4 @@
+import { useState, type DragEvent } from "react";
 import { Plus } from "lucide-react";
 import type { Issue, State } from "@/shared/api/types";
 import { StateIcon } from "@/shared/ui/issue-icons";
@@ -10,7 +11,13 @@ interface BoardColumnProps {
   identifier: string;
   meta: (issue: Issue) => { subTasks?: { done: number; total: number }; commentCount?: number };
   onIssueClick: (issue: Issue) => void;
-  onAddClick: () => void;
+  onAddClick?: () => void;
+  states: State[];
+  canMove: boolean;
+  draggedIssue: Issue | null;
+  onDragStart: (event: DragEvent<HTMLButtonElement>, issue: Issue) => void;
+  onDragEnd: () => void;
+  onMove: (issue: Issue, stateId: string) => void;
   first?: boolean;
 }
 
@@ -26,15 +33,38 @@ const emptyText: Record<State["group"], string> = {
  * Колонка доски = полоса движения. Полосы разделены пунктирной разметкой,
  * над полосой «в работе» (group started) — жёлтая линия.
  */
-export function BoardColumn({ state, issues, identifier, meta, onIssueClick, onAddClick, first }: BoardColumnProps) {
+export function BoardColumn({
+  state, issues, identifier, meta, onIssueClick, onAddClick, first,
+  states, canMove, draggedIssue, onDragStart, onDragEnd, onMove,
+}: BoardColumnProps) {
   const isDone = state.group === "completed" || state.group === "cancelled";
   const moving = state.group === "started";
+  const [isOver, setIsOver] = useState(false);
+  const canDrop = canMove && draggedIssue !== null && draggedIssue.state_id !== state.id;
 
   return (
     <section
+      onDragOver={(event) => {
+        if (!canDrop) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        setIsOver(true);
+      }}
+      onDragLeave={(event) => {
+        if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
+        setIsOver(false);
+      }}
+      onDrop={(event) => {
+        if (!canDrop || !draggedIssue) return;
+        event.preventDefault();
+        setIsOver(false);
+        onDragEnd();
+        onMove(draggedIssue, state.id);
+      }}
       className={cn(
         "relative flex w-[290px] shrink-0 snap-start flex-col px-3.5 pt-[18px]",
         !first && "bg-[linear-gradient(var(--color-gray-200)_55%,transparent_0)] bg-[length:2px_22px] bg-repeat-y",
+        canDrop && isOver && "bg-marking-soft",
       )}
     >
       {moving && <span className="absolute inset-x-3.5 top-0 h-[3px] rounded-b bg-marking" />}
@@ -43,13 +73,15 @@ export function BoardColumn({ state, issues, identifier, meta, onIssueClick, onA
         <StateIcon group={state.group} color={state.color} />
         <h3 className="font-semibold">{state.name}</h3>
         <span className="font-medium tabular-nums text-muted">{issues.length}</span>
-        <button
-          onClick={onAddClick}
-          className="ml-auto rounded p-0.5 text-faint hover:bg-white hover:text-ink"
-          aria-label={`Add task to ${state.name}`}
-        >
-          <Plus className="size-4" />
-        </button>
+        {onAddClick && (
+          <button
+            onClick={onAddClick}
+            className="ml-auto rounded p-0.5 text-faint hover:bg-white hover:text-ink"
+            aria-label={`Add task to ${state.name}`}
+          >
+            <Plus className="size-4" />
+          </button>
+        )}
       </header>
 
       <div className="flex min-h-24 flex-1 flex-col gap-2.5 overflow-y-auto pb-6">
@@ -66,6 +98,18 @@ export function BoardColumn({ state, issues, identifier, meta, onIssueClick, onA
               isDone={isDone}
               {...meta(issue)}
               onClick={() => onIssueClick(issue)}
+              draggable={canMove}
+              dragging={draggedIssue?.id === issue.id}
+              onDragStart={(event) => onDragStart(event, issue)}
+              onDragEnd={onDragEnd}
+              onKeyDown={(event) => {
+                if (!canMove || !event.altKey || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) return;
+                const index = states.findIndex((item) => item.id === state.id);
+                const nextState = states[index + (event.key === "ArrowLeft" ? -1 : 1)];
+                if (!nextState) return;
+                event.preventDefault();
+                onMove(issue, nextState.id);
+              }}
             />
           ))
         )}

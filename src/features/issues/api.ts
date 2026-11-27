@@ -33,15 +33,27 @@ type IssuesResponse = {
   next_cursor: string | null;
 };
 // GET /workspaces/:slug/projects/:projectId/issues
-export const useGetIssuesQuery = ( workspaceSlug: string, projectId: string, filters: IssueFilters = {},) =>
+export const useGetIssuesQuery = (
+  workspaceSlug: string,
+  projectId: string,
+  filters: IssueFilters = {},
+  { allPages = false, enabled = true } = {},
+) =>
   useQuery({
-    queryKey: queryKeys.issues.list(workspaceSlug, projectId, filters),
-    queryFn: async () => {
-      const { data } = await api.get<IssuesResponse>(
-        `/workspaces/${workspaceSlug}/projects/${projectId}/issues`,
-        { params: { limit: 100, ...filters } },
-      );
-      return data.data;
+    queryKey: queryKeys.issues.list(workspaceSlug, projectId, allPages ? { ...filters, allPages } : filters),
+    enabled,
+    queryFn: async ({ signal }) => {
+      const issues: Issue[] = [];
+      let cursor: string | null = null;
+      do {
+        const { data }: { data: IssuesResponse } = await api.get<IssuesResponse>(
+          `/workspaces/${workspaceSlug}/projects/${projectId}/issues`,
+          { params: { limit: 100, ...filters, cursor: cursor ?? undefined }, signal },
+        );
+        issues.push(...data.data);
+        cursor = data.next_cursor;
+      } while (allPages && cursor);
+      return issues;
     },
   });
 
@@ -76,19 +88,41 @@ export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issue
   });
 
 // PATCH
+async function editIssue(workspaceSlug: string, projectId: string, issueId: string, changes: IssueUpdate) {
+  const { data } = await api.patch<Issue>(
+    `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
+    changes,
+  );
+  return data;
+}
+
 export const useEditIssueMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (changes: IssueUpdate) => {
-      const { data } = await api.patch<Issue>(
-        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
-        changes,
-      );
-      return data;
-    },
+    mutationFn: (changes: IssueUpdate) => editIssue(workspaceSlug, projectId, issueId, changes),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
   });
 };
+
+export const useMoveIssueMutation = (workspaceSlug: string, projectId: string) => {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ issueId, stateId }: { issueId: string; stateId: string }) =>
+      editIssue(workspaceSlug, projectId, issueId, { state_id: stateId }),
+    onSuccess: async (issue) => {
+      const queryKey = [...queryKeys.issues.all, workspaceSlug, projectId]
+      await client.cancelQueries({ queryKey })
+      client.setQueryData<Issue[]>(queryKeys.issues.list(workspaceSlug, projectId, { allPages: true }), (issues) =>
+        issues?.map((item) => item.id === issue.id ? { ...item, state_id: issue.state_id } : item),
+      )
+      await Promise.all([
+        client.invalidateQueries({ queryKey }),
+        client.invalidateQueries({ queryKey: queryKeys.cycles.all(workspaceSlug, projectId) }),
+        client.invalidateQueries({ queryKey: queryKeys.modules.all(workspaceSlug, projectId) }),
+      ])
+    },
+  })
+}
 
 // DELETE
 export const useDeleteIssueMutation = (workspaceSlug: string, projectId: string) => {

@@ -4,42 +4,48 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Calendar, Plus } from "lucide-react";
+import { useProjectAccess } from "@/features/projects/use-project-access";
 import { Avatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
-import { EmptyState, PageHeader } from "@/shared/ui/page";
+import { EmptyState, PageHeader, PageSkeleton } from "@/shared/ui/page";
 import { ProgressBar } from "@/shared/ui/progress-bar";
 import { formatDateRange } from "@/shared/lib/utils";
-import { useMemberUsers } from "@/shared/api/lookups";
-import { modules } from "../mocks";
-import { CreateModuleModal } from "./create-module-modal";
+import { useProjectMembers } from "@/shared/api/lookups";
+import { useModules } from "../api";
+import { planningErrorText } from "../planning-form";
+import { ModuleModal } from "./module-modal";
 import { ModuleStatusBadge } from "./module-status";
 
 export function ModuleList() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
-  const { data: members } = useMemberUsers(workspaceSlug);
+  const { data: members } = useProjectMembers(workspaceSlug, projectId);
+  const { canWrite } = useProjectAccess(workspaceSlug);
+  const { data: projectModules = [], isPending, isError, error, refetch } = useModules({ workspaceSlug, projectId });
 
-  // Позже: useModules(workspaceSlug, projectId)
-  const projectModules = modules.filter((m) => m.project_id === projectId);
+  if (isPending) return <PageSkeleton />;
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
         title="Modules"
         description="Group tasks by feature. One task can be in several modules."
-        actions={
+        actions={canWrite && (
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" /> New module
           </Button>
-        }
+        )}
       />
 
-      {projectModules.length === 0 ? (
+      {isError ? (
+        <EmptyState title={planningErrorText(error, "Could not load modules.")}
+          action={<Button variant="secondary" onClick={() => void refetch()}>Try again</Button>} />
+      ) : projectModules.length === 0 ? (
         <EmptyState title="No modules yet" description="Create a module to group related tasks." />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {projectModules.map((mod) => {
-            const lead = members.find((m) => m.id === mod.lead_id);
+            const lead = members.find((member) => member.user_id === mod.lead_id)?.user;
             return (
               <li key={mod.id}>
                 <Link
@@ -56,10 +62,10 @@ export function ModuleList() {
                     <span className="flex items-center gap-1.5">
                       {lead ? (
                         <>
-                          <Avatar name={lead.display_name} /> {lead.display_name}
+                          <Avatar name={lead.display_name} src={lead.avatar_url} /> {lead.display_name}
                         </>
                       ) : (
-                        "No lead"
+                        mod.lead_id ? "Lead unavailable" : "No lead"
                       )}
                     </span>
                     <span className="flex items-center gap-1">
@@ -86,7 +92,9 @@ export function ModuleList() {
         </ul>
       )}
 
-      <CreateModuleModal open={createOpen} onClose={() => setCreateOpen(false)} members={members} />
+      {canWrite && createOpen && (
+        <ModuleModal workspaceSlug={workspaceSlug} projectId={projectId} onClose={() => setCreateOpen(false)} />
+      )}
     </div>
   );
 }
