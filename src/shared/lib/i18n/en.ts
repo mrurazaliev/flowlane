@@ -69,6 +69,13 @@ export const en = {
   "profile.newPassword": "New password",
   "profile.newPasswordHint": "At least 8 characters. You will be logged out on all devices.",
   "profile.updatePassword": "Update password",
+  "profile.confirmPassword": "Confirm new password",
+  "profile.saving": "Saving...",
+  "profile.saved": "Saved",
+  "profile.updating": "Updating...",
+  "validation.avatarUrl": "Enter a full link, starting with https://",
+  "validation.currentPasswordRequired": "Enter your current password",
+  "login.passwordChanged": "Password changed. Log in with your new password.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

@@ -62,4 +62,11 @@ export const ru: Record<TranslationKey, string> = {
   "profile.newPassword": "Новый пароль",
   "profile.newPasswordHint": "Минимум 8 символов. Вы выйдете со всех устройств.",
   "profile.updatePassword": "Обновить пароль",
+  "profile.confirmPassword": "Повторите новый пароль",
+  "profile.saving": "Сохраняем...",
+  "profile.saved": "Сохранено",
+  "profile.updating": "Обновляем...",
+  "validation.avatarUrl": "Введите полную ссылку, начиная с https://",
+  "validation.currentPasswordRequired": "Введите текущий пароль",
+  "login.passwordChanged": "Пароль изменён. Войдите с новым паролем.",
 };
