@@ -1,62 +1,120 @@
+import { useCallback, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
-import type { ProjectRole } from "@/shared/api/types";
+import { ConfirmDeleteModal } from "@/features/workspaces";
+import type { ProjectMember, ProjectRole, WorkspaceMember } from "@/shared/api/types";
 import { Avatar } from "@/shared/ui/avatar";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Select } from "@/shared/ui/form";
-import { useProjectMembers, useWorkspaceMembers } from "@/shared/api/lookups";
-
-const roles: ProjectRole[] = ["admin", "member", "viewer"];
+import { ErrorBanner, Select } from "@/shared/ui/form";
+import { useAddProjectMemberMutation, useProjectMembersQuery, useRemoveProjectMemberMutation } from "../api";
+import { projectErrorText, projectRoles } from "../project-form";
 
 /** Участники проекта. Добавлять можно только тех, кто уже в workspace */
-export function ProjectMembersSettings({ workspaceSlug, projectId }: { workspaceSlug: string; projectId: string }) {
-  const { data: workspaceMembers } = useWorkspaceMembers(workspaceSlug);
-  const { data: projectMembers } = useProjectMembers(workspaceSlug, projectId);
+export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMembers, canManage }: {
+  workspaceSlug: string;
+  projectId: string;
+  workspaceMembers: WorkspaceMember[];
+  canManage: boolean;
+}) {
+  const membersQuery = useProjectMembersQuery(workspaceSlug, projectId);
+  const projectMembers = membersQuery.data ?? [];
+  const add = useAddProjectMemberMutation(workspaceSlug, projectId);
+  const { mutate: remove, isPending: isRemoving, error: removeError, reset: resetRemove } =
+    useRemoveProjectMemberMutation(workspaceSlug, projectId);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [role, setRole] = useState<ProjectRole>("member");
+  const [memberToRemove, setMemberToRemove] = useState<ProjectMember | null>(null);
   const notInProject = workspaceMembers.filter((wm) => !projectMembers.some((pm) => pm.user_id === wm.user_id));
+  const selectedMember = notInProject.find((member) => member.user_id === selectedUserId);
+  const isBusy = add.isPending || isRemoving;
+  const canEdit = canManage && membersQuery.isSuccess;
+
+  const closeRemove = useCallback(() => {
+    if (isRemoving) return;
+    setMemberToRemove(null);
+    resetRemove();
+  }, [isRemoving, resetRemove]);
+
+  function onAdd(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!canEdit || isBusy || !selectedMember) return;
+    add.mutate({ user_id: selectedMember.user_id, role }, {
+      onSuccess: () => {
+        setSelectedUserId("");
+        setRole("member");
+      },
+    });
+  }
 
   return (
     <div className="space-y-4">
-      <form className="flex gap-2 rounded-xl border border-gray-200 bg-white p-4" onSubmit={(e) => e.preventDefault()}>
-        <Select defaultValue="" className="flex-1">
-          <option value="" disabled>
-            Add a workspace member…
-          </option>
-          {notInProject.map((m) => (
-            <option key={m.user_id} value={m.user_id}>
-              {m.user.display_name} ({m.user.email})
-            </option>
-          ))}
-        </Select>
-        <Select defaultValue="member" className="w-32">
-          {roles.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </Select>
-        <Button type="submit">Add</Button>
-      </form>
+      {membersQuery.isPending && <p role="status" className="text-sm text-muted">Loading project members…</p>}
+      {membersQuery.isError && (
+        <div className="space-y-2">
+          <div role="alert"><ErrorBanner>{projectErrorText(membersQuery.error, "Could not load project members.")}</ErrorBanner></div>
+          <Button variant="secondary" disabled={membersQuery.isFetching} onClick={() => void membersQuery.refetch()}>
+            Try again
+          </Button>
+        </div>
+      )}
+      {add.error && <div role="alert"><ErrorBanner>{projectErrorText(add.error, "Could not add the project member.")}</ErrorBanner></div>}
 
-      <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
-        {projectMembers.map((m) => (
-          <li key={m.user_id} className="flex items-center gap-3 px-4 py-3">
-            <Avatar name={m.user.display_name} size="md" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">{m.user.display_name}</p>
-              <p className="text-xs text-gray-500">{m.user.email}</p>
-            </div>
-            <Select defaultValue={m.role} className="h-9 w-32">
-              {roles.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </Select>
-            <button className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label="Remove">
-              <X className="size-4" />
-            </button>
-          </li>
-        ))}
-      </ul>
+      {canEdit && (
+        <form className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white p-4" onSubmit={onAdd}>
+          <Select
+            value={selectedMember?.user_id ?? ""}
+            onChange={(event) => setSelectedUserId(event.currentTarget.value)}
+            className="min-w-0 flex-1"
+            aria-label="Workspace member"
+            disabled={isBusy || notInProject.length === 0}
+          >
+            <option value="" disabled>{notInProject.length ? "Add a workspace member…" : "No workspace members to add"}</option>
+            {notInProject.map((member) => (
+              <option key={member.user_id} value={member.user_id}>{member.user.display_name} ({member.user.email})</option>
+            ))}
+          </Select>
+          <Select value={role} onChange={(event) => setRole(event.currentTarget.value as ProjectRole)}
+            className="w-28" aria-label="Project role" disabled={isBusy || notInProject.length === 0}>
+            {projectRoles.map((item) => <option key={item} value={item}>{item}</option>)}
+          </Select>
+          <Button type="submit" disabled={isBusy || !selectedMember}>{add.isPending ? "Adding…" : "Add"}</Button>
+        </form>
+      )}
+
+      {membersQuery.isSuccess && projectMembers.length === 0 && <p className="text-sm text-muted">No project members yet.</p>}
+      {projectMembers.length > 0 && (
+        <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+          {projectMembers.map((member) => (
+            <li key={member.user_id} className="flex items-center gap-3 px-4 py-3">
+              <Avatar name={member.user.display_name} src={member.user.avatar_url} size="md" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-900">{member.user.display_name}</p>
+                <p className="truncate text-xs text-gray-500">{member.user.email}</p>
+              </div>
+              <Badge>{member.role}</Badge>
+              {canEdit && (
+                <button type="button" disabled={isBusy} onClick={() => setMemberToRemove(member)}
+                  className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                  aria-label={`Remove ${member.user.display_name}`}>
+                  <X className="size-4" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {memberToRemove && (
+        <ConfirmDeleteModal
+          title="Remove project member?"
+          description={`Remove ${memberToRemove.user.display_name} from this project’s member list?`}
+          confirmLabel="Remove member"
+          pending={isRemoving}
+          error={removeError ? projectErrorText(removeError, "Could not remove the project member.") : undefined}
+          onClose={closeRemove}
+          onConfirm={() => remove(memberToRemove.user_id, { onSuccess: () => setMemberToRemove(null) })}
+        />
+      )}
     </div>
   );
 }

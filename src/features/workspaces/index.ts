@@ -5,3 +5,5 @@ export { WorkspaceSettings } from "./components/workspace-settings";
 export { MembersPage } from "./components/members-page";
 export { AcceptInvite } from "./components/accept-invite";
 export { WorkspaceNav } from "./components/workspace-nav";
+export { useWorkspaceQuery, useWorkspaceMembersQuery } from "./api";
+export { ConfirmDeleteModal } from "./components/confirm-delete-modal";
