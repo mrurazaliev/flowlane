@@ -17,7 +17,7 @@ import { Modal } from "@/shared/ui/modal";
 import { formatDate } from "@/shared/lib/utils";
 import { Attachments } from "./attachments";
 import { Discussion } from "./comments";
-import { activity, attachments, comments } from "../mocks"; // комментарии и файлы — следующие задачи
+import { activity, attachments } from "../mocks"; // история и файлы — следующие задачи
 import { useDeleteIssueMutation, useEditIssueMutation, useGetIssueQuery, useGetIssuesQuery } from "../api";
 
 export function IssueDetail() {
@@ -197,10 +197,7 @@ export function IssueDetail() {
 
           <Attachments attachments={attachments.filter((a) => a.issue_id === issue.id)} />
 
-          <Discussion
-            comments={comments.filter((c) => c.issue_id === issue.id)}
-            activity={activity.filter((a) => a.issue_id === issue.id)}
-          />
+          <Discussion issueId={issue.id} activity={activity.filter((a) => a.issue_id === issue.id)} />
         </div>
       </article>
 
