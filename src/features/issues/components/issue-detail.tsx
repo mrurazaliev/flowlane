@@ -1,36 +1,54 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { ChevronLeft, Link2, Plus, Trash2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { AlertCircle, Check, ChevronLeft, Link2, Loader2, Plus, Trash2 } from "lucide-react";
+import { isAxiosError } from "axios";
 import { useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
+import { errorText } from "@/shared/lib/errors";
 import { LabelChip } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Dropdown } from "@/shared/ui/dropdown";
+import { ErrorBanner } from "@/shared/ui/form";
 import { StateIcon } from "@/shared/ui/issue-icons";
 import { memberOptions, priorityOptions, stateOptions } from "@/shared/ui/issue-options";
+import { Modal } from "@/shared/ui/modal";
 import { formatDate } from "@/shared/lib/utils";
-import { activity, attachments, comments, issues } from "../mocks";
 import { Attachments } from "./attachments";
 import { Discussion } from "./comments";
+import { activity, attachments, comments } from "../mocks"; // комментарии и файлы — следующие задачи
+import { useDeleteIssueMutation, useEditIssueMutation, useGetIssueQuery, useGetIssuesQuery } from "../api";
 
-/**
- * D1.10 Страница задачи /w/:slug/p/:projectId/issues/:issueId (в URL — UUID, ключ WEB-6 только текстом).
- * Позже: GET/PATCH/DELETE .../issues/:issueId, inline-редактирование, markdown в описании.
- */
 export function IssueDetail() {
   const { workspaceSlug, projectId, issueId } = useParams<{
     workspaceSlug: string;
     projectId: string;
     issueId: string;
   }>();
+  const router = useRouter();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
   const { data: members } = useMemberUsers(workspaceSlug);
 
-  const issue = issues.find((i) => i.id === issueId);
-  if (!issue || !project) return <p className="p-7 text-muted">Task not found</p>;
+  const { data: issue, isLoading, isError } = useGetIssueQuery(workspaceSlug, projectId, issueId);
+  const { data: issues = [] } = useGetIssuesQuery(workspaceSlug, projectId); // для подзадач и родителя
+  const editIssue = useEditIssueMutation(workspaceSlug, projectId, issueId);
+  const deleteIssue = useDeleteIssueMutation(workspaceSlug, projectId);
+
+  if (isLoading) return <p className="p-7 text-muted">Loading task...</p>;
+  if (isError || !issue || !project) return <p className="p-7 text-muted">Task not found</p>;
+
+  const handleDelete = async () => {
+    await deleteIssue.mutateAsync(issue.id);
+    setDeleteOpen(false);
+    router.push(`/w/${workspaceSlug}/p/${projectId}/board`);
+  };
+
+  const deleteError =
+    deleteIssue.error && isAxiosError(deleteIssue.error) ? errorText(deleteIssue.error.response?.data) : null;
 
   const key = (seq: number) => `${project.identifier}-${seq}`;
   const base = `/w/${workspaceSlug}/p/${projectId}`;
@@ -58,25 +76,74 @@ export function IssueDetail() {
               </>
             )}
             <span className="font-medium text-ink">{key(issue.sequence_id)}</span>
-            <Button variant="ghost" size="sm" className="ml-auto text-red-600 hover:bg-red-50 hover:text-red-700">
+
+            <span className="ml-auto">
+              <SaveStatus pending={editIssue.isPending} failed={editIssue.isError} saved={editIssue.isSuccess} />
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeleteOpen(true)}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
               <Trash2 className="size-4" /> Delete
             </Button>
           </div>
 
-          <textarea
-            defaultValue={issue.title}
-            rows={1}
-            aria-label="Title"
-            className="mt-3 w-full resize-none rounded-lg bg-transparent text-[28px] font-semibold leading-tight tracking-tight outline-none field-sizing-content focus:bg-white md:text-[30px]"
-          />
-          <textarea
-            defaultValue={issue.description ?? ""}
-            placeholder="Add a description…"
-            aria-label="Description"
-            className="mt-2 min-h-28 w-full resize-none rounded-lg bg-transparent p-0 text-[15px] leading-relaxed text-gray-700 outline-none field-sizing-content placeholder:text-faint focus:bg-white"
-          />
+          {/* Название: Enter — сохранить, Esc — отменить. Видно, что поле можно редактировать */}
+          <div className="group mt-3">
+            <textarea
+              key={`title-${issue.id}`}
+              defaultValue={issue.title}
+              placeholder="Task title"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.currentTarget.blur(); // blur → onBlur → сохранение
+                }
+                if (e.key === "Escape") {
+                  e.currentTarget.value = issue.title; // вернуть как было
+                  e.currentTarget.blur();
+                }
+              }}
+              onBlur={(e) => {
+                const title = e.target.value.trim();
+                if (!title) e.target.value = issue.title; // пустое название не сохраняем
+                else if (title !== issue.title) editIssue.mutate({ title });
+              }}
+              rows={1}
+              aria-label="Title"
+              className="-mx-2 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1 text-[28px] font-semibold leading-tight tracking-tight outline-none transition-colors field-sizing-content hover:border-line focus:border-marking focus:bg-white md:text-[30px]"
+            />
+            <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
+              Enter to save, Esc to cancel
+            </p>
+          </div>
 
-          {/* D1.11 Подзадачи — только 1 уровень */}
+          {/* Описание: сохраняется, когда кликаешь мимо поля */}
+          <div className="group mt-2">
+            <textarea
+              key={`description-${issue.id}`}
+              defaultValue={issue.description ?? ""}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.currentTarget.value = issue.description ?? "";
+                  e.currentTarget.blur();
+                }
+              }}
+              onBlur={(e) => {
+                const description = e.target.value;
+                if (description !== (issue.description ?? "")) editIssue.mutate({ description: description || null });
+              }}
+              placeholder="Add a description…"
+              aria-label="Description"
+              className="-mx-2 min-h-28 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-gray-700 outline-none transition-colors field-sizing-content placeholder:text-faint hover:border-line focus:border-marking focus:bg-white"
+            />
+            <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
+              Saves when you click outside. Esc to cancel
+            </p>
+          </div>
+
           <Section
             title="Sub-tasks"
             meta={
@@ -117,7 +184,6 @@ export function IssueDetail() {
             )}
           </Section>
 
-          {/* D1.12 Связи: blocks, blocked_by, relates_to, duplicates */}
           <Section
             title="Relations"
             action={
@@ -129,10 +195,8 @@ export function IssueDetail() {
             <p className="text-faint">No relations yet</p>
           </Section>
 
-          {/* D1.15 Файлы */}
           <Attachments attachments={attachments.filter((a) => a.issue_id === issue.id)} />
 
-          {/* D1.13 Комментарии + D1.14 История — одной лентой */}
           <Discussion
             comments={comments.filter((c) => c.issue_id === issue.id)}
             activity={activity.filter((a) => a.issue_id === issue.id)}
@@ -140,16 +204,30 @@ export function IssueDetail() {
         </div>
       </article>
 
-      {/* Свойства задачи */}
+      {/* Свойства задачи: сохраняются сразу при выборе, статус сохранения — вверху страницы */}
       <aside className="shrink-0 border-t border-line bg-white px-5 py-5 lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0">
         <h2 className="mb-2 text-[13px] text-muted">Properties</h2>
         <Property label="Status">
-          <Dropdown variant="inline" value={issue.state_id} options={stateOptions(states)} ariaLabel="Status" />
+          <Dropdown
+            variant="inline"
+            value={issue.state_id}
+            onChange={(state_id) => editIssue.mutate({ state_id })}
+            options={stateOptions(states)}
+            ariaLabel="Status"
+          />
         </Property>
         <Property label="Priority">
-          <Dropdown variant="inline" value={issue.priority} options={priorityOptions()} ariaLabel="Priority" searchPlaceholder="Change priority…" />
+          <Dropdown
+            variant="inline"
+            value={issue.priority}
+            onChange={(priority) => editIssue.mutate({ priority })}
+            options={priorityOptions()}
+            ariaLabel="Priority"
+            searchPlaceholder="Change priority…"
+          />
         </Property>
         <Property label="Assignee">
+          {/* Исполнитель — отдельный запрос /assignees, сделаем после участников Dev 2 */}
           <Dropdown variant="inline" value={issue.assignees[0]?.user_id ?? "none"} options={memberOptions(members)} ariaLabel="Assignee" />
         </Property>
         <Property label="Labels">
@@ -161,10 +239,10 @@ export function IssueDetail() {
           </div>
         </Property>
         <Property label="Start">
-          <DateField value={issue.start_date} />
+          <DateField value={issue.start_date} onChange={(start_date) => editIssue.mutate({ start_date })} />
         </Property>
         <Property label="Due">
-          <DateField value={issue.due_date} />
+          <DateField value={issue.due_date} onChange={(due_date) => editIssue.mutate({ due_date })} />
         </Property>
 
         <p className="mt-4 border-t border-line-soft pt-4 text-[12.5px] leading-relaxed text-muted">
@@ -173,8 +251,60 @@ export function IssueDetail() {
           Updated on {formatDate(issue.updated_at)}
         </p>
       </aside>
+
+      {/* Подтверждение удаления — своё окно вместо браузерного confirm() */}
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Delete this task?"
+        icon={<Trash2 className="size-5 text-red-600" />}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)} disabled={deleteIssue.isPending}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleteIssue.isPending}>
+              {deleteIssue.isPending ? "Deleting..." : "Delete task"}
+            </Button>
+          </>
+        }
+      >
+        <ErrorBanner>{deleteError}</ErrorBanner>
+        <p className="text-muted">
+          <span className="font-medium text-ink">
+            {key(issue.sequence_id)} {issue.title}
+          </span>{" "}
+          will be deleted for everyone in the project, together with its comments and files. This can&apos;t be undone.
+        </p>
+      </Modal>
     </div>
   );
+}
+
+/** «Saving… / Saved / Couldn't save» — чтобы пользователь видел, что изменение сохранилось */
+function SaveStatus({ pending, failed, saved }: { pending: boolean; failed: boolean; saved: boolean }) {
+  if (pending) {
+    return (
+      <span className="flex items-center gap-1.5 text-muted" role="status">
+        <Loader2 className="size-3.5 animate-spin" /> Saving…
+      </span>
+    );
+  }
+  if (failed) {
+    return (
+      <span className="flex items-center gap-1.5 text-red-600" role="alert">
+        <AlertCircle className="size-3.5" /> Couldn&apos;t save
+      </span>
+    );
+  }
+  if (saved) {
+    return (
+      <span className="flex items-center gap-1.5 text-[#3a9a6b]" role="status">
+        <Check className="size-3.5" /> Saved
+      </span>
+    );
+  }
+  return null;
 }
 
 function Section({
@@ -213,11 +343,13 @@ function Property({ label, children }: { label: string; children: React.ReactNod
   );
 }
 
-function DateField({ value }: { value: string | null }) {
+// Дата из <input type="date"> → ISO для бэкенда (пусто → null)
+function DateField({ value, onChange }: { value: string | null; onChange: (date: string | null) => void }) {
   return (
     <input
       type="date"
       defaultValue={value?.slice(0, 10) ?? ""}
+      onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : null)}
       className="-ml-2 h-9 w-full rounded-lg bg-transparent px-2 text-sm text-ink outline-none hover:bg-gray-100 focus:bg-gray-100"
     />
   );

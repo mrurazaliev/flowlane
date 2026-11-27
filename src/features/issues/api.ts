@@ -19,6 +19,14 @@ start_date?: string | null;
 due_date?: string | null;
 };
 
+export type IssueUpdate = {
+  title?: string;
+  description?: string | null;
+  state_id?: string;
+  priority?: Priority;
+  start_date?: string | null;
+  due_date?: string | null;
+};
 
 type IssuesResponse = {
   data: Issue[];
@@ -49,6 +57,45 @@ export const useAddIssueMutation = (workspaceSlug: string, projectId: string) =>
       );
       return data;
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+
+
+// GET одной задачи
+export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
+  useQuery({
+    queryKey: queryKeys.issues.detail(workspaceSlug, projectId, issueId),
+    queryFn: async () => {
+      const { data } = await api.get<Issue>(
+        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
+      );
+      return data;
+    },
+  });
+
+// PATCH
+export const useEditIssueMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (changes: IssueUpdate) => {
+      const { data } = await api.patch<Issue>(
+        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
+        changes,
+      );
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// DELETE
+export const useDeleteIssueMutation = (workspaceSlug: string, projectId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (issueId: string) =>
+      api.delete(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
   });
 };
