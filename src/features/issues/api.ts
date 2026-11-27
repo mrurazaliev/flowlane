@@ -1,7 +1,7 @@
 import { api } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Issue, Priority } from "@/shared/api/types";
+import type { Comment, Issue, Priority } from "@/shared/api/types";
 
 export type IssueFilters = {
     cycle?: string;
@@ -97,5 +97,48 @@ export const useDeleteIssueMutation = (workspaceSlug: string, projectId: string)
     mutationFn: (issueId: string) =>
       api.delete(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// ---------- Комментарии ----------
+const commentsUrl = (workspaceSlug: string, projectId: string, issueId: string) =>
+  `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/comments`;
+
+// GET
+export const useGetCommentsQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
+  useQuery({
+    queryKey: queryKeys.issues.comments(issueId),
+    queryFn: async () => {
+      const { data } = await api.get<Comment[]>(commentsUrl(workspaceSlug, projectId, issueId));
+      return data;
+    },
+  });
+
+// POST
+export const useAddCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: string) => api.post(commentsUrl(workspaceSlug, projectId, issueId), { body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueId) }),
+  });
+};
+
+// PATCH
+export const useEditCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ commentId, body }: { commentId: string; body: string }) =>
+      api.patch(`${commentsUrl(workspaceSlug, projectId, issueId)}/${commentId}`, { body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueId) }),
+  });
+};
+
+// DELETE
+export const useDeleteCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (commentId: string) =>
+      api.delete(`${commentsUrl(workspaceSlug, projectId, issueId)}/${commentId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueId) }),
   });
 };
