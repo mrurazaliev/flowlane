@@ -2,17 +2,27 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useProject, useProjectMembers, useWorkspace } from "@/shared/api/lookups";
+import { useWorkspaceQuery } from "@/features/workspaces";
 import { AvatarStack } from "@/shared/ui/avatar";
 import { cn } from "@/shared/lib/utils";
+import { useProjectMembersQuery, useProjectQuery } from "../api";
+import { projectErrorText } from "../project-form";
 
 /** Шапка проекта: путь, название, команда и вкладки (активная — жёлтая разметка) */
 export function ProjectHeader() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const pathname = usePathname();
-  const { data: workspace } = useWorkspace(workspaceSlug);
-  const { data: project } = useProject(workspaceSlug, projectId);
-  const { data: members } = useProjectMembers(workspaceSlug, projectId);
+  const { data: workspace } = useWorkspaceQuery(workspaceSlug);
+  const projectQuery = useProjectQuery(workspaceSlug, projectId);
+  const { data: members } = useProjectMembersQuery(workspaceSlug, projectId);
+
+  if (projectQuery.isPending) return <ProjectHeaderSkeleton />;
+  const project = projectQuery.data;
+  if (!project) {
+    return <p className="border-b border-line bg-white px-7 py-4 text-sm text-muted">
+      {projectErrorText(projectQuery.error, "Could not load the project.")}
+    </p>;
+  }
 
   const base = `/w/${workspaceSlug}/p/${projectId}`;
   const tabs = [
@@ -26,13 +36,13 @@ export function ProjectHeader() {
   return (
     <header className="border-b border-line bg-white px-4 pt-4 md:px-7">
       <p className="text-[13px] text-muted">
-        {workspace?.name} / <span className="font-medium text-ink">{project?.name}</span>
+        {workspace?.name ?? workspaceSlug} / <span className="font-medium text-ink">{project.name}</span>
       </p>
       <div className="mt-1 flex items-center gap-3">
-        <h1 className="text-[22px] font-semibold tracking-tight md:text-[26px]">{project?.name ?? "Project not found"}</h1>
-        {project && <span className="rounded-md border border-line px-1.5 text-xs text-muted">{project.identifier}</span>}
+        <h1 className="text-[22px] font-semibold tracking-tight md:text-[26px]">{project.name}</h1>
+        <span className="rounded-md border border-line px-1.5 text-xs text-muted">{project.identifier}</span>
         <div className="ml-auto hidden md:block">
-          <AvatarStack names={members.map((m) => m.user.display_name)} />
+          {members && <AvatarStack names={members.map((m) => m.user.display_name)} />}
         </div>
       </div>
 

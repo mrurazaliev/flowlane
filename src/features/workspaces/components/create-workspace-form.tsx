@@ -3,23 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { isAxiosError } from "axios";
 import { errorText } from "@/shared/lib/errors";
 import { Button } from "@/shared/ui/button";
 import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
 import { useCreateWorkspaceMutation } from "../api";
-
-const createWorkspaceSchema = z.object({
-  name: z.string().trim().min(1, "Enter a workspace name").max(100, "Use at most 100 characters"),
-  slug: z.string()
-    .trim()
-    .min(2, "Use at least 2 characters")
-    .max(50, "Use at most 50 characters")
-    .regex(/^[a-z0-9-]+$/, "Use lowercase letters, digits and hyphens only"),
-});
-
-type CreateWorkspaceFormData = z.infer<typeof createWorkspaceSchema>;
+import { workspaceFormSchema, type WorkspaceFormData } from "../workspace-form";
 
 export function CreateWorkspaceForm() {
   const router = useRouter();
@@ -29,9 +18,9 @@ export function CreateWorkspaceForm() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<CreateWorkspaceFormData>({ resolver: zodResolver(createWorkspaceSchema) });
+  } = useForm<WorkspaceFormData>({ resolver: zodResolver(workspaceFormSchema) });
 
-  async function onSubmit(input: CreateWorkspaceFormData) {
+  async function onSubmit(input: WorkspaceFormData) {
     try {
       const workspace = await createWorkspace.mutateAsync(input);
       router.push(`/w/${workspace.slug}/projects`);
