@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { IncomingInvites } from '@/features/workspaces'
 import { CheckCheck } from "lucide-react";
 import type { NotificationType } from "@/shared/api/types";
 import { Avatar } from "@/shared/ui/avatar";
@@ -38,6 +39,8 @@ export function NotificationList() {
           </Button>
         }
       />
+
+      <IncomingInvites className="mb-6 max-w-3xl" />
 
       <Tabs
         className="mb-4"

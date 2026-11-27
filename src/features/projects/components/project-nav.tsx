@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import { useCallback, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { Plus } from "lucide-react";
-import { projectColor } from "@/shared/api/lookups";
-import { SidebarLink } from "@/shared/layout/sidebar-link";
-import { useProjectsQuery } from "../api";
-import { projectSettingsHref } from "../project-form";
-import { useProjectAccess } from "../use-project-access";
-import { CreateProjectModal } from "./create-project-modal";
+import { useCallback, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { Plus } from 'lucide-react'
+import { projectColor } from '@/shared/api/lookups'
+import { SidebarLink } from '@/shared/layout/sidebar-link'
+import { useProjects } from '../api'
+import { projectSettingsHref } from '../project-form'
+import { useProjectAccess } from '../use-project-access'
+import { CreateProjectModal } from './create-project-modal';
 
 /** Список проектов в сайдбаре + «+» для создания (слот в AppShell) */
 export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
-  const { projectId } = useParams<{ projectId?: string }>();
-  const [createOpen, setCreateOpen] = useState(false);
-  const projectsQuery = useProjectsQuery(workspaceSlug);
-  const projects = projectsQuery.data ?? [];
-  const activeProjects = projects.filter((project) => !project.is_archived);
-  const { membersQuery, canManage } = useProjectAccess(workspaceSlug);
-  const closeCreate = useCallback(() => setCreateOpen(false), []);
+  const { projectId } = useParams<{ projectId?: string }>()
+  const [createOpen, setCreateOpen] = useState(false)
+  const projectsQuery = useProjects(workspaceSlug)
+  const projects = projectsQuery.data ?? []
+  const activeProjects = projects.filter((project) => !project.is_archived)
+  const { membersQuery, canManage } = useProjectAccess(workspaceSlug)
+  const closeCreate = useCallback(() => setCreateOpen(false), [])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -42,7 +42,7 @@ export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
         {projectsQuery.isError && <p className="px-2.5 py-2 text-sm text-[#8c93a0]">Could not load projects</p>}
         {projectsQuery.isSuccess && activeProjects.length === 0 && (
           <div className="px-2.5 py-2 text-sm">
-            <p className="text-[#8c93a0]">{projects.length ? "No active projects" : "No projects yet"}</p>
+            <p className="text-[#8c93a0]">{projects.length ? 'No active projects' : 'No projects yet'}</p>
             {canManage && <button type="button" onClick={() => setCreateOpen(true)} className="mt-1 font-medium text-marking hover:underline">
               Create a project
             </button>}
@@ -65,5 +65,5 @@ export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
         <CreateProjectModal workspaceSlug={workspaceSlug} members={membersQuery.data} onClose={closeCreate} />
       )}
     </div>
-  );
+  )
 }

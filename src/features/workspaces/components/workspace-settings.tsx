@@ -1,29 +1,29 @@
-"use client";
+'use client'
 
-import { useCallback, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
-import { Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { useMe } from "@/features/auth";
-import type { Workspace } from "@/shared/api/types";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
-import { PageHeader } from "@/shared/ui/page";
+import { useCallback, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
+import { Trash2 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { useMe } from '@/features/auth'
+import type { Workspace } from '@/shared/api/types'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner, FieldError, FieldHint, Input, Label } from '@/shared/ui/form'
+import { PageHeader } from '@/shared/ui/page'
 import {
-  useDeleteWorkspaceMutation,
-  useUpdateWorkspaceMutation,
-  useWorkspaceMembersQuery,
-  useWorkspaceQuery,
-} from "../api";
-import { workspaceErrorText, workspaceFormSchema, type WorkspaceFormData } from "../workspace-form";
-import { ConfirmDeleteModal } from "./confirm-delete-modal";
+  useDeleteWorkspace,
+  useEditWorkspace,
+  useWorkspaceMembers,
+  useWorkspace,
+} from '../api'
+import { workspaceErrorText, workspaceFormSchema, type WorkspaceFormData } from '../workspace-form'
+import { ConfirmDeleteModal } from './confirm-delete-modal';
 
 /** D2.3 Workspace settings at /w/:workspaceSlug/settings. */
 export function WorkspaceSettings() {
-  const { workspaceSlug } = useParams<{ workspaceSlug: string }>();
-  const workspaceQuery = useWorkspaceQuery(workspaceSlug);
+  const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
+  const workspaceQuery = useWorkspace(workspaceSlug)
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
@@ -34,7 +34,7 @@ export function WorkspaceSettings() {
       {workspaceQuery.isError && (
         <div className="max-w-3xl space-y-3">
           <div role="alert">
-            <ErrorBanner>{workspaceErrorText(workspaceQuery.error, "Could not load workspace settings.")}</ErrorBanner>
+            <ErrorBanner>{workspaceErrorText(workspaceQuery.error, 'Could not load workspace settings.')}</ErrorBanner>
           </div>
           <Button variant="secondary" disabled={workspaceQuery.isFetching} onClick={() => void workspaceQuery.refetch()}>
             Try again
@@ -46,19 +46,19 @@ export function WorkspaceSettings() {
         <WorkspaceSettingsContent key={workspaceSlug} workspace={workspaceQuery.data} />
       )}
     </div>
-  );
+  )
 }
 
 function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
-  const router = useRouter();
-  const { data: me } = useMe();
-  const { data: members } = useWorkspaceMembersQuery(workspace.slug);
-  const updateWorkspace = useUpdateWorkspaceMutation(workspace.slug);
+  const router = useRouter()
+  const { data: me } = useMe()
+  const { data: members } = useWorkspaceMembers(workspace.slug)
+  const updateWorkspace = useEditWorkspace(workspace.slug)
   const { mutate: deleteWorkspace, isPending: isDeleting, error: deleteError, reset: resetDelete } =
-    useDeleteWorkspaceMutation(workspace.slug);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const isOwner = workspace.owner_id === me?.id;
-  const canEdit = isOwner || members?.some((member) => member.user_id === me?.id && member.role === "admin");
+    useDeleteWorkspace(workspace.slug)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const isOwner = workspace.owner_id === me?.id
+  const canEdit = isOwner || members?.some((member) => member.user_id === me?.id && member.role === 'admin')
 
   const {
     register, handleSubmit, reset, setError,
@@ -67,41 +67,45 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
     resolver: zodResolver(workspaceFormSchema),
     values: { name: workspace.name, slug: workspace.slug },
     resetOptions: { keepDirtyValues: true },
-  });
+  })
 
   const closeDelete = useCallback(() => {
-    if (isDeleting) return;
-    setDeleteOpen(false);
-    resetDelete();
-  }, [isDeleting, resetDelete]);
+    if (isDeleting) return
+    setDeleteOpen(false)
+    resetDelete()
+  }, [isDeleting, resetDelete])
+
+  function handleDelete() {
+    deleteWorkspace(undefined, { onSuccess: () => router.replace('/workspaces') })
+  }
 
   async function onSubmit(input: WorkspaceFormData) {
-    if (!canEdit) return;
+    if (!canEdit) return
 
     if (input.name === workspace.name && input.slug === workspace.slug) {
-      reset(input);
-      return;
+      reset(input)
+      return
     }
 
     try {
       const updated = await updateWorkspace.mutateAsync({
         name: input.name === workspace.name ? undefined : input.name,
         slug: input.slug === workspace.slug ? undefined : input.slug,
-      });
-      reset({ name: updated.name, slug: updated.slug });
+      })
+      reset({ name: updated.name, slug: updated.slug })
       if (updated.slug !== workspace.slug) {
-        router.replace(`/w/${updated.slug}/settings`);
+        router.replace(`/w/${updated.slug}/settings`)
       }
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 409) {
-        setError("slug", { type: "server", message: "This workspace URL is already taken" }, { shouldFocus: true });
-        return;
+        setError('slug', { type: 'server', message: 'This workspace URL is already taken' }, { shouldFocus: true })
+        return
       }
 
-      setError("root.server", {
-        type: "server",
-        message: workspaceErrorText(error, "Could not save the workspace. Please try again."),
-      });
+      setError('root.server', {
+        type: 'server',
+        message: workspaceErrorText(error, 'Could not save the workspace. Please try again.'),
+      })
     }
   }
 
@@ -119,8 +123,8 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
             readOnly={!canEdit || isSubmitting || isDeleting}
             invalid={!!errors.name}
             aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? "ws-name-error" : undefined}
-            {...register("name")}
+            aria-describedby={errors.name ? 'ws-name-error' : undefined}
+            {...register('name')}
           />
           {errors.name && <div id="ws-name-error"><FieldError>{errors.name.message}</FieldError></div>}
         </div>
@@ -135,7 +139,7 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
               invalid={!!errors.slug}
               aria-invalid={!!errors.slug}
               aria-describedby="ws-slug-feedback"
-              {...register("slug")}
+              {...register('slug')}
             />
           </div>
           <div id="ws-slug-feedback" aria-live="polite">
@@ -151,7 +155,7 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
           <div className="flex items-center justify-end gap-3">
             {updateWorkspace.isSuccess && !isDirty && <p role="status" className="text-sm text-gray-500">Changes saved.</p>}
             <Button type="submit" disabled={!isDirty || isSubmitting || isDeleting}>
-              {isSubmitting ? "Saving…" : "Save changes"}
+              {isSubmitting ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
         )}
@@ -175,11 +179,11 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
           description={`“${workspace.name}” and its projects will be permanently deleted.`}
           confirmLabel="Delete workspace"
           pending={isDeleting}
-          error={deleteError ? workspaceErrorText(deleteError, "Could not delete the workspace.") : undefined}
+          error={deleteError ? workspaceErrorText(deleteError, 'Could not delete the workspace.') : undefined}
           onClose={closeDelete}
-          onConfirm={() => deleteWorkspace(undefined, { onSuccess: () => router.replace("/workspaces") })}
+          onConfirm={handleDelete}
         />
       )}
     </div>
-  );
+  )
 }

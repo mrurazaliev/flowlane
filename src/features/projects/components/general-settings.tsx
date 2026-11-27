@@ -1,20 +1,20 @@
-import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Archive, ArchiveRestore, Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { ConfirmDeleteModal } from "@/features/workspaces";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner, FieldError, FieldHint, Input, Label, Select, Textarea } from "@/shared/ui/form";
-import type { Project, WorkspaceMember } from "@/shared/api/types";
-import { useDeleteProjectMutation, useUpdateProjectMutation } from "../api";
-import { projectErrorText, projectSettingsSchema } from "../project-form";
+import { useCallback, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Archive, ArchiveRestore, Trash2 } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import type { z } from 'zod'
+import { ConfirmDeleteModal } from '@/features/workspaces'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner, FieldError, FieldHint, Input, Label, Select, Textarea } from '@/shared/ui/form'
+import type { Project, WorkspaceMember } from '@/shared/api/types'
+import { useDeleteProject, useEditProject } from '../api'
+import { projectErrorText, projectSettingsSchema } from '../project-form'
 
-type SettingsForm = z.infer<typeof projectSettingsSchema>;
+type SettingsForm = z.infer<typeof projectSettingsSchema>
 
 function formValues(project: Project): SettingsForm {
-  return { name: project.name, description: project.description ?? "", lead_id: project.lead_id ?? "" };
+  return { name: project.name, description: project.description ?? '', lead_id: project.lead_id ?? '' }
 }
 
 /** D2.8 Основные настройки проекта. */
@@ -24,11 +24,11 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
   workspaceMembers: WorkspaceMember[];
   canManage: boolean;
 }) {
-  const router = useRouter();
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const update = useUpdateProjectMutation(workspaceSlug, project.id);
+  const router = useRouter()
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const update = useEditProject(workspaceSlug, project.id)
   const { mutate: remove, reset: resetDelete, isPending: isDeleting, error: deleteError } =
-    useDeleteProjectMutation(workspaceSlug, project.id);
+    useDeleteProject(workspaceSlug, project.id)
   const {
     register, handleSubmit, reset,
     formState: { errors, isDirty, isSubmitting },
@@ -36,27 +36,35 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
     resolver: zodResolver(projectSettingsSchema),
     values: formValues(project),
     resetOptions: { keepDirtyValues: true },
-  });
-  const isBusy = isSubmitting || update.isPending || isDeleting;
+  })
+  const isBusy = isSubmitting || update.isPending || isDeleting
   const closeDelete = useCallback(() => {
-    if (isDeleting) return;
-    setDeleteOpen(false);
-    resetDelete();
-  }, [isDeleting, resetDelete]);
+    if (isDeleting) return
+    setDeleteOpen(false)
+    resetDelete()
+  }, [isDeleting, resetDelete])
 
   function onSubmit(input: SettingsForm) {
-    if (!canManage || isBusy) return;
+    if (!canManage || isBusy) return
     update.mutate({
       name: input.name === project.name ? undefined : input.name,
-      description: input.description === (project.description ?? "") ? undefined : input.description || null,
-      lead_id: input.lead_id === (project.lead_id ?? "") ? undefined : input.lead_id || null,
-    }, { onSuccess: (saved) => reset(formValues(saved)) });
+      description: input.description === (project.description ?? '') ? undefined : input.description || null,
+      lead_id: input.lead_id === (project.lead_id ?? '') ? undefined : input.lead_id || null,
+    }, { onSuccess: (saved) => reset(formValues(saved)) })
+  }
+
+  function handleArchive() {
+    update.mutate({ is_archived: !project.is_archived })
+  }
+
+  function handleDelete() {
+    remove(undefined, { onSuccess: () => router.replace(`/w/${encodeURIComponent(workspaceSlug)}/projects`) })
   }
 
   return (
     <div className="space-y-6">
       {update.error && (
-        <div role="alert"><ErrorBanner>{projectErrorText(update.error, "Could not update the project.")}</ErrorBanner></div>
+        <div role="alert"><ErrorBanner>{projectErrorText(update.error, 'Could not update the project.')}</ErrorBanner></div>
       )}
       <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-6" onSubmit={handleSubmit(onSubmit)}>
         <h2 className="text-base font-semibold text-gray-900">General</h2>
@@ -64,7 +72,7 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
           <div className="col-span-2">
             <Label htmlFor="p-name">Project name</Label>
             <Input id="p-name" readOnly={!canManage || isBusy} invalid={!!errors.name}
-              aria-invalid={!!errors.name} {...register("name")} />
+              aria-invalid={!!errors.name} {...register('name')} />
             <FieldError>{errors.name?.message}</FieldError>
           </div>
           <div>
@@ -75,12 +83,12 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
         <div>
           <Label htmlFor="p-description">Description</Label>
           <Textarea id="p-description" maxLength={500} readOnly={!canManage || isBusy}
-            invalid={!!errors.description} aria-invalid={!!errors.description} {...register("description")} />
+            invalid={!!errors.description} aria-invalid={!!errors.description} {...register('description')} />
           {errors.description ? <FieldError>{errors.description.message}</FieldError> : <FieldHint>Max 500 characters</FieldHint>}
         </div>
         <div>
           <Label htmlFor="p-lead">Project lead</Label>
-          <Select id="p-lead" disabled={!canManage || isBusy} aria-invalid={!!errors.lead_id} {...register("lead_id")}>
+          <Select id="p-lead" disabled={!canManage || isBusy} aria-invalid={!!errors.lead_id} {...register('lead_id')}>
             <option value="">No lead</option>
             {project.lead_id && !workspaceMembers.some((member) => member.user_id === project.lead_id) && (
               <option value={project.lead_id}>Current lead</option>
@@ -97,7 +105,7 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
           <div className="flex items-center justify-end gap-3">
             {update.isSuccess && !isDirty && <p role="status" className="text-sm text-muted">Changes saved.</p>}
             <Button type="submit" disabled={!isDirty || isBusy}>
-              {update.isPending && update.variables.is_archived === undefined ? "Saving…" : "Save changes"}
+              {update.isPending && update.variables.is_archived === undefined ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
         )}
@@ -107,14 +115,14 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
         <h2 className="text-base font-semibold text-red-700">Danger zone</h2>
         <div className="mt-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-900">{project.is_archived ? "Restore project" : "Archive project"}</p>
+            <p className="text-sm font-medium text-gray-900">{project.is_archived ? 'Restore project' : 'Archive project'}</p>
             <p className="text-sm text-gray-500">{project.is_archived
-              ? "Show the project in the sidebar again."
-              : "Hide the project from the sidebar. You can restore it later."}</p>
+              ? 'Show the project in the sidebar again.'
+              : 'Hide the project from the sidebar. You can restore it later.'}</p>
           </div>
-          <Button variant="secondary" disabled={isBusy} onClick={() => update.mutate({ is_archived: !project.is_archived })}>
+          <Button variant="secondary" disabled={isBusy} onClick={handleArchive}>
             {project.is_archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
-            {project.is_archived ? "Restore" : "Archive"}
+            {project.is_archived ? 'Restore' : 'Archive'}
           </Button>
         </div>
         <div className="mt-4 flex items-center justify-between gap-4 border-t border-gray-100 pt-4">
@@ -134,11 +142,11 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
           description={`“${project.name}” and its tasks, cycles and modules will be permanently deleted.`}
           confirmLabel="Delete project"
           pending={isDeleting}
-          error={deleteError ? projectErrorText(deleteError, "Could not delete the project.") : undefined}
+          error={deleteError ? projectErrorText(deleteError, 'Could not delete the project.') : undefined}
           onClose={closeDelete}
-          onConfirm={() => remove(undefined, { onSuccess: () => router.replace(`/w/${encodeURIComponent(workspaceSlug)}/projects`) })}
+          onConfirm={handleDelete}
         />
       )}
     </div>
-  );
+  )
 }

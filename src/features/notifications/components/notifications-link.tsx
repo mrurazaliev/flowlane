@@ -1,18 +1,20 @@
-"use client";
+'use client'
 
-import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
-import { SidebarLink } from "@/shared/layout/sidebar-link";
-import { notifications } from "../mocks";
+import { usePathname } from 'next/navigation'
+import { Bell } from 'lucide-react'
+import { useInvites } from '@/features/workspaces'
+import { SidebarLink } from '@/shared/layout/sidebar-link'
+import { notifications } from '../mocks'
 
 /**
  * D2.15 Колокольчик со счётчиком (слот в сайдбаре).
  * Позже: GET .../notifications раз в 30–60 с (refetchInterval), badge = unread_count из ответа.
  */
 export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) {
-  const pathname = usePathname();
-  const href = `/w/${workspaceSlug}/notifications`;
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const pathname = usePathname()
+  const href = `/w/${workspaceSlug}/notifications`
+  const { data: invites = [] } = useInvites()
+  const unreadCount = notifications.filter((item) => !item.is_read).length + invites.length
 
   return (
     <SidebarLink href={href} active={pathname === href}>
@@ -22,5 +24,5 @@ export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) 
         <span className="rounded-full bg-marking px-1.5 text-xs font-semibold tabular-nums text-asphalt">{unreadCount}</span>
       )}
     </SidebarLink>
-  );
+  )
 }

@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { ChevronsUpDown } from "lucide-react";
-import { useWorkspaceQuery } from "../api";
+import Link from 'next/link'
+import { ChevronsUpDown } from 'lucide-react'
+import { useWorkspace } from '../api';
 
 /**
  * D2.2 Переключатель workspace (слот вверху сайдбара).
  * Пока ведёт на страницу выбора; позже — выпадающий список из GET /workspaces.
  */
 export function WorkspaceSwitcher({ workspaceSlug }: { workspaceSlug: string }) {
-  const { data: workspace } = useWorkspaceQuery(workspaceSlug);
-  const name = workspace?.name ?? workspaceSlug;
+  const { data: workspace } = useWorkspace(workspaceSlug)
+  const name = workspace?.name ?? workspaceSlug
 
   return (
     <Link
@@ -21,5 +21,5 @@ export function WorkspaceSwitcher({ workspaceSlug }: { workspaceSlug: string }) 
       <span className="flex-1 truncate">{name}</span>
       <ChevronsUpDown className="size-4 text-faint" />
     </Link>
-  );
+  )
 }

@@ -1,33 +1,34 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { isAxiosError } from "axios";
-import { useMe } from "@/features/auth";
-import { errorText } from "@/shared/lib/errors";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner } from "@/shared/ui/form";
-import { Logo } from "@/shared/ui/logo";
-import { useWorkspacesQuery } from "../api";
-import { CreateWorkspaceForm } from "./create-workspace-form";
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { useMe } from '@/features/auth'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner } from '@/shared/ui/form'
+import { Logo } from '@/shared/ui/logo'
+import { useWorkspaces } from '../api'
+import { workspaceErrorText } from '../workspace-form'
+import { CreateWorkspaceForm } from './create-workspace-form'
+import { IncomingInvites } from './incoming-invites'
 
 /** D2.1 Выбор и создание workspace */
 export function WorkspacePicker() {
-  const { data: workspaces, error, isPending, isError, isFetching, refetch } = useWorkspacesQuery();
-  const { data: currentUser } = useMe();
+  const { data: workspaces, error, isPending, isError, isFetching, refetch } = useWorkspaces()
+  const { data: currentUser } = useMe()
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-12">
       <Logo withText={false} />
       <h1 className="mt-4 text-2xl font-semibold text-gray-900">Select a workspace</h1>
       <p className="mt-1 text-sm text-gray-500">Choose an existing workspace or create a new one.</p>
+      <IncomingInvites className="mt-8 w-full" />
 
       <div className="mt-10 grid w-full gap-6 md:grid-cols-2">
         {/* Мои workspace */}
         <section>
           <div className="mb-3 flex items-center justify-between text-xs">
             <span className="font-semibold uppercase tracking-wide text-gray-500">
-              Your workspaces{workspaces ? ` (${workspaces.length})` : ""}
+              Your workspaces{workspaces ? ` (${workspaces.length})` : ''}
             </span>
             <span className="text-gray-400">{currentUser?.email}</span>
           </div>
@@ -38,11 +39,11 @@ export function WorkspacePicker() {
             <div className="mb-3 space-y-2">
               <div role="alert">
                 <ErrorBanner>
-                  {errorText(isAxiosError(error) ? error.response?.data : undefined, "Could not load your workspaces.")}
+                  {workspaceErrorText(error, 'Could not load your workspaces.')}
                 </ErrorBanner>
               </div>
               <Button variant="secondary" disabled={isFetching} onClick={() => void refetch()}>
-                {isFetching ? "Retrying..." : "Try again"}
+                {isFetching ? 'Retrying...' : 'Try again'}
               </Button>
             </div>
           )}
@@ -80,5 +81,5 @@ export function WorkspacePicker() {
         <CreateWorkspaceForm />
       </div>
     </main>
-  );
+  )
 }

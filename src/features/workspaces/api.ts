@@ -1,154 +1,171 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/shared/api/client";
-import { queryKeys } from "@/shared/api/queryKeys";
-import type { Workspace, WorkspaceMember, WorkspaceRole } from "@/shared/api/types";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { api } from '@/shared/api/client'
+import { queryKeys } from '@/shared/api/queryKeys'
+import type { Workspace, WorkspaceMember, WorkspaceRole } from '@/shared/api/types'
 
-type CreateWorkspaceInput = Pick<Workspace, "name" | "slug">;
-export type AssignableWorkspaceRole = Exclude<WorkspaceRole, "owner">;
-type AddMemberInput = { user_id: string; role: AssignableWorkspaceRole };
+type WorkspacePayload = Pick<Workspace, 'name' | 'slug'>
+export type AssignableWorkspaceRole = Exclude<WorkspaceRole, 'owner'>
+type WorkspaceMemberPayload = { user_id: string; role: AssignableWorkspaceRole }
+
+const workspacesUrl = '/workspaces/'
+const workspacesQueryKey = queryKeys.workspaces.all
 
 function workspacePath(slug: string) {
-  return `/workspaces/${encodeURIComponent(slug)}`;
+  return `${workspacesUrl}${encodeURIComponent(slug)}`
 }
 
-export function useWorkspacesQuery() {
-  return useQuery({
-    queryKey: queryKeys.workspaces.all,
-    queryFn: async ({ signal }) => {
-      const { data } = await api.get<Workspace[]>("/workspaces/", { signal });
-      return data;
-    },
-  });
+async function getWorkspaces(signal: AbortSignal): Promise<Workspace[]> {
+  const { data } = await api.get<Workspace[]>(workspacesUrl, { signal })
+  return data
 }
 
-export function useCreateWorkspaceMutation() {
-  const queryClient = useQueryClient();
+async function getWorkspace(slug: string, signal: AbortSignal): Promise<Workspace> {
+  const { data } = await api.get<Workspace>(workspacePath(slug), { signal })
+  return data
+}
 
+async function addWorkspace(payload: WorkspacePayload): Promise<Workspace> {
+  const { data } = await api.post<Workspace>(workspacesUrl, payload)
+  return data
+}
+
+async function editWorkspace(slug: string, payload: Partial<WorkspacePayload>): Promise<Workspace> {
+  const { data } = await api.patch<Workspace>(workspacePath(slug), payload)
+  return data
+}
+
+async function deleteWorkspace(slug: string): Promise<void> {
+  await api.delete(workspacePath(slug))
+}
+
+async function getWorkspaceMembers(slug: string, signal: AbortSignal): Promise<WorkspaceMember[]> {
+  const { data } = await api.get<WorkspaceMember[]>(`${workspacePath(slug)}/members`, { signal })
+  return data
+}
+
+async function addWorkspaceMember(slug: string, payload: WorkspaceMemberPayload): Promise<WorkspaceMember> {
+  const { data } = await api.post<WorkspaceMember>(`${workspacePath(slug)}/members`, payload)
+  return data
+}
+
+async function editWorkspaceMemberRole(slug: string, { user_id, role }: WorkspaceMemberPayload): Promise<WorkspaceMember> {
+  const { data } = await api.patch<WorkspaceMember>(
+    `${workspacePath(slug)}/members/${encodeURIComponent(user_id)}`,
+    { role },
+  )
+  return data
+}
+
+async function removeWorkspaceMember(slug: string, userId: string): Promise<void> {
+  await api.delete(`${workspacePath(slug)}/members/${encodeURIComponent(userId)}`)
+}
+
+export function useWorkspaces() {
+  return useQuery({ queryKey: workspacesQueryKey, queryFn: ({ signal }) => getWorkspaces(signal) })
+}
+
+export function useAddWorkspace() {
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: CreateWorkspaceInput) => {
-      const { data } = await api.post<Workspace>("/workspaces/", input);
-      return data;
-    },
+    mutationFn: addWorkspace,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all, exact: true });
+      void queryClient.invalidateQueries({ queryKey: workspacesQueryKey, exact: true })
     },
-  });
+  })
 }
 
-export function useWorkspaceQuery(slug: string) {
+export function useWorkspace(slug: string) {
   return useQuery({
     queryKey: queryKeys.workspaces.detail(slug),
-    queryFn: async ({ signal }) => {
-      const { data } = await api.get<Workspace>(workspacePath(slug), { signal });
-      return data;
-    },
-  });
+    queryFn: ({ signal }) => getWorkspace(slug, signal),
+  })
 }
 
-export function useUpdateWorkspaceMutation(slug: string) {
-  const queryClient = useQueryClient();
+export function useEditWorkspace(slug: string) {
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: Partial<CreateWorkspaceInput>) => {
-      const { data } = await api.patch<Workspace>(workspacePath(slug), input);
-      return data;
-    },
+    mutationFn: (payload: Partial<WorkspacePayload>) => editWorkspace(slug, payload),
     onSuccess: async (workspace) => {
-      const nextDetailKey = queryKeys.workspaces.detail(workspace.slug);
-      await queryClient.cancelQueries({ queryKey: nextDetailKey, exact: true });
+      const nextDetailKey = queryKeys.workspaces.detail(workspace.slug)
+      await queryClient.cancelQueries({ queryKey: nextDetailKey, exact: true })
 
       if (workspace.slug !== slug) {
-        queryClient.removeQueries({ queryKey: queryKeys.workspaces.detail(slug) });
+        queryClient.removeQueries({ queryKey: queryKeys.workspaces.detail(slug) })
       }
 
-      queryClient.setQueryData(nextDetailKey, workspace);
-      queryClient.setQueryData<Workspace[]>(queryKeys.workspaces.all, (current) =>
+      queryClient.setQueryData(nextDetailKey, workspace)
+      queryClient.setQueryData<Workspace[]>(workspacesQueryKey, (current) =>
         current?.map((item) => item.id === workspace.id ? workspace : item),
-      );
-      void queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all, exact: true });
+      )
+      void queryClient.invalidateQueries({ queryKey: workspacesQueryKey, exact: true })
     },
-  });
+  })
 }
 
-export function useDeleteWorkspaceMutation(slug: string) {
-  const queryClient = useQueryClient();
+export function useDeleteWorkspace(slug: string) {
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async () => {
-      await api.delete(workspacePath(slug));
-    },
+    mutationFn: () => deleteWorkspace(slug),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: queryKeys.workspaces.detail(slug) });
-      queryClient.setQueryData<Workspace[]>(queryKeys.workspaces.all, (current) =>
+      queryClient.removeQueries({ queryKey: queryKeys.workspaces.detail(slug) })
+      queryClient.setQueryData<Workspace[]>(workspacesQueryKey, (current) =>
         current?.filter((item) => item.slug !== slug),
-      );
-      void queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all, exact: true });
+      )
+      void queryClient.invalidateQueries({ queryKey: workspacesQueryKey, exact: true })
     },
-  });
+  })
 }
 
-export function useWorkspaceMembersQuery(slug: string) {
+export function useWorkspaceMembers(slug: string) {
   return useQuery({
     queryKey: queryKeys.workspaces.members(slug),
-    queryFn: async ({ signal }) => {
-      const { data } = await api.get<WorkspaceMember[]>(`${workspacePath(slug)}/members`, { signal });
-      return data;
-    },
-  });
+    queryFn: ({ signal }) => getWorkspaceMembers(slug, signal),
+  })
 }
 
-export function useAddWorkspaceMemberMutation(slug: string) {
-  const queryClient = useQueryClient();
-  const queryKey = queryKeys.workspaces.members(slug);
+export function useAddWorkspaceMember(slug: string) {
+  const queryClient = useQueryClient()
+  const queryKey = queryKeys.workspaces.members(slug)
 
   return useMutation({
-    mutationFn: async (input: AddMemberInput) => {
-      const { data } = await api.post<WorkspaceMember>(`${workspacePath(slug)}/members`, input);
-      return data;
-    },
+    mutationFn: (payload: WorkspaceMemberPayload) => addWorkspaceMember(slug, payload),
     onSuccess: (member) => {
       queryClient.setQueryData<WorkspaceMember[]>(queryKey, (current) =>
         current && !current.some((item) => item.user_id === member.user_id) ? [...current, member] : current,
-      );
-      void queryClient.invalidateQueries({ queryKey, exact: true });
+      )
+      void queryClient.invalidateQueries({ queryKey, exact: true })
     },
-  });
+  })
 }
 
-export function useChangeWorkspaceMemberRoleMutation(slug: string) {
-  const queryClient = useQueryClient();
-  const queryKey = queryKeys.workspaces.members(slug);
+export function useEditWorkspaceMemberRole(slug: string) {
+  const queryClient = useQueryClient()
+  const queryKey = queryKeys.workspaces.members(slug)
 
   return useMutation({
-    mutationFn: async ({ user_id, role }: AddMemberInput) => {
-      const { data } = await api.patch<WorkspaceMember>(
-        `${workspacePath(slug)}/members/${encodeURIComponent(user_id)}`,
-        { role },
-      );
-      return data;
-    },
+    mutationFn: (payload: WorkspaceMemberPayload) => editWorkspaceMemberRole(slug, payload),
     onSuccess: (member) => {
       queryClient.setQueryData<WorkspaceMember[]>(queryKey, (current) =>
         current?.map((item) => item.user_id === member.user_id ? member : item),
-      );
-      void queryClient.invalidateQueries({ queryKey, exact: true });
+      )
+      void queryClient.invalidateQueries({ queryKey, exact: true })
     },
-  });
+  })
 }
 
-export function useRemoveWorkspaceMemberMutation(slug: string) {
-  const queryClient = useQueryClient();
-  const queryKey = queryKeys.workspaces.members(slug);
+export function useRemoveWorkspaceMember(slug: string) {
+  const queryClient = useQueryClient()
+  const queryKey = queryKeys.workspaces.members(slug)
 
   return useMutation({
-    mutationFn: async (userId: string) => {
-      await api.delete(`${workspacePath(slug)}/members/${encodeURIComponent(userId)}`);
-    },
+    mutationFn: (userId: string) => removeWorkspaceMember(slug, userId),
     onSuccess: (_, userId) => {
       queryClient.setQueryData<WorkspaceMember[]>(queryKey, (current) =>
         current?.filter((item) => item.user_id !== userId),
-      );
-      void queryClient.invalidateQueries({ queryKey, exact: true });
+      )
+      void queryClient.invalidateQueries({ queryKey, exact: true })
     },
-  });
+  })
 }
