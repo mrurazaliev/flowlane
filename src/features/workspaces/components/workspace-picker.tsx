@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { isAxiosError } from "axios";
 import { useMe } from "@/features/auth";
-import { useWorkspaces } from "@/shared/api/lookups";
-import { CreateWorkspaceForm } from "./create-workspace-form";
+import { errorText } from "@/shared/lib/errors";
+import { Button } from "@/shared/ui/button";
+import { ErrorBanner } from "@/shared/ui/form";
 import { Logo } from "@/shared/ui/logo";
+import { useWorkspacesQuery } from "../api";
+import { CreateWorkspaceForm } from "./create-workspace-form";
 
 /** D2.1 Выбор и создание workspace */
 export function WorkspacePicker() {
-  const { data: workspaces } = useWorkspaces();
+  const { data: workspaces, error, isPending, isError, isFetching, refetch } = useWorkspacesQuery();
   const { data: currentUser } = useMe();
 
   return (
@@ -23,32 +27,49 @@ export function WorkspacePicker() {
         <section>
           <div className="mb-3 flex items-center justify-between text-xs">
             <span className="font-semibold uppercase tracking-wide text-gray-500">
-              Your workspaces ({workspaces.length})
+              Your workspaces{workspaces ? ` (${workspaces.length})` : ""}
             </span>
-        <span className="text-gray-400">{currentUser?.email}</span>
+            <span className="text-gray-400">{currentUser?.email}</span>
           </div>
 
-          <ul className="space-y-3">
-            {workspaces.map((ws) => (
-              <li key={ws.id}>
-                <Link
-                  href={`/w/${ws.slug}/projects`}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition hover:border-indigo-300 hover:shadow-sm"
-                >
-                  <span className="flex size-10 items-center justify-center rounded-lg bg-indigo-100 font-semibold text-indigo-700">
-                    {ws.name[0]}
-                  </span>
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium text-gray-900">{ws.name}</span>
-                    <span className="block text-xs text-gray-500">/{ws.slug}</span>
-                  </span>
-                  <ArrowRight className="size-4 text-gray-400" />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {isPending && <p role="status" className="text-sm text-gray-500">Loading workspaces...</p>}
 
-          {workspaces.length === 0 && (
+          {isError && (
+            <div className="mb-3 space-y-2">
+              <div role="alert">
+                <ErrorBanner>
+                  {errorText(isAxiosError(error) ? error.response?.data : undefined, "Could not load your workspaces.")}
+                </ErrorBanner>
+              </div>
+              <Button variant="secondary" disabled={isFetching} onClick={() => void refetch()}>
+                {isFetching ? "Retrying..." : "Try again"}
+              </Button>
+            </div>
+          )}
+
+          {workspaces && workspaces.length > 0 && (
+            <ul className="space-y-3">
+              {workspaces.map((ws) => (
+                <li key={ws.id}>
+                  <Link
+                    href={`/w/${ws.slug}/projects`}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 transition hover:border-indigo-300 hover:shadow-sm"
+                  >
+                    <span className="flex size-10 items-center justify-center rounded-lg bg-indigo-100 font-semibold text-indigo-700">
+                      {ws.name[0]}
+                    </span>
+                    <span className="flex-1">
+                      <span className="block text-sm font-medium text-gray-900">{ws.name}</span>
+                      <span className="block text-xs text-gray-500">/{ws.slug}</span>
+                    </span>
+                    <ArrowRight className="size-4 text-gray-400" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {workspaces?.length === 0 && !isError && (
             <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
               You are not in any workspace yet — create one.
             </p>

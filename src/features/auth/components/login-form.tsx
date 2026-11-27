@@ -11,15 +11,18 @@ import { ErrorBanner, FieldError, Input, Label } from "@/shared/ui/form";
 import { errorText } from "@/shared/lib/errors";
 import { useLoginMutation } from "../api";
 import { PasswordInput } from "./password-input";
+import { useT } from "@/shared/lib/i18n";
 
+// В сообщениях — ключи переводов, переводим их при показе: t(errors.email.message)
 const loginSchema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Enter your password"),
+  email: z.string().email("validation.email"),
+  password: z.string().min(1, "validation.passwordRequired"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = () => {
+  const t = useT();
   const router = useRouter();
   const login = useLoginMutation();
 
@@ -39,34 +42,34 @@ export const LoginForm = () => {
 
   return (
     <>
-      <h1 className="text-[26px] font-semibold tracking-tight">Log in</h1>
-      <p className="mb-7 mt-1.5 text-muted">Welcome back. Use your work email.</p>
+      <h1 className="text-[26px] font-semibold tracking-tight">{t("login.title")}</h1>
+      <p className="mb-7 mt-1.5 text-muted">{t("login.subtitle")}</p>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <ErrorBanner>{apiError}</ErrorBanner>
 
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("field.email")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="you@company.com"
+            placeholder={t("field.emailPlaceholder")}
             autoComplete="email"
             invalid={!!errors.email}
             {...register("email")}
           />
-          <FieldError>{errors.email?.message}</FieldError>
+          <FieldError>{errors.email?.message && t(errors.email.message)}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("field.password")}</Label>
           <PasswordInput
             id="password"
             autoComplete="current-password"
             invalid={!!errors.password}
             {...register("password")}
           />
-          <FieldError>{errors.password?.message}</FieldError>
+          <FieldError>{errors.password?.message && t(errors.password.message)}</FieldError>
         </div>
 
         <Button
@@ -74,17 +77,17 @@ export const LoginForm = () => {
           disabled={login.isPending}
           className="mt-2 h-[46px] w-full text-[15px] font-semibold"
         >
-          {login.isPending ? "Logging in..." : "Log in"}
+          {login.isPending ? t("login.submitting") : t("login.submit")}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-muted">
-        New here?{" "}
+        {t("login.noAccount")}{" "}
         <Link
           href="/register"
           className="font-semibold text-ink underline decoration-marking decoration-2 underline-offset-[3px]"
         >
-          Create an account
+          {t("login.createAccount")}
         </Link>
       </p>
     </>

@@ -2,26 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CircleUser, LogOut } from "lucide-react";
 import { Avatar } from "@/shared/ui/avatar";
+import { ThemeToggle } from "@/shared/ui/theme-toggle";
+import { LanguageSwitcher } from "@/shared/ui/language-switcher";
+import { useT } from "@/shared/lib/i18n";
 import { useMe } from "../hooks";
-import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "../api";
 
 /** Меню профиля внизу сайдбара (слот в AppShell, Dev 1) */
 export function UserMenu() {
- const { data: user } = useMe();
+  const t = useT();
+  const { data: user } = useMe();
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const logout = useLogoutMutation();
 
-  if (!user) return null;   // ← после ВСЕХ хуков
+  if (!user) return null; // ← после ВСЕХ хуков
 
   const handleLogout = () => {
     logout.mutate(undefined, {
       onSettled: () => router.push("/login"),
     });
   };
+
   return (
     <div className="relative">
       {open && (
@@ -33,16 +38,25 @@ export function UserMenu() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm hover:bg-gray-100"
             >
-              <CircleUser className="size-4 text-muted" /> Profile
+              <CircleUser className="size-4 text-muted" /> {t("menu.profile")}
             </Link>
-            {/* Позже: logout() — POST /auth/logout, очистить store, перейти на /login */}
- <button
-  onClick={handleLogout}
-  disabled={logout.isPending}
-  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-red-600 hover:bg-red-50"
->
-  <LogOut className="size-4" /> {logout.isPending ? "Logging out..." : "Log out"}
-</button>
+
+            <ThemeToggle withLabel />
+
+            <div className="flex items-center justify-between px-2.5 py-1.5 text-sm">
+              <span className="text-muted">{t("common.language")}</span>
+              <LanguageSwitcher />
+            </div>
+
+            <div className="my-1 border-t border-line-soft" />
+
+            <button
+              onClick={handleLogout}
+              disabled={logout.isPending}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
+              <LogOut className="size-4" /> {logout.isPending ? t("menu.loggingOut") : t("menu.logout")}
+            </button>
           </div>
         </>
       )}

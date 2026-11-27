@@ -1,0 +1,65 @@
+import type { TranslationKey } from "./en";
+
+// Русские тексты. Тип Record<TranslationKey, string> не даст забыть ключ из en.ts
+export const ru: Record<TranslationKey, string> = {
+  "common.language": "Язык",
+  "theme.dark": "Тёмная тема",
+  "theme.light": "Светлая тема",
+  "theme.toggle": "Сменить тему",
+
+  "auth.hero.title": "У каждой задачи своя полоса.",
+  "auth.hero.subtitle": "Планируйте спринты, двигайте работу вперёд и видьте, кто чем занят.",
+  "auth.lane.todo": "К выполнению",
+  "auth.lane.inProgress": "В работе",
+  "auth.lane.done": "Готово",
+
+  "field.email": "Email",
+  "field.password": "Пароль",
+  "field.emailPlaceholder": "you@company.com",
+
+  "login.title": "Вход",
+  "login.subtitle": "С возвращением. Используйте рабочий email.",
+  "login.submit": "Войти",
+  "login.submitting": "Входим...",
+  "login.noAccount": "Впервые здесь?",
+  "login.createAccount": "Создать аккаунт",
+
+  "register.title": "Создать аккаунт",
+  "register.subtitle": "Начните организовывать работу вместе с командой.",
+  "register.name": "Ваше имя",
+  "register.namePlaceholder": "Алекс Ривера",
+  "register.passwordHint": "Минимум 8 символов",
+  "register.confirmPassword": "Повторите пароль",
+  "register.submit": "Создать аккаунт",
+  "register.submitting": "Создаём аккаунт...",
+  "register.haveAccount": "Уже есть аккаунт?",
+  "register.login": "Войти",
+
+  "validation.email": "Введите корректный email",
+  "validation.passwordRequired": "Введите пароль",
+  "validation.nameRequired": "Введите имя",
+  "validation.nameTooLong": "Слишком длинное имя",
+  "validation.passwordMin": "Пароль должен быть не короче 8 символов",
+  "validation.confirmRequired": "Повторите пароль",
+  "validation.passwordsMismatch": "Пароли не совпадают",
+
+  "password.show": "Показать пароль",
+  "password.hide": "Скрыть пароль",
+
+  "menu.profile": "Профиль",
+  "menu.logout": "Выйти",
+  "menu.loggingOut": "Выходим...",
+
+  "profile.back": "Назад",
+  "profile.title": "Профиль",
+  "profile.description": "Настройки вашего аккаунта",
+  "profile.personalInfo": "Личные данные",
+  "profile.avatarUrl": "Ссылка на аватар",
+  "profile.displayName": "Отображаемое имя",
+  "profile.save": "Сохранить",
+  "profile.changePassword": "Смена пароля",
+  "profile.currentPassword": "Текущий пароль",
+  "profile.newPassword": "Новый пароль",
+  "profile.newPasswordHint": "Минимум 8 символов. Вы выйдете со всех устройств.",
+  "profile.updatePassword": "Обновить пароль",
+};
