@@ -10,7 +10,7 @@ import { Button } from "@/shared/ui/button";
 import { PriorityIcon, StateIcon } from "@/shared/ui/issue-icons";
 import { EmptyState } from "@/shared/ui/page";
 import { cn, formatDate } from "@/shared/lib/utils";
-import { issues as allIssues, moduleIssueIds } from "../mocks";
+import { useGetIssuesQuery } from "../api";
 
 export interface IssueListFilter {
   cycle?: string;
@@ -34,16 +34,15 @@ export function IssueList({ workspaceSlug, projectId, filter = {}, groupBy = "st
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
 
-  const issues = allIssues.filter(
-    (i) =>
-      i.project_id === projectId &&
-      (!filter.cycle || i.cycle_id === filter.cycle) &&
-      (!filter.module || (moduleIssueIds[filter.module] ?? []).includes(i.id)),
-  );
+const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, filter);
 
-  if (issues.length === 0) {
-    return <EmptyState title="No tasks here yet" description="Tasks you add will show up in this list." />;
-  }
+if (isLoading) return <p className="p-4 text-muted">Loading tasks...</p>;
+if (isError) return <p className="p-4 text-red-600">Could not load tasks</p>;
+
+if (issues.length === 0) {
+  return <EmptyState title="No tasks here yet" description="Tasks you add will show up in this list." />;
+}
+
 
   const identifier = project?.identifier ?? "";
   const href = (issue: Issue) => `/w/${workspaceSlug}/p/${projectId}/issues/${issue.id}`;
