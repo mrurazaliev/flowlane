@@ -1,9 +1,11 @@
 // Публичный API фичи workspaces (Dev 2).
-export { WorkspacePicker } from "./components/workspace-picker";
-export { WorkspaceSwitcher } from "./components/workspace-switcher";
-export { WorkspaceSettings } from "./components/workspace-settings";
-export { MembersPage } from "./components/members-page";
-export { AcceptInvite } from "./components/accept-invite";
-export { WorkspaceNav } from "./components/workspace-nav";
-export { useWorkspaceQuery, useWorkspaceMembersQuery } from "./api";
-export { ConfirmDeleteModal } from "./components/confirm-delete-modal";
+export { WorkspacePicker } from './components/workspace-picker'
+export { WorkspaceSwitcher } from './components/workspace-switcher'
+export { WorkspaceSettings } from './components/workspace-settings'
+export { MembersPage } from './components/members-page'
+export { AcceptInvite } from './components/accept-invite'
+export { WorkspaceNav } from './components/workspace-nav'
+export { useWorkspace, useWorkspaceMembers } from './api'
+export { ConfirmDeleteModal } from './components/confirm-delete-modal'
+export { IncomingInvites } from './components/incoming-invites'
+export { useInvites } from './invites-api'

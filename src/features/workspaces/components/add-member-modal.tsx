@@ -1,43 +1,45 @@
-"use client";
+'use client'
 
-import { useCallback } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { UserPlus } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner, FieldError, FieldHint, Input, Label, Select } from "@/shared/ui/form";
-import { Modal } from "@/shared/ui/modal";
-import { useAddWorkspaceMemberMutation } from "../api";
-import { assignableWorkspaceRoles, workspaceErrorText } from "../workspace-form";
+import { useCallback, useState, type FormEvent } from 'react'
+import { UserPlus } from 'lucide-react'
+import { z } from 'zod'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner, FieldError, FieldHint, Input, Label, Select } from '@/shared/ui/form'
+import { Modal } from '@/shared/ui/modal'
+import { useAddWorkspaceMember, type AssignableWorkspaceRole } from '../api'
+import { assignableWorkspaceRoles, workspaceErrorText } from '../workspace-form'
 
-const addMemberSchema = z.object({
-  user_id: z.string().trim().uuid("Enter a valid user ID (UUID)"),
-  role: z.enum(assignableWorkspaceRoles),
-});
-
-type AddMemberFormData = z.infer<typeof addMemberSchema>;
+const userIdSchema = z.string().trim().uuid('Enter a valid user ID (UUID)')
 
 export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: string; onClose: () => void }) {
-  const addMember = useAddWorkspaceMemberMutation(workspaceSlug);
-  const {
-    register, handleSubmit, setError,
-    formState: { errors, isSubmitting },
-  } = useForm<AddMemberFormData>({ resolver: zodResolver(addMemberSchema), defaultValues: { role: "member" } });
+  const addMutation = useAddWorkspaceMember(workspaceSlug)
+  const [userId, setUserId] = useState('')
+  const [role, setRole] = useState<AssignableWorkspaceRole>('member')
+  const [userIdError, setUserIdError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const busy = addMutation.isPending
 
   const close = useCallback(() => {
-    if (!isSubmitting) onClose();
-  }, [isSubmitting, onClose]);
+    if (!busy) onClose()
+  }, [busy, onClose])
 
-  async function onSubmit(input: AddMemberFormData) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (busy) return
+
+    setActionError('')
+    const id = userIdSchema.safeParse(userId)
+    if (!id.success) {
+      setUserIdError(id.error.issues[0].message)
+      event.currentTarget.querySelector<HTMLInputElement>('#member-user-id')?.focus()
+      return
+    }
+
     try {
-      await addMember.mutateAsync(input);
-      onClose();
+      await addMutation.mutateAsync({ user_id: id.data, role })
+      onClose()
     } catch (error) {
-      setError("root.server", {
-        type: "server",
-        message: workspaceErrorText(error, "Could not add the member. Please try again."),
-      });
+      setActionError(workspaceErrorText(error, 'Could not add the member. Please try again.'))
     }
   }
 
@@ -49,32 +51,37 @@ export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: stri
       onClose={close}
       footer={
         <>
-          <Button variant="secondary" disabled={isSubmitting} onClick={close}>Cancel</Button>
-          <Button type="submit" form="add-member-form" disabled={isSubmitting}>
-            {isSubmitting ? "Adding…" : "Add member"}
+          <Button variant="secondary" disabled={busy} onClick={close}>Cancel</Button>
+          <Button type="submit" form="add-member-form" disabled={busy}>
+            {busy ? 'Adding…' : 'Add member'}
           </Button>
         </>
       }
     >
-      <form id="add-member-form" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        {errors.root?.server?.message && (
-          <div role="alert"><ErrorBanner>{errors.root.server.message}</ErrorBanner></div>
+      <form id="add-member-form" className="space-y-4" onSubmit={handleSubmit}>
+        {actionError && (
+          <div role="alert"><ErrorBanner>{actionError}</ErrorBanner></div>
         )}
 
         <div>
           <Label htmlFor="member-user-id">User ID</Label>
           <Input
             id="member-user-id"
+            name="user_id"
             autoComplete="off"
-            readOnly={isSubmitting}
-            invalid={!!errors.user_id}
-            aria-invalid={!!errors.user_id}
+            readOnly={busy}
+            invalid={!!userIdError}
+            aria-invalid={!!userIdError}
             aria-describedby="member-user-id-feedback"
-            {...register("user_id")}
+            value={userId}
+            onChange={(event) => {
+              setUserId(event.currentTarget.value)
+              if (userIdError && userIdSchema.safeParse(event.currentTarget.value).success) setUserIdError('')
+            }}
           />
           <div id="member-user-id-feedback" aria-live="polite">
-            {errors.user_id ? (
-              <FieldError>{errors.user_id.message}</FieldError>
+            {userIdError ? (
+              <FieldError>{userIdError}</FieldError>
             ) : (
               <FieldHint>Enter the UUID of an existing Flowlane user.</FieldHint>
             )}
@@ -83,11 +90,12 @@ export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: stri
 
         <div>
           <Label htmlFor="add-member-role">Role</Label>
-          <Select id="add-member-role" disabled={isSubmitting} {...register("role")}>
-            {assignableWorkspaceRoles.map((role) => <option key={role} value={role}>{role}</option>)}
+          <Select id="add-member-role" disabled={busy} value={role}
+            onChange={(event) => setRole(event.currentTarget.value as AssignableWorkspaceRole)}>
+            {assignableWorkspaceRoles.map((item) => <option key={item} value={item}>{item}</option>)}
           </Select>
         </div>
       </form>
     </Modal>
-  );
+  )
 }

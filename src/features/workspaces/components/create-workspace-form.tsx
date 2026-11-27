@@ -1,44 +1,42 @@
-"use client";
+'use client'
 
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
-import { errorText } from "@/shared/lib/errors";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/form";
-import { useCreateWorkspaceMutation } from "../api";
-import { workspaceFormSchema, type WorkspaceFormData } from "../workspace-form";
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner, FieldError, FieldHint, Input, Label } from '@/shared/ui/form'
+import { useAddWorkspace } from '../api'
+import { workspaceErrorText, workspaceFormSchema, type WorkspaceFormData } from '../workspace-form'
 
 export function CreateWorkspaceForm() {
-  const router = useRouter();
-  const createWorkspace = useCreateWorkspaceMutation();
+  const router = useRouter()
+  const createWorkspace = useAddWorkspace()
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<WorkspaceFormData>({ resolver: zodResolver(workspaceFormSchema) });
+  } = useForm<WorkspaceFormData>({ resolver: zodResolver(workspaceFormSchema) })
 
   async function onSubmit(input: WorkspaceFormData) {
     try {
-      const workspace = await createWorkspace.mutateAsync(input);
-      router.push(`/w/${workspace.slug}/projects`);
+      const workspace = await createWorkspace.mutateAsync(input)
+      router.push(`/w/${workspace.slug}/projects`)
     } catch (error) {
-      const response = isAxiosError(error) ? error.response : undefined;
-      if (response?.status === 409) {
+      if (isAxiosError(error) && error.response?.status === 409) {
         setError(
-          "slug",
-          { type: "server", message: "This workspace URL is already taken" },
+          'slug',
+          { type: 'server', message: 'This workspace URL is already taken' },
           { shouldFocus: true },
-        );
-        return;
+        )
+        return
       }
 
-      setError("root.server", {
-        type: "server",
-        message: errorText(response?.data, "Could not create the workspace. Please try again."),
-      });
+      setError('root.server', {
+        type: 'server',
+        message: workspaceErrorText(error, 'Could not create the workspace. Please try again.'),
+      })
     }
   }
 
@@ -62,8 +60,8 @@ export function CreateWorkspaceForm() {
             readOnly={isSubmitting}
             invalid={!!errors.name}
             aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? "ws-name-error" : undefined}
-            {...register("name")}
+            aria-describedby={errors.name ? 'ws-name-error' : undefined}
+            {...register('name')}
           />
           {errors.name && (
             <div id="ws-name-error"><FieldError>{errors.name.message}</FieldError></div>
@@ -81,7 +79,7 @@ export function CreateWorkspaceForm() {
               readOnly={isSubmitting}
               aria-invalid={!!errors.slug}
               aria-describedby="ws-slug-feedback"
-              {...register("slug")}
+              {...register('slug')}
             />
           </div>
           <div id="ws-slug-feedback" aria-live="polite">
@@ -94,9 +92,9 @@ export function CreateWorkspaceForm() {
         </div>
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Creating workspace..." : "Create workspace"}
+          {isSubmitting ? 'Creating workspace...' : 'Create workspace'}
         </Button>
       </form>
     </section>
-  );
+  )
 }

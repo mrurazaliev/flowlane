@@ -1,6 +1,6 @@
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner } from "@/shared/ui/form";
-import { Modal } from "@/shared/ui/modal";
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner } from '@/shared/ui/form'
+import { Modal } from '@/shared/ui/modal'
 
 export function ConfirmDeleteModal({
   title, description, confirmLabel, pending, error, onClose, onConfirm,
@@ -22,7 +22,7 @@ export function ConfirmDeleteModal({
         <>
           <Button variant="secondary" disabled={pending} onClick={onClose}>Cancel</Button>
           <Button variant="danger" disabled={pending} onClick={onConfirm}>
-            {pending ? "Please wait…" : confirmLabel}
+            {pending ? 'Please wait…' : confirmLabel}
           </Button>
         </>
       }
@@ -32,5 +32,5 @@ export function ConfirmDeleteModal({
         {error && <div role="alert"><ErrorBanner>{error}</ErrorBanner></div>}
       </div>
     </Modal>
-  );
+  )
 }

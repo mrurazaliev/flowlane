@@ -1,32 +1,32 @@
-"use client";
+'use client'
 
-import { useCallback, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { Plus } from "lucide-react";
-import { projectColor } from "@/shared/api/lookups";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { ErrorBanner } from "@/shared/ui/form";
-import { EmptyState, PageHeader } from "@/shared/ui/page";
-import { useProjectsQuery } from "../api";
-import { projectErrorText, projectSettingsHref } from "../project-form";
-import { useProjectAccess } from "../use-project-access";
-import { CreateProjectModal } from "./create-project-modal";
+import { useCallback, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { Plus } from 'lucide-react'
+import { projectColor } from '@/shared/api/lookups'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { ErrorBanner } from '@/shared/ui/form'
+import { EmptyState, PageHeader } from '@/shared/ui/page'
+import { useProjects } from '../api'
+import { projectErrorText, projectSettingsHref } from '../project-form'
+import { useProjectAccess } from '../use-project-access'
+import { CreateProjectModal } from './create-project-modal';
 
 /** D2.7 Список проектов /w/:slug/projects. */
 export function ProjectsList() {
-  const { workspaceSlug } = useParams<{ workspaceSlug: string }>();
-  const [createOpen, setCreateOpen] = useState(false);
-  const projectsQuery = useProjectsQuery(workspaceSlug);
-  const { membersQuery, canManage } = useProjectAccess(workspaceSlug);
-  const projects = projectsQuery.data;
-  const closeCreate = useCallback(() => setCreateOpen(false), []);
+  const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
+  const [createOpen, setCreateOpen] = useState(false)
+  const projectsQuery = useProjects(workspaceSlug)
+  const { membersQuery, canManage } = useProjectAccess(workspaceSlug)
+  const projects = projectsQuery.data
+  const closeCreate = useCallback(() => setCreateOpen(false), [])
   const createButton = canManage && (
     <Button onClick={() => setCreateOpen(true)}>
       <Plus className="size-4" /> New project
     </Button>
-  );
+  )
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
@@ -36,7 +36,7 @@ export function ProjectsList() {
       {projectsQuery.isError && (
         <div className="mb-4 max-w-xl space-y-2">
           <div role="alert">
-            <ErrorBanner>{projectErrorText(projectsQuery.error, "Could not load projects.")}</ErrorBanner>
+            <ErrorBanner>{projectErrorText(projectsQuery.error, 'Could not load projects.')}</ErrorBanner>
           </div>
           <Button variant="secondary" disabled={projectsQuery.isFetching} onClick={() => void projectsQuery.refetch()}>
             Try again
@@ -46,7 +46,7 @@ export function ProjectsList() {
       {projectsQuery.isSuccess && projectsQuery.data.length === 0 && (
         <EmptyState
           title="No projects yet"
-          description={canManage ? "Create your first project to start tracking tasks." : undefined}
+          description={canManage ? 'Create your first project to start tracking tasks.' : undefined}
           action={createButton}
         />
       )}
@@ -71,7 +71,7 @@ export function ProjectsList() {
                   </div>
                   {project.is_archived && <Badge className="ml-auto">Archived</Badge>}
                 </div>
-                <p className="mt-3 line-clamp-2 text-sm text-gray-500">{project.description ?? "No description"}</p>
+                <p className="mt-3 line-clamp-2 text-sm text-gray-500">{project.description ?? 'No description'}</p>
               </Link>
             </li>
           ))}
@@ -82,5 +82,5 @@ export function ProjectsList() {
         <CreateProjectModal workspaceSlug={workspaceSlug} members={membersQuery.data} onClose={closeCreate} />
       )}
     </div>
-  );
+  )
 }
