@@ -6,10 +6,10 @@ import { FolderOpen, Plus } from "lucide-react";
 import type { Issue } from "@/shared/api/types";
 import { useLabels, useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
 import { Button, Kbd } from "@/shared/ui/button";
-import { issues as allIssues, comments } from "../mocks";
 import { BoardColumn } from "./board-column";
 import { CreateIssueModal } from "./create-issue-modal";
 import { IssueFilters } from "./issue-filters";
+import { useGetIssuesQuery } from "../api";
 
 /**
  * D1.9 Kanban board: колонки = статусы проекта («полосы движения»).
@@ -25,16 +25,17 @@ export function Board() {
   const { data: states } = useStates(workspaceSlug, projectId);
   const { data: members } = useMemberUsers(workspaceSlug);
   const { data: labels } = useLabels(workspaceSlug, projectId);
-  const issues = allIssues.filter((i) => i.project_id === projectId);
+  const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId);
 
   if (!project) return <p className="p-7 text-muted">Project not found</p>;
-
+if (isLoading) return <p className="p-7 text-muted">Loading tasks...</p>;
+if (isError) return <p className="p-7 text-red-600">Could not load tasks</p>;
   const doneStateIds = new Set(states.filter((s) => s.group === "completed").map((s) => s.id));
   const meta = (issue: Issue) => {
     const children = issues.filter((i) => i.parent_id === issue.id);
     return {
       subTasks: { done: children.filter((c) => doneStateIds.has(c.state_id)).length, total: children.length },
-      commentCount: comments.filter((c) => c.issue_id === issue.id).length,
+      commentCount: 0, // бэкенд не присылает количество комментариев в списке задач
     };
   };
 
