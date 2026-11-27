@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
+import { themeScript } from "@/shared/lib/theme";
 
 // Fira Sans лежит в проекте (src/app/fonts) — при сборке ничего не скачивается
 const firaSans = localFont({
@@ -21,9 +22,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${firaSans.variable} h-full`}>
+    // suppressHydrationWarning: themeScript и язык меняют <html> до React — это ожидаемо
+    <html lang="en" className={`${firaSans.variable} h-full`} suppressHydrationWarning>
+      <head>
+        {/* Ставит тёмную тему до отрисовки, чтобы не было вспышки светлой */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full font-sans">
-        <Providers>{children}</Providers>  
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

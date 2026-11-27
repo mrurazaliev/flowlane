@@ -4,7 +4,8 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-asphalt text-white hover:bg-asphalt-2",
+  // В тёмной теме асфальт сливается с фоном, поэтому главная кнопка — жёлтая разметка
+  primary: "bg-asphalt text-white hover:bg-asphalt-2 dark:bg-marking dark:text-asphalt dark:hover:bg-[#f5c451]",
   secondary: "border border-line bg-white text-ink hover:bg-gray-50",
   ghost: "text-muted hover:bg-gray-100 hover:text-ink",
   danger: "bg-red-600 text-white hover:bg-red-700",

@@ -11,22 +11,24 @@ import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/fo
 import { errorText } from "@/shared/lib/errors";
 import { useRegisterMutation } from "../api";
 import { PasswordInput } from "./password-input";
+import { useT } from "@/shared/lib/i18n";
 
 const registerSchema = z
   .object({
-    display_name: z.string().min(1, "Enter your name").max(100, "Name is too long"),
-    email: z.string().email("Enter a valid email"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirm_password: z.string().min(1, "Repeat your password"),
+    display_name: z.string().min(1, "validation.nameRequired").max(100, "validation.nameTooLong"),
+    email: z.string().email("validation.email"),
+    password: z.string().min(8, "validation.passwordMin"),
+    confirm_password: z.string().min(1, "validation.confirmRequired"),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: "Passwords don't match",
+    message: "validation.passwordsMismatch",
     path: ["confirm_password"],
   });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export const RegisterForm = () => {
+  const t = useT();
   const router = useRouter();
   const registerUser = useRegisterMutation();
 
@@ -50,39 +52,39 @@ export const RegisterForm = () => {
 
   return (
     <>
-      <h1 className="text-[26px] font-semibold tracking-tight">Create an account</h1>
-      <p className="mb-7 mt-1.5 text-muted">Start organizing work with your team.</p>
+      <h1 className="text-[26px] font-semibold tracking-tight">{t("register.title")}</h1>
+      <p className="mb-7 mt-1.5 text-muted">{t("register.subtitle")}</p>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <ErrorBanner>{apiError}</ErrorBanner>
 
         <div>
-          <Label htmlFor="name">Your name</Label>
+          <Label htmlFor="name">{t("register.name")}</Label>
           <Input
             id="name"
-            placeholder="Alex Rivera"
+            placeholder={t("register.namePlaceholder")}
             autoComplete="name"
             invalid={!!errors.display_name}
             {...register("display_name")}
           />
-          <FieldError>{errors.display_name?.message}</FieldError>
+          <FieldError>{errors.display_name?.message && t(errors.display_name.message)}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("field.email")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="you@company.com"
+            placeholder={t("field.emailPlaceholder")}
             autoComplete="email"
             invalid={!!errors.email}
             {...register("email")}
           />
-          <FieldError>{errors.email?.message}</FieldError>
+          <FieldError>{errors.email?.message && t(errors.email.message)}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("field.password")}</Label>
           <PasswordInput
             id="password"
             autoComplete="new-password"
@@ -90,21 +92,21 @@ export const RegisterForm = () => {
             {...register("password")}
           />
           {errors.password ? (
-            <FieldError>{errors.password.message}</FieldError>
+            <FieldError>{errors.password.message && t(errors.password.message)}</FieldError>
           ) : (
-            <FieldHint>At least 8 characters</FieldHint>
+            <FieldHint>{t("register.passwordHint")}</FieldHint>
           )}
         </div>
 
         <div>
-          <Label htmlFor="confirm_password">Confirm password</Label>
+          <Label htmlFor="confirm_password">{t("register.confirmPassword")}</Label>
           <PasswordInput
             id="confirm_password"
             autoComplete="new-password"
             invalid={!!errors.confirm_password}
             {...register("confirm_password")}
           />
-          <FieldError>{errors.confirm_password?.message}</FieldError>
+          <FieldError>{errors.confirm_password?.message && t(errors.confirm_password.message)}</FieldError>
         </div>
 
         <Button
@@ -112,17 +114,17 @@ export const RegisterForm = () => {
           disabled={registerUser.isPending}
           className="mt-2 h-[46px] w-full text-[15px] font-semibold"
         >
-          {registerUser.isPending ? "Creating account..." : "Create account"}
+          {registerUser.isPending ? t("register.submitting") : t("register.submit")}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-muted">
-        Already have an account?{" "}
+        {t("register.haveAccount")}{" "}
         <Link
           href="/login"
           className="font-semibold text-ink underline decoration-marking decoration-2 underline-offset-[3px]"
         >
-          Log in
+          {t("register.login")}
         </Link>
       </p>
     </>
