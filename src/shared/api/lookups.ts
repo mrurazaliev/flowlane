@@ -1,8 +1,9 @@
-// SHARED (F1.4): справочные данные, которые нужны обоим разработчикам.
-// Сейчас возвращают моки в форме, похожей на useQuery ({ data, isLoading }).
-// Позже каждая функция станет useQuery({ queryKey: queryKeys..., queryFn: ... }),
-// а компоненты менять не придётся.
-import { labels, projectMembers, projects, states, users, workspaceMembers, workspaces } from "./mocks";
+
+import { useQuery } from "@tanstack/react-query";
+import { api } from "./client";
+import { queryKeys } from "./queryKeys";
+import type { Label, Project, State } from "./types";
+import { projectMembers, users, workspaceMembers, workspaces } from "./mocks";
 
 function result<T>(data: T) {
   return { data, isLoading: false as const, error: null };
@@ -15,28 +16,47 @@ export function useWorkspaces() {
 export function useWorkspace(workspaceSlug: string) {
   return result(workspaces.find((w) => w.slug === workspaceSlug));
 }
+export const useProjects = (workspaceSlug: string) => {
+  const query = useQuery({
+    queryKey: queryKeys.projects.all(workspaceSlug),
+    queryFn: async () => {
+      const { data } = await api.get<Project[]>(`/workspaces/${workspaceSlug}/projects`);
+      return data;
+    },
+  });
+  return { ...query, data: query.data ?? [] };
+};
 
-export function useProjects(workspaceSlug: string) {
-  const workspace = workspaces.find((w) => w.slug === workspaceSlug);
-  return result(projects.filter((p) => p.workspace_id === workspace?.id));
-}
+export const useProject = (workspaceSlug: string, projectId: string) =>
+  useQuery({
+    queryKey: queryKeys.projects.detail(workspaceSlug, projectId),
+    queryFn: async () => {
+      const { data } = await api.get<Project>(`/workspaces/${workspaceSlug}/projects/${projectId}`);
+      return data;
+    },
+  });
 
-export function useProject(workspaceSlug: string, projectId: string) {
-  void workspaceSlug;
-  return result(projects.find((p) => p.id === projectId));
-}
+export const useStates = (workspaceSlug: string, projectId: string) => {
+  const query = useQuery({
+    queryKey: queryKeys.states(workspaceSlug, projectId),
+    queryFn: async () => {
+      const { data } = await api.get<State[]>(`/workspaces/${workspaceSlug}/projects/${projectId}/states`);
+      return data;
+    },
+  });
+  return { ...query, data: query.data ?? [] };
+};
 
-export function useStates(workspaceSlug: string, projectId: string) {
-  void workspaceSlug;
-  void projectId;
-  return result([...states].sort((a, b) => a.order - b.order));
-}
-
-export function useLabels(workspaceSlug: string, projectId: string) {
-  void workspaceSlug;
-  void projectId;
-  return result(labels);
-}
+export const useLabels = (workspaceSlug: string, projectId: string) => {
+  const query = useQuery({
+    queryKey: queryKeys.labels(workspaceSlug, projectId),
+    queryFn: async () => {
+      const { data } = await api.get<Label[]>(`/workspaces/${workspaceSlug}/projects/${projectId}/labels`);
+      return data;
+    },
+  });
+  return { ...query, data: query.data ?? [] };
+};
 
 export function useWorkspaceMembers(workspaceSlug: string) {
   void workspaceSlug;
