@@ -10,8 +10,10 @@ import { ErrorBanner } from '@/shared/ui/form'
 import { Logo } from '@/shared/ui/logo'
 import { useAcceptInvite, useInvite } from '../invites-api'
 import { workspaceErrorText } from '../workspace-form'
+import { useT } from "@/shared/lib/i18n";
 
 export function AcceptInvite() {
+  const t = useT();
   const { token } = useParams<{ token: string }>()
   const router = useRouter()
   const { data: invite, isPending, error } = useInvite(token)
@@ -23,7 +25,7 @@ export function AcceptInvite() {
     setActionError('')
 
     if (!getRefreshToken()) {
-      setActionError('Log in or sign up with the invited email, then open this link again.')
+      setActionError(t("Log in or sign up with the invited email, then open this link again."))
       return
     }
 
@@ -31,7 +33,7 @@ export function AcceptInvite() {
       await acceptMutation.mutateAsync()
       router.replace(`/w/${encodeURIComponent(invite.workspace.slug)}/projects`)
     } catch (error) {
-      setActionError(workspaceErrorText(error, 'Could not accept the invitation. Please try again.'))
+      setActionError(workspaceErrorText(error, t("Could not accept the invitation. Please try again.")))
     }
   }
 
@@ -39,12 +41,12 @@ export function AcceptInvite() {
     <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
         <div className="flex justify-center"><Logo withText={false} /></div>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-indigo-600">Workspace invite</p>
+        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-indigo-600">{t("Workspace invite")}</p>
 
-        {isPending && <p role="status" className="mt-4 text-sm text-muted">Loading invitation…</p>}
+        {isPending && <p role="status" className="mt-4 text-sm text-muted">{t("Loading invitation…")}</p>}
         {error && (
           <div className="mt-4" role="alert">
-            <ErrorBanner>{workspaceErrorText(error, 'Could not load this invitation.')}</ErrorBanner>
+            <ErrorBanner>{workspaceErrorText(error, t("Could not load this invitation."))}</ErrorBanner>
           </div>
         )}
 
@@ -56,16 +58,16 @@ export function AcceptInvite() {
             <p className="mt-2 text-sm text-gray-500">
               Sign in as {invite.email} to join as <span className="font-medium capitalize text-gray-900">{invite.role}</span>.
             </p>
-            <p className="mt-2 text-xs text-gray-500">Valid until {formatDate(invite.expires_at)}.</p>
+            <p className="mt-2 text-xs text-gray-500">{t("Valid until {date}.", { date: formatDate(invite.expires_at) })}</p>
 
             {actionError && <div className="mt-4" role="alert"><ErrorBanner>{actionError}</ErrorBanner></div>}
             <div className="mt-6 space-y-2">
               <Button className="w-full" disabled={acceptMutation.isPending} onClick={() => void handleAccept()}>
-                {acceptMutation.isPending ? 'Accepting…' : 'Accept invite'}
+                {acceptMutation.isPending ? t("Accepting…") : t("Accept invite")}
               </Button>
               <div className="flex gap-2">
-                <Link href="/register" className={buttonClasses('secondary', 'md', 'flex-1')}>Sign up</Link>
-                <Link href="/login" className={buttonClasses('secondary', 'md', 'flex-1')}>Log in</Link>
+                <Link href="/register" className={buttonClasses('secondary', 'md', 'flex-1')}>{t("Sign up")}</Link>
+                <Link href="/login" className={buttonClasses('secondary', 'md', 'flex-1')}>{t("Log in")}</Link>
               </div>
             </div>
           </>

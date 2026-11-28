@@ -7,9 +7,11 @@ import { AvatarStack } from '@/shared/ui/avatar'
 import { cn } from '@/shared/lib/utils'
 import { useProjectMembers, useProject } from '../api'
 import { projectErrorText } from '../project-form';
+import { useT } from "@/shared/lib/i18n";
 
 /** Шапка проекта: путь, название, команда и вкладки (активная — жёлтая разметка) */
 export function ProjectHeader() {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>()
   const pathname = usePathname()
   const { data: workspace } = useWorkspace(workspaceSlug)
@@ -20,17 +22,17 @@ export function ProjectHeader() {
   const project = projectQuery.data
   if (!project) {
     return <p className="border-b border-line bg-white px-7 py-4 text-sm text-muted">
-      {projectErrorText(projectQuery.error, 'Could not load the project.')}
+      {projectErrorText(projectQuery.error, t("Could not load the project."))}
     </p>
   }
 
   const base = `/w/${workspaceSlug}/p/${projectId}`
   const tabs = [
-    { href: `${base}/issues`, label: 'Issues' },
-    { href: `${base}/board`, label: 'Board' },
-    { href: `${base}/cycles`, label: 'Cycles' },
-    { href: `${base}/modules`, label: 'Modules' },
-    { href: `${base}/settings`, label: 'Settings' },
+    { href: `${base}/issues`, label: t("Issues") },
+    { href: `${base}/board`, label: t("Board") },
+    { href: `${base}/cycles`, label: t("Cycles") },
+    { href: `${base}/modules`, label: t("Modules") },
+    { href: `${base}/settings`, label: t("Settings") },
   ]
 
   return (

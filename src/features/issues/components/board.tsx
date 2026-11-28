@@ -14,8 +14,10 @@ import { BoardColumn } from "./board-column";
 import { CreateIssueModal } from "./create-issue-modal";
 import { IssueFilters } from "./issue-filters";
 import { useGetIssuesQuery, useMoveIssueMutation } from "../api";
+import { useT } from "@/shared/lib/i18n";
 
 export function Board() {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
@@ -30,9 +32,9 @@ export function Board() {
   const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, {}, { allPages: true });
   const moveIssue = useMoveIssueMutation(workspaceSlug, projectId);
 
-  if (!project) return <p className="p-7 text-muted">Project not found</p>;
-  if (isLoading) return <p className="p-7 text-muted">Loading tasks...</p>;
-  if (isError) return <p className="p-7 text-red-600">Could not load tasks</p>;
+  if (!project) return <p className="p-7 text-muted">{t("Project not found")}</p>;
+  if (isLoading) return <p className="p-7 text-muted">{t("Loading tasks...")}</p>;
+  if (isError) return <p className="p-7 text-red-600">{t("Could not load tasks")}</p>;
   const pendingMove = moveIssue.isPending ? moveIssue.variables : undefined;
   const boardIssues = pendingMove
     ? issues.map((issue) => issue.id === pendingMove.issueId ? { ...issue, state_id: pendingMove.stateId } : issue)
@@ -74,7 +76,7 @@ export function Board() {
         states={states}
         actions={canWrite && (
           <Button onClick={() => openCreate()}>
-            <Plus className="size-4" strokeWidth={2.2} /> New task <Kbd>C</Kbd>
+            <Plus className="size-4" strokeWidth={2.2} /> {t("New task")} <Kbd>C</Kbd>
           </Button>
         )}
       />
@@ -82,12 +84,12 @@ export function Board() {
       {moveIssue.isError && (
         <div className="px-4 py-2 md:px-7" role="alert">
           <ErrorBanner>
-            {errorText(isAxiosError(moveIssue.error) ? moveIssue.error.response?.data : null, "Could not move the task. Try again.")}
+            {errorText(isAxiosError(moveIssue.error) ? moveIssue.error.response?.data : null, t("Could not move the task. Try again."))}
           </ErrorBanner>
         </div>
       )}
       <p className="sr-only" role="status">
-        {moveIssue.isPending ? "Moving task…" : moveIssue.isSuccess ? "Task status saved." : ""}
+        {moveIssue.isPending ? t("Moving task…") : moveIssue.isSuccess ? t("Task status saved.") : ""}
       </p>
 
       <div className="relative flex min-h-0 flex-1 snap-x overflow-x-auto px-2 md:px-3">
@@ -117,12 +119,12 @@ export function Board() {
               <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-marking-soft text-[#8a6410]">
                 <FolderOpen className="size-6" />
               </span>
-              <h2 className="mt-4 text-lg font-semibold tracking-tight">No tasks yet</h2>
+              <h2 className="mt-4 text-lg font-semibold tracking-tight">{t("No tasks yet")}</h2>
               {canWrite && (
                 <>
-                  <p className="mt-1 text-muted">Create the first task and it will appear in its lane.</p>
+                  <p className="mt-1 text-muted">{t("Create the first task and it will appear in its lane.")}</p>
                   <Button className="mt-5" onClick={() => openCreate()}>
-                    <Plus className="size-4" /> Create a task
+                    <Plus className="size-4" /> {t("Create a task")}
                   </Button>
                 </>
               )}

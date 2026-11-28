@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,6 +12,7 @@ import { ErrorBanner, FieldError, FieldHint, Input, Label, Select, Textarea } fr
 import type { Project, WorkspaceMember } from '@/shared/api/types'
 import { useDeleteProject, useEditProject } from '../api'
 import { projectErrorText, projectSettingsSchema } from '../project-form'
+import { useT } from "@/shared/lib/i18n";
 
 type SettingsForm = z.infer<typeof projectSettingsSchema>
 
@@ -24,6 +27,7 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
   workspaceMembers: WorkspaceMember[];
   canManage: boolean;
 }) {
+  const t = useT();
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const update = useEditProject(workspaceSlug, project.id)
@@ -64,34 +68,34 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
   return (
     <div className="space-y-6">
       {update.error && (
-        <div role="alert"><ErrorBanner>{projectErrorText(update.error, 'Could not update the project.')}</ErrorBanner></div>
+        <div role="alert"><ErrorBanner>{projectErrorText(update.error, t("Could not update the project."))}</ErrorBanner></div>
       )}
       <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-6" onSubmit={handleSubmit(onSubmit)}>
-        <h2 className="text-base font-semibold text-gray-900">General</h2>
+        <h2 className="text-base font-semibold text-gray-900">{t("General")}</h2>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
-            <Label htmlFor="p-name">Project name</Label>
+            <Label htmlFor="p-name">{t("Project name")}</Label>
             <Input id="p-name" readOnly={!canManage || isBusy} invalid={!!errors.name}
               aria-invalid={!!errors.name} {...register('name')} />
             <FieldError>{errors.name?.message}</FieldError>
           </div>
           <div>
-            <Label htmlFor="p-identifier">Identifier</Label>
+            <Label htmlFor="p-identifier">{t("Identifier")}</Label>
             <Input id="p-identifier" value={project.identifier} readOnly />
           </div>
         </div>
         <div>
-          <Label htmlFor="p-description">Description</Label>
+          <Label htmlFor="p-description">{t("Description")}</Label>
           <Textarea id="p-description" maxLength={500} readOnly={!canManage || isBusy}
             invalid={!!errors.description} aria-invalid={!!errors.description} {...register('description')} />
-          {errors.description ? <FieldError>{errors.description.message}</FieldError> : <FieldHint>Max 500 characters</FieldHint>}
+          {errors.description ? <FieldError>{errors.description.message}</FieldError> : <FieldHint>{t("Max 500 characters")}</FieldHint>}
         </div>
         <div>
-          <Label htmlFor="p-lead">Project lead</Label>
+          <Label htmlFor="p-lead">{t("Project lead")}</Label>
           <Select id="p-lead" disabled={!canManage || isBusy} aria-invalid={!!errors.lead_id} {...register('lead_id')}>
-            <option value="">No lead</option>
+            <option value="">{t("No lead")}</option>
             {project.lead_id && !workspaceMembers.some((member) => member.user_id === project.lead_id) && (
-              <option value={project.lead_id}>Current lead</option>
+              <option value={project.lead_id}>{t("Current lead")}</option>
             )}
             {workspaceMembers.map((member) => (
               <option key={member.user_id} value={member.user_id}>
@@ -103,46 +107,46 @@ export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canM
         </div>
         {canManage && (
           <div className="flex items-center justify-end gap-3">
-            {update.isSuccess && !isDirty && <p role="status" className="text-sm text-muted">Changes saved.</p>}
+            {update.isSuccess && !isDirty && <p role="status" className="text-sm text-muted">{t("Changes saved.")}</p>}
             <Button type="submit" disabled={!isDirty || isBusy}>
-              {update.isPending && update.variables.is_archived === undefined ? 'Saving…' : 'Save changes'}
+              {update.isPending && update.variables.is_archived === undefined ? t("Saving…") : t("Save changes")}
             </Button>
           </div>
         )}
       </form>
 
       {canManage && <section className="rounded-xl border border-red-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-red-700">Danger zone</h2>
+        <h2 className="text-base font-semibold text-red-700">{t("Danger zone")}</h2>
         <div className="mt-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-900">{project.is_archived ? 'Restore project' : 'Archive project'}</p>
+            <p className="text-sm font-medium text-gray-900">{project.is_archived ? t("Restore project") : t("Archive project")}</p>
             <p className="text-sm text-gray-500">{project.is_archived
-              ? 'Show the project in the sidebar again.'
-              : 'Hide the project from the sidebar. You can restore it later.'}</p>
+              ? t("Show the project in the sidebar again.")
+              : t("Hide the project from the sidebar. You can restore it later.")}</p>
           </div>
           <Button variant="secondary" disabled={isBusy} onClick={handleArchive}>
             {project.is_archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
-            {project.is_archived ? 'Restore' : 'Archive'}
+            {project.is_archived ? t("Restore") : t("Archive")}
           </Button>
         </div>
         <div className="mt-4 flex items-center justify-between gap-4 border-t border-gray-100 pt-4">
           <div>
-            <p className="text-sm font-medium text-gray-900">Delete project</p>
-            <p className="text-sm text-gray-500">All tasks, cycles and modules will be deleted.</p>
+            <p className="text-sm font-medium text-gray-900">{t("Delete project")}</p>
+            <p className="text-sm text-gray-500">{t("All tasks, cycles and modules will be deleted.")}</p>
           </div>
           <Button variant="danger" disabled={isBusy} onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="size-4" /> Delete
+            <Trash2 className="size-4" /> {t("Delete")}
           </Button>
         </div>
       </section>}
 
       {deleteOpen && (
         <ConfirmDeleteModal
-          title="Delete project?"
+          title={t("Delete project?")}
           description={`“${project.name}” and its tasks, cycles and modules will be permanently deleted.`}
-          confirmLabel="Delete project"
+          confirmLabel={t("Delete project")}
           pending={isDeleting}
-          error={deleteError ? projectErrorText(deleteError, 'Could not delete the project.') : undefined}
+          error={deleteError ? projectErrorText(deleteError, t("Could not delete the project.")) : undefined}
           onClose={closeDelete}
           onConfirm={handleDelete}
         />

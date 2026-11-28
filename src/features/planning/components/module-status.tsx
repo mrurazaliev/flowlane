@@ -1,5 +1,6 @@
 import type { ModuleStatus } from "@/shared/api/types";
 import { Badge } from "@/shared/ui/badge";
+import { translate } from "@/shared/lib/i18n";
 
 export const moduleStatusLabels: Record<ModuleStatus, string> = {
   backlog: "Backlog",
@@ -18,5 +19,5 @@ const tones = {
 } as const;
 
 export function ModuleStatusBadge({ status }: { status: ModuleStatus }) {
-  return <Badge tone={tones[status]}>{moduleStatusLabels[status]}</Badge>;
+  return <Badge tone={tones[status]}>{translate(moduleStatusLabels[status])}</Badge>;
 }

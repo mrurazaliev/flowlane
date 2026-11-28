@@ -14,8 +14,10 @@ import { planningErrorText } from "../planning-form";
 import { CycleModal } from "./cycle-modal";
 import { PlanningActions } from "./planning-actions";
 import { PlanningTasks } from "./planning-tasks";
+import { useT } from "@/shared/lib/i18n";
 
 export function CycleDetail() {
+  const t = useT();
   const { workspaceSlug, projectId, cycleId } = useParams<{
     workspaceSlug: string;
     projectId: string;
@@ -26,7 +28,7 @@ export function CycleDetail() {
   const { data: cycle, isPending, error } = useCycle({ workspaceSlug, projectId }, cycleId);
   if (isPending) return <PageSkeleton />;
   if (!cycle || cycle.project_id !== projectId) {
-    return <p className="p-6 text-sm text-gray-500" role="alert">{planningErrorText(error, "Cycle not found.")}</p>;
+    return <p className="p-6 text-sm text-gray-500" role="alert">{planningErrorText(error, t("Cycle not found."))}</p>;
   }
 
   return (
@@ -35,7 +37,7 @@ export function CycleDetail() {
         href={`/w/${workspaceSlug}/p/${projectId}/cycles`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
       >
-        <ArrowLeft className="size-4" /> All cycles
+        <ArrowLeft className="size-4" /> {t("All cycles")}
       </Link>
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -55,7 +57,7 @@ export function CycleDetail() {
         {cycle.progress && (
           <div className="mt-5">
             <div className="mb-2 flex items-baseline justify-between">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
+              <span className="text-sm font-medium text-gray-700">{t("Progress")}</span>
               <span className="text-2xl font-semibold text-gray-900">{cycle.progress.completion_percentage}%</span>
             </div>
             <ProgressBar progress={cycle.progress} showLegend />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/shared/ui/logo";
+import { useT } from "@/shared/lib/i18n";
 import { cn } from "@/shared/lib/utils";
 
 interface AppShellProps {
@@ -23,6 +24,7 @@ interface AppShellProps {
  * На узком экране сайдбар прячется и открывается кнопкой меню.
  */
 export function AppShell({ switcher, nav, projects, userMenu, children }: AppShellProps) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -42,7 +44,7 @@ export function AppShell({ switcher, nav, projects, userMenu, children }: AppShe
       >
         <div className="flex items-center justify-between px-2 pb-[18px]">
           <Logo light />
-          <button className="rounded-lg p-1.5 text-faint hover:text-white md:hidden" onClick={() => setOpen(false)} aria-label="Close menu">
+          <button className="rounded-lg p-1.5 text-faint hover:text-white md:hidden" onClick={() => setOpen(false)} aria-label={t("Close menu")}>
             <X className="size-5" />
           </button>
         </div>
@@ -55,7 +57,7 @@ export function AppShell({ switcher, nav, projects, userMenu, children }: AppShe
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Верхняя панель на телефоне */}
         <header className="flex items-center gap-3 bg-asphalt px-4 py-3 text-white md:hidden">
-          <button onClick={() => setOpen(true)} aria-label="Open menu" className="-ml-1 rounded-lg p-1">
+          <button onClick={() => setOpen(true)} aria-label={t("Open menu")} className="-ml-1 rounded-lg p-1">
             <Menu className="size-5" />
           </button>
           <Logo light />

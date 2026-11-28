@@ -1,5 +1,6 @@
 import type { Priority, StateGroup } from "@/shared/api/types";
 import { cn } from "@/shared/lib/utils";
+import { translate } from "@/shared/lib/i18n";
 
 export const priorityLabels: Record<Priority, string> = {
   urgent: "Urgent",
@@ -16,7 +17,7 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
   if (priority === "urgent") {
     return (
       <span
-        aria-label="Urgent"
+        aria-label={translate("Urgent")}
         className={cn("inline-grid size-[15px] place-items-center rounded-[4px] bg-[#d64545] text-[11px] font-bold leading-none text-white", className)}
       >
         !
@@ -24,14 +25,14 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
     );
   }
   if (priority === "none") {
-    return <span aria-label="No priority" className={cn("inline-block h-0.5 w-3 rounded bg-gray-300", className)} />;
+    return <span aria-label={translate("No priority")} className={cn("inline-block h-0.5 w-3 rounded bg-gray-300", className)} />;
   }
 
   const filled = { high: 3, medium: 2, low: 1 }[priority];
   const color = { high: "#e07b39", medium: "#c9a227", low: "#5b8def" }[priority];
 
   return (
-    <span aria-label={priorityLabels[priority]} className={cn("inline-flex h-3 items-end gap-[2px]", className)}>
+    <span aria-label={translate(priorityLabels[priority])} className={cn("inline-flex h-3 items-end gap-[2px]", className)}>
       {[5, 8, 12].map((height, i) => (
         <span
           key={height}

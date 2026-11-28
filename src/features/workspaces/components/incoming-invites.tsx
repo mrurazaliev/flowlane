@@ -6,21 +6,23 @@ import { formatDate } from '@/shared/lib/utils'
 import { Button, buttonClasses } from '@/shared/ui/button'
 import { ErrorBanner } from '@/shared/ui/form'
 import { useInvites } from '../invites-api'
+import { useT } from "@/shared/lib/i18n";
 import { workspaceErrorText } from '../workspace-form'
 
 export function IncomingInvites({ className }: { className?: string }) {
+  const t = useT();
   const { data: invites = [], isError, error, isFetching, refetch } = useInvites()
 
   if (!invites.length && !isError) return null
 
   return (
-    <section className={className} aria-label="Workspace invitations">
-      <h2 className="mb-3 text-base font-semibold text-ink">Invitations</h2>
+    <section className={className} aria-label={t("Workspace invitations")}>
+      <h2 className="mb-3 text-base font-semibold text-ink">{t("Invitations")}</h2>
 
       {isError && (
         <div className="mb-3 space-y-2">
-          <div role="alert"><ErrorBanner>{workspaceErrorText(error, 'Could not load invitations.')}</ErrorBanner></div>
-          <Button variant="secondary" disabled={isFetching} onClick={() => void refetch()}>Try again</Button>
+          <div role="alert"><ErrorBanner>{workspaceErrorText(error, t("Could not load invitations."))}</ErrorBanner></div>
+          <Button variant="secondary" disabled={isFetching} onClick={() => void refetch()}>{t("Try again")}</Button>
         </div>
       )}
 
@@ -38,7 +40,7 @@ export function IncomingInvites({ className }: { className?: string }) {
                 </p>
               </div>
               <Link href={`/invites/${encodeURIComponent(invite.token)}`} className={buttonClasses('secondary', 'sm')}>
-                View invitation
+                {t("View invitation")}
               </Link>
             </li>
           ))}

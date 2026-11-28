@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { translate } from "@/shared/lib/i18n";
 
 export interface DropdownOption<T extends string> {
   value: T;
@@ -33,7 +34,7 @@ export function Dropdown<T extends string>({
   value,
   options,
   onChange,
-  placeholder = "Select…",
+  placeholder = translate("Select…"),
   searchPlaceholder,
   variant = "field",
   prefix,
@@ -133,11 +134,11 @@ export function Dropdown<T extends string>({
                 setQuery(e.target.value);
                 setActive(0);
               }}
-              placeholder={searchPlaceholder ?? "Search…"}
+              placeholder={searchPlaceholder ?? translate("Search…")}
               className="mb-1 w-full border-b border-line-soft px-2 pb-2 pt-1 text-sm outline-none placeholder:text-faint"
             />
           ) : null}
-          {filtered.length === 0 && <p className="px-2 py-2 text-sm text-faint">Nothing found</p>}
+          {filtered.length === 0 && <p className="px-2 py-2 text-sm text-faint">{translate("Nothing found")}</p>}
           {filtered.map((option, i) => (
             <button
               key={option.value}

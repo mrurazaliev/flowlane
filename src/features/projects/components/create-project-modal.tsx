@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button'
 import { ErrorBanner, FieldError, FieldHint, Input, Label, Select, Textarea } from '@/shared/ui/form'
 import { Modal } from '@/shared/ui/modal'
 import { useAddProject } from '../api'
+import { useT } from "@/shared/lib/i18n";
 import { createProjectSchema, projectErrorText, projectSettingsHref } from '../project-form'
 
 type CreateProjectForm = z.infer<typeof createProjectSchema>
@@ -21,6 +22,7 @@ export function CreateProjectModal({ workspaceSlug, members, onClose }: {
   members: WorkspaceMember[];
   onClose: () => void;
 }) {
+  const t = useT();
   const router = useRouter()
   const createProject = useAddProject(workspaceSlug)
   const {
@@ -46,14 +48,14 @@ export function CreateProjectModal({ workspaceSlug, members, onClose }: {
       if (isAxiosError(error) && error.response?.status === 409) {
         setError('identifier', {
           type: 'server',
-          message: projectErrorText(error, 'This project identifier is already in use.'),
+          message: projectErrorText(error, t("This project identifier is already in use.")),
         }, { shouldFocus: true })
         return
       }
 
       setError('root.server', {
         type: 'server',
-        message: projectErrorText(error, 'Could not create the project. Please try again.'),
+        message: projectErrorText(error, t("Could not create the project. Please try again.")),
       })
     }
   }
@@ -62,15 +64,15 @@ export function CreateProjectModal({ workspaceSlug, members, onClose }: {
     <Modal
       open
       onClose={close}
-      title="New project"
+      title={t("New project")}
       icon={<FolderPlus className="size-5 text-indigo-600" />}
       footer={
         <>
           <Button variant="secondary" disabled={isSubmitting} onClick={close}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button type="submit" form="create-project-form" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating…' : 'Create project'}
+            {isSubmitting ? t("Creating…") : t("Create project")}
           </Button>
         </>
       }
@@ -80,35 +82,35 @@ export function CreateProjectModal({ workspaceSlug, members, onClose }: {
           <div role="alert"><ErrorBanner>{errors.root.server.message}</ErrorBanner></div>
         )}
         <div>
-          <Label htmlFor="project-name">Project name *</Label>
-          <Input id="project-name" placeholder="e.g. Website" readOnly={isSubmitting} invalid={!!errors.name}
+          <Label htmlFor="project-name">{t("Project name")} *</Label>
+          <Input id="project-name" placeholder={t("e.g. Website")} readOnly={isSubmitting} invalid={!!errors.name}
             aria-invalid={!!errors.name} {...register('name')} />
           <FieldError>{errors.name?.message}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="identifier">Identifier *</Label>
+          <Label htmlFor="identifier">{t("Identifier")} *</Label>
           <Input id="identifier" placeholder="WEB" maxLength={10} className="uppercase" readOnly={isSubmitting}
             invalid={!!errors.identifier} aria-invalid={!!errors.identifier} {...register('identifier')} />
           {errors.identifier ? (
             <FieldError>{errors.identifier.message}</FieldError>
           ) : (
-            <FieldHint>Letters and digits, max 10 characters. Tasks will be named WEB-1, WEB-2…</FieldHint>
+            <FieldHint>{t("Letters and digits, max 10 characters. Tasks will be named WEB-1, WEB-2…")}</FieldHint>
           )}
         </div>
 
         <div>
-          <Label htmlFor="project-description">Description</Label>
-          <Textarea id="project-description" placeholder="What is this project about?" maxLength={500}
+          <Label htmlFor="project-description">{t("Description")}</Label>
+          <Textarea id="project-description" placeholder={t("What is this project about?")} maxLength={500}
             readOnly={isSubmitting} invalid={!!errors.description} aria-invalid={!!errors.description}
             {...register('description')} />
           <FieldError>{errors.description?.message}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="project-lead">Project lead</Label>
+          <Label htmlFor="project-lead">{t("Project lead")}</Label>
           <Select id="project-lead" disabled={isSubmitting} aria-invalid={!!errors.lead_id} {...register('lead_id')}>
-            <option value="">No lead</option>
+            <option value="">{t("No lead")}</option>
             {members.map((member) => (
               <option key={member.user_id} value={member.user_id}>{member.user.display_name}</option>
             ))}

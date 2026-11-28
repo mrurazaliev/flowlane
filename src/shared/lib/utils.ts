@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { currentLocale, translate } from "@/shared/lib/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,9 +16,9 @@ export function initials(name: string) {
     .toUpperCase();
 }
 
-/** ISO-дата → "Dec 12" (в UTC, чтобы сервер и браузер рисовали одинаково) */
+/** ISO-дата → "Dec 12" / "12 дек." (в UTC, чтобы сервер и браузер рисовали одинаково) */
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
+  return new Date(iso).toLocaleDateString(currentLocale() === "ru" ? "ru-RU" : "en-US", {
     month: "short",
     day: "numeric",
     timeZone: "UTC",
@@ -33,6 +34,6 @@ export function formatFileSize(bytes: number) {
 
 /** Даты цикла/модуля: "Nov 23 → Dec 6" или "No dates" */
 export function formatDateRange(start: string | null, end: string | null) {
-  if (!start && !end) return "No dates";
+  if (!start && !end) return translate("No dates");
   return `${start ? formatDate(start) : "…"} → ${end ? formatDate(end) : "…"}`;
 }

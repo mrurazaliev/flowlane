@@ -8,10 +8,12 @@ import { Button, Kbd } from "@/shared/ui/button";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { CreateIssueModal } from "./create-issue-modal";
 import { IssueFilters } from "./issue-filters";
+import { useT } from "@/shared/lib/i18n";
 import { IssueList } from "./issue-list";
 
 /** Страница /w/:slug/p/:projectId/issues — список задач с фильтрами, группировкой и сортировкой */
 export function IssuesPage() {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<"state" | "none">("state");
@@ -31,30 +33,30 @@ export function IssuesPage() {
             {/* D1.7 Позже: group_by, sort_by, order — в URL и в запрос */}
             <Dropdown
               variant="ghost"
-              prefix="Group"
+              prefix={t("Group")}
               value={groupBy}
               onChange={setGroupBy}
               align="right"
               options={[
-                { value: "state", label: "Status" },
-                { value: "none", label: "None" },
+                { value: "state", label: t("Status") },
+                { value: "none", label: t("None") },
               ]}
             />
             <Dropdown
               variant="ghost"
-              prefix="Sort"
+              prefix={t("Sort")}
               value="sort_order"
               align="right"
               options={[
-                { value: "sort_order", label: "Manual" },
-                { value: "created_at", label: "Created" },
-                { value: "updated_at", label: "Updated" },
-                { value: "priority", label: "Priority" },
-                { value: "due_date", label: "Due date" },
+                { value: "sort_order", label: t("Manual") },
+                { value: "created_at", label: t("Created") },
+                { value: "updated_at", label: t("Updated") },
+                { value: "priority", label: t("Priority") },
+                { value: "due_date", label: t("Due date") },
               ]}
             />
             <Button className="ml-1" onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" strokeWidth={2.2} /> New task <Kbd>C</Kbd>
+              <Plus className="size-4" strokeWidth={2.2} /> {t("New task")} <Kbd>C</Kbd>
             </Button>
           </>
         }

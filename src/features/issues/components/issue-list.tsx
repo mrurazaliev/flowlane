@@ -10,6 +10,7 @@ import { Button } from "@/shared/ui/button";
 import { PriorityIcon, StateIcon } from "@/shared/ui/issue-icons";
 import { EmptyState } from "@/shared/ui/page";
 import { cn, formatDate } from "@/shared/lib/utils";
+import { useT } from "@/shared/lib/i18n";
 import { useGetIssuesQuery } from "../api";
 
 export interface IssueListFilter {
@@ -31,17 +32,18 @@ interface IssueListProps {
  * Позже: GET .../issues?cycle=…&module=…&group_by=state&cursor=…; «Load more» — по next_cursor.
  */
 export function IssueList({ workspaceSlug, projectId, filter = {}, groupBy = "state" }: IssueListProps) {
+  const t = useT();
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
 
 const showAll = !!(filter.cycle || filter.module);
 const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, filter, { allPages: showAll });
 
-if (isLoading) return <p className="p-4 text-muted">Loading tasks...</p>;
-if (isError) return <p className="p-4 text-red-600">Could not load tasks</p>;
+if (isLoading) return <p className="p-4 text-muted">{t("Loading tasks...")}</p>;
+if (isError) return <p className="p-4 text-red-600">{t("Could not load tasks")}</p>;
 
 if (issues.length === 0) {
-  return <EmptyState title="No tasks here yet" description="Tasks you add will show up in this list." />;
+  return <EmptyState title={t("No tasks here yet")} description={t("Tasks you add will show up in this list.")} />;
 }
 
 
@@ -107,7 +109,7 @@ if (issues.length === 0) {
       {!showAll && (
         <div className="flex justify-center">
           {/* Позже: показываем, только если в ответе есть next_cursor */}
-          <Button variant="secondary">Load more</Button>
+          <Button variant="secondary">{t("Load more")}</Button>
         </div>
       )}
     </div>

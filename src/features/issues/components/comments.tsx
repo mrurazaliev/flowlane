@@ -18,9 +18,11 @@ import {
   useGetActivityQuery,
   useGetCommentsQuery,
 } from "../api";
+import { useT } from "@/shared/lib/i18n";
 
 /** D1.13 Комментарии + D1.14 история изменений — одной лентой по времени, всё с бэкенда */
 export const Discussion = ({ issueId }: { issueId: string }) => {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const { data: me } = useMe();
 
@@ -68,48 +70,48 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
 
   // Превращаем запись истории в понятную фразу: «changed status from Todo to In Progress»
   const nameOf = {
-    state: (id: string | null) => states.find((s) => s.id === id)?.name ?? "unknown",
-    user: (id: string | null) => members.find((u) => u.id === id)?.display_name ?? "someone",
-    label: (id: string | null) => labels.find((l) => l.id === id)?.name ?? "a label",
+    state: (id: string | null) => states.find((s) => s.id === id)?.name ?? t("unknown"),
+    user: (id: string | null) => members.find((u) => u.id === id)?.display_name ?? t("someone"),
+    label: (id: string | null) => labels.find((l) => l.id === id)?.name ?? t("a label"),
     date: (value: string | null) => (value ? formatDate(value) : null),
-    priority: (value: string | null) => (value ? (priorityLabels[value as Priority] ?? value) : "none"),
+    priority: (value: string | null) => (value ? t(priorityLabels[value as Priority] ?? value) : t("none")),
   };
 
   const describe = (entry: ActivityEntry): string | null => {
     const { action, field, old_value: from, new_value: to } = entry;
     switch (action) {
       case "issue.created":
-        return "created the task";
+        return t("created the task");
       case "issue.assignee_added":
-        return `assigned ${nameOf.user(to)}`;
+        return t("assigned {user}", { user: nameOf.user(to) });
       case "issue.assignee_removed":
-        return `unassigned ${nameOf.user(from)}`;
+        return t("unassigned {user}", { user: nameOf.user(from) });
       case "issue.label_added":
-        return `added the label ${nameOf.label(to)}`;
+        return t("added the label {label}", { label: nameOf.label(to) });
       case "issue.label_removed":
-        return `removed the label ${nameOf.label(from)}`;
+        return t("removed the label {label}", { label: nameOf.label(from) });
       case "issue.attachment_added":
-        return "attached a file";
+        return t("attached a file");
       case "issue.attachment_removed":
-        return "removed a file";
+        return t("removed a file");
       case "issue.updated":
         switch (field) {
           case "state_id":
-            return `changed status from ${nameOf.state(from)} to ${nameOf.state(to)}`;
+            return t("changed status from {from} to {to}", { from: nameOf.state(from), to: nameOf.state(to) });
           case "priority":
-            return `changed priority from ${nameOf.priority(from)} to ${nameOf.priority(to)}`;
+            return t("changed priority from {from} to {to}", { from: nameOf.priority(from), to: nameOf.priority(to) });
           case "title":
-            return `renamed the task to "${to}"`;
+            return t("renamed the task to “{title}”", { title: to ?? "" });
           case "description":
-            return to ? "updated the description" : "removed the description";
+            return to ? t("updated the description") : t("removed the description");
           case "start_date":
-            return to ? `set the start date to ${nameOf.date(to)}` : "removed the start date";
+            return to ? t("set the start date to {date}", { date: nameOf.date(to) ?? "" }) : t("removed the start date");
           case "due_date":
-            return to ? `set the due date to ${nameOf.date(to)}` : "removed the due date";
+            return to ? t("set the due date to {date}", { date: nameOf.date(to) ?? "" }) : t("removed the due date");
           case "parent_id":
-            return to ? "made this a sub-task" : "removed the parent task";
+            return to ? t("made this a sub-task") : t("removed the parent task");
           default:
-            return `updated ${field ?? "the task"}`;
+            return field ? t("updated {field}", { field }) : t("updated the task");
         }
       default:
         return null; // comment.* и прочее — комментарии и так видны в ленте
@@ -130,12 +132,12 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
   return (
     <section className="mt-8">
       <h3 className="mb-3 text-[15px] font-semibold">
-        Discussion
+        {t("Discussion")}
         {comments.length > 0 && <span className="ml-2 text-[13px] font-medium text-muted">{comments.length}</span>}
       </h3>
 
-      {isLoading && <p className="text-[13px] text-muted">Loading comments...</p>}
-      {isError && <p className="text-[13px] text-red-600">Could not load comments</p>}
+      {isLoading && <p className="text-[13px] text-muted">{t("Loading comments...")}</p>}
+      {isError && <p className="text-[13px] text-red-600">{t("Could not load comments")}</p>}
 
       <ol className="space-y-4">
         {feed.map((entry) => {
@@ -167,7 +169,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                 </p>
 
                 {comment.deleted_at ? (
-                  <p className="mt-0.5 italic text-faint">This comment was deleted</p>
+                  <p className="mt-0.5 italic text-faint">{t("This comment was deleted")}</p>
                 ) : isEditing ? (
                   // Режим редактирования
                   <div className="mt-1.5">
@@ -183,14 +185,14 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                     />
                     <div className="mt-1.5 flex items-center gap-2">
                       <Button size="sm" onClick={() => void saveEdit()} disabled={editComment.isPending || !editText.trim()}>
-                        {editComment.isPending ? "Saving..." : "Save"}
+                        {editComment.isPending ? t("Saving...") : t("Save")}
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
-                        Cancel
+                        {t("Cancel")}
                       </Button>
-                      <span className="text-xs text-muted">Ctrl+Enter to save, Esc to cancel</span>
+                      <span className="text-xs text-muted">{t("Ctrl+Enter to save, Esc to cancel")}</span>
                     </div>
-                    {editComment.isError && <p className="mt-1 text-xs text-red-600">Couldn&apos;t save the comment</p>}
+                    {editComment.isError && <p className="mt-1 text-xs text-red-600">{t("Couldn't save the comment")}</p>}
                   </div>
                 ) : (
                   <p className="mt-0.5 whitespace-pre-line leading-relaxed text-gray-700">{comment.body}</p>
@@ -201,25 +203,25 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                   <div className="mt-1 flex items-center gap-3.5 text-[12.5px] text-faint">
                     {confirmDeleteId === comment.id ? (
                       <>
-                        <span className="text-ink">Delete this comment?</span>
+                        <span className="text-ink">{t("Delete this comment?")}</span>
                         <button
                           onClick={() => void handleDelete(comment.id)}
                           disabled={deleteComment.isPending}
                           className="font-medium text-red-600 hover:underline"
                         >
-                          {deleteComment.isPending ? "Deleting..." : "Delete"}
+                          {deleteComment.isPending ? t("Deleting...") : t("Delete")}
                         </button>
                         <button onClick={() => setConfirmDeleteId(null)} className="hover:text-ink">
-                          Cancel
+                          {t("Cancel")}
                         </button>
                       </>
                     ) : (
                       <>
                         <button onClick={() => startEdit(comment.id, comment.body)} className="hover:text-ink">
-                          Edit
+                          {t("Edit")}
                         </button>
                         <button onClick={() => setConfirmDeleteId(comment.id)} className="hover:text-red-600">
-                          Delete
+                          {t("Delete")}
                         </button>
                       </>
                     )}
@@ -231,7 +233,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
         })}
       </ol>
 
-      {!isLoading && feed.length === 0 && <p className="text-faint">No comments yet. Start the discussion.</p>}
+      {!isLoading && feed.length === 0 && <p className="text-faint">{t("No comments yet. Start the discussion.")}</p>}
 
       {/* Новый комментарий */}
       <form
@@ -241,20 +243,20 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Write a comment…"
-          aria-label="New comment"
+          placeholder={t("Write a comment…")}
+          aria-label={t("New comment")}
           className="flex-1 bg-transparent outline-none placeholder:text-faint"
         />
         <button
           type="submit"
           disabled={addComment.isPending || !text.trim()}
           className="grid size-8 place-items-center rounded-lg bg-asphalt text-white hover:bg-asphalt-2 disabled:opacity-40 dark:bg-marking dark:text-asphalt"
-          aria-label="Send comment"
+          aria-label={t("Send comment")}
         >
           <Send className="size-4" />
         </button>
       </form>
-      {addComment.isError && <p className="mt-1.5 text-xs text-red-600">Couldn&apos;t send the comment. Try again.</p>}
+      {addComment.isError && <p className="mt-1.5 text-xs text-red-600">{t("Couldn't send the comment. Try again.")}</p>}
     </section>
   );
 };

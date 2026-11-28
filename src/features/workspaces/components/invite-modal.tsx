@@ -8,11 +8,13 @@ import { ErrorBanner, FieldError, FieldHint, Input, Label, Select } from '@/shar
 import { Modal } from '@/shared/ui/modal'
 import type { AssignableWorkspaceRole } from '../api'
 import { useAddInvite } from '../invites-api'
+import { useT } from "@/shared/lib/i18n";
 import { workspaceErrorText } from '../workspace-form'
 
 const emailSchema = z.string().trim().toLowerCase().email('Enter a valid email')
 
 export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string; onClose: () => void }) {
+  const t = useT();
   const inviteMutation = useAddInvite(workspaceSlug)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<AssignableWorkspaceRole>('member')
@@ -40,7 +42,7 @@ export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string;
       await inviteMutation.mutateAsync({ email: result.data, role })
       onClose()
     } catch (error) {
-      setActionError(workspaceErrorText(error, 'Could not create the invitation. Please try again.'))
+      setActionError(workspaceErrorText(error, t("Could not create the invitation. Please try again.")))
     }
   }
 
@@ -48,20 +50,20 @@ export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string;
     <Modal
       open
       onClose={close}
-      title="Invite people"
+      title={t("Invite people")}
       icon={<UserPlus className="size-5 text-indigo-600" />}
       footer={
         <>
-          <Button variant="secondary" disabled={busy} onClick={close}>Cancel</Button>
-          <Button type="submit" form="invite-form" disabled={busy}>{busy ? 'Sending…' : 'Send invite'}</Button>
+          <Button variant="secondary" disabled={busy} onClick={close}>{t("Cancel")}</Button>
+          <Button type="submit" form="invite-form" disabled={busy}>{busy ? t("Sending…") : t("Send invite")}</Button>
         </>
       }
     >
       <form id="invite-form" className="space-y-4" noValidate onSubmit={handleSubmit}>
         {actionError && <div role="alert"><ErrorBanner>{actionError}</ErrorBanner></div>}
         <div>
-          <Label htmlFor="invite-email">Email *</Label>
-          <Input id="invite-email" type="email" autoComplete="email" placeholder="colleague@company.com"
+          <Label htmlFor="invite-email">{t("Email")} *</Label>
+          <Input id="invite-email" type="email" autoComplete="email" placeholder={t("colleague@company.com")}
             value={email} required readOnly={busy} invalid={!!emailError} aria-invalid={!!emailError}
             aria-describedby={emailError ? 'invite-email-error' : undefined}
             onChange={(event) => {
@@ -71,14 +73,14 @@ export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string;
           {emailError && <div id="invite-email-error" role="alert"><FieldError>{emailError}</FieldError></div>}
         </div>
         <div>
-          <Label htmlFor="invite-role">Role</Label>
+          <Label htmlFor="invite-role">{t("Role")}</Label>
           <Select id="invite-role" value={role} disabled={busy}
             onChange={(event) => setRole(event.currentTarget.value as AssignableWorkspaceRole)}>
-            <option value="admin">Admin — manages members and settings</option>
-            <option value="member">Member — creates and edits tasks</option>
-            <option value="guest">Guest — can view, cannot edit</option>
+            <option value="admin">{t("Admin — manages members and settings")}</option>
+            <option value="member">{t("Member — creates and edits tasks")}</option>
+            <option value="guest">{t("Guest — can view, cannot edit")}</option>
           </Select>
-          <FieldHint>The invitation is valid for 7 days.</FieldHint>
+          <FieldHint>{t("The invitation is valid for 7 days.")}</FieldHint>
         </div>
       </form>
     </Modal>

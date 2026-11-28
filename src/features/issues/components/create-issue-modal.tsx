@@ -14,6 +14,7 @@ import { ErrorBanner, FieldError, Input, Label, Textarea } from "@/shared/ui/for
 import { memberOptions, priorityOptions, stateOptions } from "@/shared/ui/issue-options";
 import { Modal } from "@/shared/ui/modal";
 import { useAddIssueMutation } from "../api";
+import { useT } from "@/shared/lib/i18n";
 
 interface CreateIssueModalProps {
   open: boolean;
@@ -42,6 +43,7 @@ type IssueFormData = z.infer<typeof issueSchema>;
 const toIso = (date: string) => (date ? new Date(date).toISOString() : null);
 
 export const CreateIssueModal = ({ open, onClose, states, members, labels, defaultStateId, parentId }: CreateIssueModalProps) => {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const addIssue = useAddIssueMutation(workspaceSlug, projectId);
 
@@ -96,15 +98,15 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
     <Modal
       open={open}
       onClose={onClose}
-      title={parentId ? "New sub-task" : "New task"}
+      title={parentId ? t("New sub-task") : t("New task")}
       className="max-w-xl"
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button type="submit" form="create-issue-form" disabled={addIssue.isPending}>
-            {addIssue.isPending ? "Creating..." : "Create task"}
+            {addIssue.isPending ? t("Creating...") : t("Create task")}
           </Button>
         </>
       }
@@ -113,54 +115,54 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
         <ErrorBanner>{apiError}</ErrorBanner>
 
         <div>
-          <Label htmlFor="title">Title</Label>
-          <Input id="title" placeholder="What needs to be done?" invalid={!!errors.title} {...register("title")} />
+          <Label htmlFor="title">{t("Title")}</Label>
+          <Input id="title" placeholder={t("What needs to be done?")} invalid={!!errors.title} {...register("title")} />
           <FieldError>{errors.title?.message}</FieldError>
         </div>
 
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t("Description")}</Label>
           <Textarea
             id="description"
-            placeholder="Details, steps to reproduce, acceptance criteria"
+            placeholder={t("Details, steps to reproduce, acceptance criteria")}
             {...register("description")}
           />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label>Status</Label>
+            <Label>{t("Status")}</Label>
             <Controller
               control={control}
               name="state_id"
               render={({ field }) => (
-                <Dropdown value={field.value} onChange={field.onChange} options={stateOptions(states)} ariaLabel="Status" />
+                <Dropdown value={field.value} onChange={field.onChange} options={stateOptions(states)} ariaLabel={t("Status")} />
               )}
             />
             <FieldError>{errors.state_id?.message}</FieldError>
           </div>
           <div>
-            <Label>Priority</Label>
+            <Label>{t("Priority")}</Label>
             <Controller
               control={control}
               name="priority"
               render={({ field }) => (
-                <Dropdown value={field.value} onChange={field.onChange} options={priorityOptions()} ariaLabel="Priority" />
+                <Dropdown value={field.value} onChange={field.onChange} options={priorityOptions()} ariaLabel={t("Priority")} />
               )}
             />
           </div>
           <div>
-            <Label>Assignee</Label>
+            <Label>{t("Assignee")}</Label>
             <Controller
               control={control}
               name="assignee_id"
               render={({ field }) => (
-                <Dropdown value={field.value} onChange={field.onChange} options={memberOptions(members)} ariaLabel="Assignee" />
+                <Dropdown value={field.value} onChange={field.onChange} options={memberOptions(members)} ariaLabel={t("Assignee")} />
               )}
             />
           </div>
           <div>
-            <Label>Label</Label>
+            <Label>{t("Label")}</Label>
             <Controller
               control={control}
               name="label_id"
@@ -168,8 +170,8 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
                 <Dropdown
                   value={field.value}
                   onChange={field.onChange}
-                  placeholder="No label"
-                  ariaLabel="Label"
+                  placeholder={t("No label")}
+                  ariaLabel={t("Label")}
                   options={labels.map((l) => ({
                     value: l.id,
                     label: l.name,
@@ -180,15 +182,15 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
             />
           </div>
           <div>
-            <Label htmlFor="start">Start date</Label>
+            <Label htmlFor="start">{t("Start date")}</Label>
             <Input id="start" type="date" {...register("start_date")} />
           </div>
           <div>
-            <Label htmlFor="due">Due date</Label>
+            <Label htmlFor="due">{t("Due date")}</Label>
             <Input id="due" type="date" {...register("due_date")} />
           </div>
         </div>
       </form>
     </Modal>
   );
-};
+};
