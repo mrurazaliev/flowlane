@@ -1,6 +1,9 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { LandingPage } from "@/features/landing";
 
-// Позже: если пользователь залогинен — на /workspaces, иначе на /login
+export const metadata: Metadata = { title: "Flowlane — tasks for your team" };
+
+// Главная: лендинг для новых людей. Вошедших LandingPage сама отправит на /workspaces
 export default function Home() {
-  redirect("/login");
+  return <LandingPage />;
 }

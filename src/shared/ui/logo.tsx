@@ -1,12 +1,15 @@
 import { cn } from "@/shared/lib/utils";
 
-/** Логотип: жёлтый квадрат с разметкой полосы */
+/** Логотип: изгиб дороги с жёлтой разметкой в круге — «полоса потока» (flow + lane) */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <span className={cn("relative inline-block size-[26px] shrink-0 overflow-hidden rounded-[7px] bg-marking", className)}>
-      <span className="absolute left-1/2 top-[3px] h-1.5 w-[2.5px] -translate-x-1/2 rounded bg-asphalt" />
-      <span className="absolute left-1/2 top-[14px] h-1.5 w-[2.5px] -translate-x-1/2 rounded bg-asphalt" />
-    </span>
+    <svg viewBox="0 0 34 34" aria-hidden className={cn("size-[26px] shrink-0", className)}>
+      <circle cx="17" cy="17" r="17" fill="#f2b630" />
+      {/* Сама дорога (асфальт) */}
+      <path d="M10 28 C10 18 24 16 24 6" stroke="#0d0f13" strokeWidth="7" strokeLinecap="round" fill="none" />
+      {/* Пунктирная разметка по центру дороги */}
+      <path d="M10 28 C10 18 24 16 24 6" stroke="#f2b630" strokeWidth="1.6" strokeDasharray="3 3" fill="none" />
+    </svg>
   );
 }
 

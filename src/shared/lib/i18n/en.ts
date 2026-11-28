@@ -7,11 +7,10 @@ export const en = {
   "theme.toggle": "Switch theme",
 
   // Экран входа (левая часть)
-  "auth.hero.title": "Every task in its lane.",
-  "auth.hero.subtitle": "Plan sprints, move work forward and see who is doing what.",
-  "auth.lane.todo": "Todo",
-  "auth.lane.inProgress": "In progress",
-  "auth.lane.done": "Done",
+  "auth.hero.title": "Start working with your team",
+  "auth.hero.subtitle": "One space for tasks, sprints and people.",
+  "auth.register.heroTitle": "Flowlane — where every journey begins.",
+  "auth.register.heroSubtitle": "Create an account, invite your team and send the first task down its lane. Signing up takes a minute.",
 
   // Поля
   "field.email": "Email",

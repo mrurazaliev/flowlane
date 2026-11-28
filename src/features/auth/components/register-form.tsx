@@ -55,7 +55,8 @@ export const RegisterForm = () => {
       <h1 className="text-[26px] font-semibold tracking-tight">{t("register.title")}</h1>
       <p className="mb-7 mt-1.5 text-muted">{t("register.subtitle")}</p>
 
-      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+      {/* method="post": если нажать кнопку до загрузки JS, браузер не положит пароль в адрес страницы */}
+      <form method="post" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <ErrorBanner>{apiError}</ErrorBanner>
 
         <div>
