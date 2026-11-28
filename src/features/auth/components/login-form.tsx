@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -25,6 +26,15 @@ export const LoginForm = () => {
   const t = useT();
   const router = useRouter();
   const login = useLoginMutation();
+  const [notice, setNotice] = useState(false);
+
+  // Пришли со страницы профиля после смены пароля — показываем зелёное сообщение один раз
+  useEffect(() => {
+    if (sessionStorage.getItem("password-changed")) {
+      sessionStorage.removeItem("password-changed");
+      setNotice(true);
+    }
+  }, []);
 
   const {
     register,
@@ -46,6 +56,11 @@ export const LoginForm = () => {
       <p className="mb-7 mt-1.5 text-muted">{t("login.subtitle")}</p>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        {notice && (
+          <p role="status" className="rounded-lg border border-[#3a9a6b]/30 bg-[#3a9a6b]/10 px-3.5 py-2.5 text-sm text-[#2f7d57] dark:text-[#7fd1a6]">
+            {t("login.passwordChanged")}
+          </p>
+        )}
         <ErrorBanner>{apiError}</ErrorBanner>
 
         <div>

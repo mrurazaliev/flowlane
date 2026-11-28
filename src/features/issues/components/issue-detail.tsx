@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertCircle, Check, ChevronLeft, Link2, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, Link2, Loader2, Plus, Trash2, X } from "lucide-react";
 import { isAxiosError } from "axios";
-import { useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
+import { useLabels, useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
 import { errorText } from "@/shared/lib/errors";
-import { LabelChip } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { ErrorBanner } from "@/shared/ui/form";
@@ -17,8 +16,17 @@ import { Modal } from "@/shared/ui/modal";
 import { formatDate } from "@/shared/lib/utils";
 import { Attachments } from "./attachments";
 import { Discussion } from "./comments";
-import { activity, attachments } from "../mocks"; // история и файлы — следующие задачи
-import { useDeleteIssueMutation, useEditIssueMutation, useGetIssueQuery, useGetIssuesQuery } from "../api";
+import { attachments } from "../mocks"; // файлы — следующая задача
+import {
+  useAddAssigneeMutation,
+  useAddLabelMutation,
+  useDeleteIssueMutation,
+  useEditIssueMutation,
+  useGetIssueQuery,
+  useGetIssuesQuery,
+  useRemoveAssigneeMutation,
+  useRemoveLabelMutation,
+} from "../api";
 
 export function IssueDetail() {
   const { workspaceSlug, projectId, issueId } = useParams<{
@@ -35,7 +43,12 @@ export function IssueDetail() {
 
   const { data: issue, isLoading, isError } = useGetIssueQuery(workspaceSlug, projectId, issueId);
   const { data: issues = [] } = useGetIssuesQuery(workspaceSlug, projectId); // для подзадач и родителя
+  const { data: labels } = useLabels(workspaceSlug, projectId);
   const editIssue = useEditIssueMutation(workspaceSlug, projectId, issueId);
+  const addAssignee = useAddAssigneeMutation(workspaceSlug, projectId, issueId);
+  const removeAssignee = useRemoveAssigneeMutation(workspaceSlug, projectId, issueId);
+  const addLabel = useAddLabelMutation(workspaceSlug, projectId, issueId);
+  const removeLabel = useRemoveLabelMutation(workspaceSlug, projectId, issueId);
   const deleteIssue = useDeleteIssueMutation(workspaceSlug, projectId);
 
   if (isLoading) return <p className="p-7 text-muted">Loading task...</p>;
@@ -49,6 +62,25 @@ export function IssueDetail() {
 
   const deleteError =
     deleteIssue.error && isAxiosError(deleteIssue.error) ? errorText(deleteIssue.error.response?.data) : null;
+
+  // Исполнитель: в интерфейсе один, а бэкенд хранит список — снимаем старого и ставим нового
+  const changeAssignee = async (userId: string) => {
+    const current = issue.assignees[0]?.user_id;
+    if (current === userId) return;
+    if (current) await removeAssignee.mutateAsync(current);
+    if (userId !== "none") await addAssignee.mutateAsync(userId);
+  };
+
+  // Лейблы, которых ещё нет у задачи — их можно добавить
+  const issueLabelIds = issue.labels.map(({ label }) => label.id);
+  const availableLabels = labels.filter((l) => !issueLabelIds.includes(l.id));
+
+  // Индикатор «Saving… / Saved / Couldn't save» показывает ПОСЛЕДНЕЕ сохранение.
+  // Раньше брали «есть ли ошибка хоть где-то» — и старая ошибка (например, от исполнителя)
+  // висела на экране, даже когда новые изменения сохранялись успешно.
+  const lastSave = [editIssue, addAssignee, removeAssignee, addLabel, removeLabel].reduce((latest, m) =>
+    m.submittedAt > latest.submittedAt ? m : latest,
+  );
 
   const key = (seq: number) => `${project.identifier}-${seq}`;
   const base = `/w/${workspaceSlug}/p/${projectId}`;
@@ -78,7 +110,7 @@ export function IssueDetail() {
             <span className="font-medium text-ink">{key(issue.sequence_id)}</span>
 
             <span className="ml-auto">
-              <SaveStatus pending={editIssue.isPending} failed={editIssue.isError} saved={editIssue.isSuccess} />
+              <SaveStatus pending={lastSave.isPending} failed={lastSave.isError} saved={lastSave.isSuccess} />
             </span>
             <Button
               variant="ghost"
@@ -197,7 +229,7 @@ export function IssueDetail() {
 
           <Attachments attachments={attachments.filter((a) => a.issue_id === issue.id)} />
 
-          <Discussion issueId={issue.id} activity={activity.filter((a) => a.issue_id === issue.id)} />
+          <Discussion issueId={issue.id} />
         </div>
       </article>
 
@@ -224,15 +256,54 @@ export function IssueDetail() {
           />
         </Property>
         <Property label="Assignee">
-          {/* Исполнитель — отдельный запрос /assignees, сделаем после участников Dev 2 */}
-          <Dropdown variant="inline" value={issue.assignees[0]?.user_id ?? "none"} options={memberOptions(members)} ariaLabel="Assignee" />
+          <Dropdown
+            key={`assignee-${issue.assignees[0]?.user_id ?? "none"}`}
+            variant="inline"
+            value={issue.assignees[0]?.user_id ?? "none"}
+            onChange={(userId) => void changeAssignee(userId)}
+            options={memberOptions(members)}
+            ariaLabel="Assignee"
+            searchPlaceholder="Assign to…"
+          />
         </Property>
         <Property label="Labels">
-          <div className="flex flex-wrap gap-1 py-1.5">
-            {issue.labels.length === 0 && <span className="text-faint">No labels</span>}
+          <div className="flex flex-wrap items-center gap-1 py-1.5">
             {issue.labels.map(({ label }) => (
-              <LabelChip key={label.id} name={label.name} color={label.color} />
+              <span
+                key={label.id}
+                className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 py-px pl-2 pr-1 text-xs text-gray-600"
+              >
+                <span className="size-1.5 rounded-full" style={{ backgroundColor: label.color }} />
+                {label.name}
+                <button
+                  onClick={() => removeLabel.mutate(label.id)}
+                  disabled={removeLabel.isPending}
+                  aria-label={`Remove label ${label.name}`}
+                  className="grid size-4 place-items-center rounded-full text-faint hover:bg-gray-200 hover:text-ink"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
             ))}
+
+            {availableLabels.length > 0 ? (
+              <Dropdown
+                key={`add-label-${issue.labels.length}`}
+                variant="ghost"
+                value={null}
+                placeholder="+ Add label"
+                onChange={(labelId) => addLabel.mutate(labelId)}
+                options={availableLabels.map((l) => ({
+                  value: l.id,
+                  label: l.name,
+                  icon: <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />,
+                }))}
+                ariaLabel="Add label"
+                searchPlaceholder="Find a label…"
+              />
+            ) : (
+              issue.labels.length === 0 && <span className="text-faint">No labels in this project yet</span>
+            )}
           </div>
         </Property>
         <Property label="Start">

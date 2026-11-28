@@ -7,27 +7,28 @@ import { useMe } from "@/features/auth";
 import { Avatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { formatDate } from "@/shared/lib/utils";
+import { useLabels, useMemberUsers, useStates } from "@/shared/api/lookups";
+import { priorityLabels } from "@/shared/ui/issue-icons";
+import type { Priority } from "@/shared/api/types";
 import {
+  type ActivityEntry,
   useAddCommentMutation,
   useDeleteCommentMutation,
   useEditCommentMutation,
+  useGetActivityQuery,
   useGetCommentsQuery,
 } from "../api";
 
-interface ActivityItem {
-  id: string;
-  actor: string;
-  text: string;
-  created_at: string;
-}
-
-/**
- * D1.13 Комментарии (настоящие, с бэкенда) + D1.14 история изменений одной лентой по времени.
- * История пока из моков — следующий шаг: GET .../activity.
- */
-export const Discussion = ({ issueId, activity }: { issueId: string; activity: ActivityItem[] }) => {
+/** D1.13 Комментарии + D1.14 история изменений — одной лентой по времени, всё с бэкенда */
+export const Discussion = ({ issueId }: { issueId: string }) => {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const { data: me } = useMe();
+
+  // История хранит id (статуса, человека, лейбла) — чтобы показать имена, берём справочники
+  const { data: activityEntries = [] } = useGetActivityQuery(workspaceSlug, projectId, issueId);
+  const { data: states } = useStates(workspaceSlug, projectId);
+  const { data: members } = useMemberUsers(workspaceSlug);
+  const { data: labels } = useLabels(workspaceSlug, projectId);
 
   const { data: comments = [], isLoading, isError } = useGetCommentsQuery(workspaceSlug, projectId, issueId);
   const addComment = useAddCommentMutation(workspaceSlug, projectId, issueId);
@@ -64,6 +65,61 @@ export const Discussion = ({ issueId, activity }: { issueId: string; activity: A
     await deleteComment.mutateAsync(commentId);
     setConfirmDeleteId(null);
   };
+
+  // Превращаем запись истории в понятную фразу: «changed status from Todo to In Progress»
+  const nameOf = {
+    state: (id: string | null) => states.find((s) => s.id === id)?.name ?? "unknown",
+    user: (id: string | null) => members.find((u) => u.id === id)?.display_name ?? "someone",
+    label: (id: string | null) => labels.find((l) => l.id === id)?.name ?? "a label",
+    date: (value: string | null) => (value ? formatDate(value) : null),
+    priority: (value: string | null) => (value ? (priorityLabels[value as Priority] ?? value) : "none"),
+  };
+
+  const describe = (entry: ActivityEntry): string | null => {
+    const { action, field, old_value: from, new_value: to } = entry;
+    switch (action) {
+      case "issue.created":
+        return "created the task";
+      case "issue.assignee_added":
+        return `assigned ${nameOf.user(to)}`;
+      case "issue.assignee_removed":
+        return `unassigned ${nameOf.user(from)}`;
+      case "issue.label_added":
+        return `added the label ${nameOf.label(to)}`;
+      case "issue.label_removed":
+        return `removed the label ${nameOf.label(from)}`;
+      case "issue.attachment_added":
+        return "attached a file";
+      case "issue.attachment_removed":
+        return "removed a file";
+      case "issue.updated":
+        switch (field) {
+          case "state_id":
+            return `changed status from ${nameOf.state(from)} to ${nameOf.state(to)}`;
+          case "priority":
+            return `changed priority from ${nameOf.priority(from)} to ${nameOf.priority(to)}`;
+          case "title":
+            return `renamed the task to "${to}"`;
+          case "description":
+            return to ? "updated the description" : "removed the description";
+          case "start_date":
+            return to ? `set the start date to ${nameOf.date(to)}` : "removed the start date";
+          case "due_date":
+            return to ? `set the due date to ${nameOf.date(to)}` : "removed the due date";
+          case "parent_id":
+            return to ? "made this a sub-task" : "removed the parent task";
+          default:
+            return `updated ${field ?? "the task"}`;
+        }
+      default:
+        return null; // comment.* и прочее — комментарии и так видны в ленте
+    }
+  };
+
+  const activity = activityEntries.flatMap((entry) => {
+    const text = describe(entry);
+    return text ? [{ id: entry.id, actor: entry.actor.display_name, text, created_at: entry.created_at }] : [];
+  });
 
   // История и комментарии — одной лентой по времени
   const feed = [

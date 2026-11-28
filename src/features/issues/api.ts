@@ -28,6 +28,15 @@ export type IssueUpdate = {
   due_date?: string | null;
 };
 
+// Бэкенд в ответе задачи может прислать в labels/assignees пустые объекты {}
+// (в его схеме ответа у этих полей не описаны свойства). Убираем такие записи,
+// чтобы страницы не падали на label.id или user.display_name.
+const normalizeIssue = (issue: Issue): Issue => ({
+  ...issue,
+  labels: (issue.labels ?? []).filter((item) => item?.label?.id),
+  assignees: (issue.assignees ?? []).filter((item) => item?.user_id && item?.user),
+});
+
 type IssuesResponse = {
   data: Issue[];
   next_cursor: string | null;
@@ -50,7 +59,7 @@ export const useGetIssuesQuery = (
           `/workspaces/${workspaceSlug}/projects/${projectId}/issues`,
           { params: { limit: 100, ...filters, cursor: cursor ?? undefined }, signal },
         );
-        issues.push(...data.data);
+        issues.push(...data.data.map(normalizeIssue));
         cursor = data.next_cursor;
       } while (allPages && cursor);
       return issues;
@@ -83,7 +92,7 @@ export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issue
       const { data } = await api.get<Issue>(
         `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
       );
-      return data;
+      return normalizeIssue(data);
     },
   });
 
@@ -176,3 +185,69 @@ export const useDeleteCommentMutation = (workspaceSlug: string, projectId: strin
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueId) }),
   });
 };
+
+// ---------- Исполнители и лейблы задачи ----------
+const issueUrl = (workspaceSlug: string, projectId: string, issueId: string) =>
+  `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`;
+
+// POST {i}/assignees — назначить исполнителя
+export const useAddAssigneeMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api.post(`${issueUrl(workspaceSlug, projectId, issueId)}/assignees`, { user_id: userId }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// DELETE {i}/assignees/:userId — снять исполнителя
+export const useRemoveAssigneeMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => api.delete(`${issueUrl(workspaceSlug, projectId, issueId)}/assignees/${userId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// POST {i}/labels — добавить лейбл
+export const useAddLabelMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (labelId: string) =>
+      api.post(`${issueUrl(workspaceSlug, projectId, issueId)}/labels`, { label_id: labelId }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// DELETE {i}/labels/:labelId — убрать лейбл
+export const useRemoveLabelMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (labelId: string) => api.delete(`${issueUrl(workspaceSlug, projectId, issueId)}/labels/${labelId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
+  });
+};
+
+// ---------- История изменений ----------
+export type ActivityEntry = {
+  id: string;
+  action: string; // "issue.created", "issue.updated", "issue.assignee_added", ...
+  field: string | null; // для issue.updated: "state_id", "priority", "title", ...
+  old_value: string | null;
+  new_value: string | null; // для статуса/исполнителя/лейбла — это id
+  created_at: string;
+  actor: { id: string; display_name: string; avatar_url: string | null };
+};
+
+// GET {i}/activity — бэкенд отдаёт от новых к старым
+export const useGetActivityQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
+  useQuery({
+    queryKey: queryKeys.issues.activity(issueId),
+    queryFn: async () => {
+      const { data } = await api.get<{ data: ActivityEntry[]; next_cursor: string | null }>(
+        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/activity`,
+        { params: { limit: 100 } },
+      );
+      return data.data;
+    },
+  });
