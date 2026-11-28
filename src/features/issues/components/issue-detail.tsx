@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertCircle, Check, ChevronLeft, Link2, Loader2, Plus, Trash2, X } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, Loader2, Plus, Trash2, X } from "lucide-react";
 import { isAxiosError } from "axios";
 import { useLabels, useMemberUsers, useProject, useStates } from "@/shared/api/lookups";
 import { errorText } from "@/shared/lib/errors";
@@ -14,9 +14,8 @@ import { StateIcon } from "@/shared/ui/issue-icons";
 import { memberOptions, priorityOptions, stateOptions } from "@/shared/ui/issue-options";
 import { Modal } from "@/shared/ui/modal";
 import { formatDate } from "@/shared/lib/utils";
-import { Attachments } from "./attachments";
+import { CreateIssueModal } from "./create-issue-modal";
 import { Discussion } from "./comments";
-import { attachments } from "../mocks"; // файлы — следующая задача
 import {
   useAddAssigneeMutation,
   useAddLabelMutation,
@@ -36,6 +35,7 @@ export function IssueDetail() {
   }>();
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [subTaskOpen, setSubTaskOpen] = useState(false);
 
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
@@ -190,7 +190,7 @@ export function IssueDetail() {
             }
             action={
               !issue.parent_id && (
-                <SectionAction>
+                <SectionAction onClick={() => setSubTaskOpen(true)}>
                   <Plus className="size-3.5" /> Add sub-task
                 </SectionAction>
               )
@@ -216,18 +216,6 @@ export function IssueDetail() {
             )}
           </Section>
 
-          <Section
-            title="Relations"
-            action={
-              <SectionAction>
-                <Link2 className="size-3.5" /> Add relation
-              </SectionAction>
-            }
-          >
-            <p className="text-faint">No relations yet</p>
-          </Section>
-
-          <Attachments attachments={attachments.filter((a) => a.issue_id === issue.id)} />
 
           <Discussion issueId={issue.id} />
         </div>
@@ -320,6 +308,16 @@ export function IssueDetail() {
         </p>
       </aside>
 
+      {/* Новая подзадача — та же форма, что на доске, только с parent_id */}
+      <CreateIssueModal
+        open={subTaskOpen}
+        onClose={() => setSubTaskOpen(false)}
+        states={states}
+        members={members}
+        labels={labels}
+        parentId={issue.id}
+      />
+
       {/* Подтверждение удаления — своё окно вместо браузерного confirm() */}
       <Modal
         open={deleteOpen}
@@ -398,8 +396,12 @@ function Section({
   );
 }
 
-function SectionAction({ children }: { children: React.ReactNode }) {
-  return <button className="flex items-center gap-1 text-[13px] font-medium text-muted hover:text-ink">{children}</button>;
+function SectionAction({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="flex items-center gap-1 text-[13px] font-medium text-muted hover:text-ink">
+      {children}
+    </button>
+  );
 }
 
 function Property({ label, children }: { label: string; children: React.ReactNode }) {

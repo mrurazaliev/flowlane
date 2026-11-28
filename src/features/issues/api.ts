@@ -17,6 +17,7 @@ assignee_ids?: string[];
 label_ids?: string[];
 start_date?: string | null;
 due_date?: string | null;
+parent_id?: string; // если задаём — это подзадача
 };
 
 export type IssueUpdate = {
