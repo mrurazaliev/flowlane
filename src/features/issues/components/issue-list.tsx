@@ -58,21 +58,21 @@ if (issues.length === 0) {
           {state && (
             <h3
               className={cn(
-                "mb-2 flex items-center gap-2 px-1 font-semibold",
+                "mb-2 flex items-center gap-2 px-1 text-[15px] font-semibold",
                 state.group === "started" && "border-l-[3px] border-marking pl-3",
               )}
             >
               <StateIcon group={state.group} color={state.color} />
               {state.name}
-              <span className="font-medium tabular-nums text-muted">{items.length}</span>
+              <span className="rounded-full border border-line bg-white px-2 text-xs font-medium tabular-nums text-muted">{items.length}</span>
             </h3>
           )}
-          <ul className="divide-y divide-line-soft overflow-hidden rounded-xl border border-line bg-white">
+          <ul className="divide-y divide-line-soft overflow-hidden rounded-[14px] border border-line bg-white shadow-[0_1px_0_var(--color-line)]">
             {items.map((issue) => (
               <li key={issue.id}>
-                <Link href={href(issue)} className="flex items-center gap-3 px-3.5 py-2.5 hover:bg-gray-50 md:gap-4">
+                <Link href={href(issue)} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50 md:gap-4">
                   <PriorityIcon priority={issue.priority} className="w-4 shrink-0" />
-                  <span className="w-14 shrink-0 text-[12.5px] tabular-nums text-muted">
+                  <span className="font-id w-16 shrink-0 text-[12.5px] text-muted">
                     {identifier}-{issue.sequence_id}
                   </span>
                   <span className="flex min-w-0 flex-1 items-center gap-1.5 font-medium">

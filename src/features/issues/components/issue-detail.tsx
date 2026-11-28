@@ -103,7 +103,7 @@ export function IssueDetail() {
                 <span className="text-faint">/</span>
               </>
             )}
-            <span className="font-medium text-ink">{key(issue.sequence_id)}</span>
+            <span className="font-id font-medium text-ink">{key(issue.sequence_id)}</span>
 
             <span className="ml-auto">
               <SaveStatus pending={lastSave.isPending} failed={lastSave.isError} saved={lastSave.isSuccess} />
@@ -140,7 +140,7 @@ export function IssueDetail() {
               }}
               rows={1}
               aria-label={t("Title")}
-              className="-mx-2 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1 text-[28px] font-semibold leading-tight tracking-tight outline-none transition-colors field-sizing-content hover:border-line focus:border-marking focus:bg-white md:text-[30px]"
+              className="-mx-2 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1 text-[28px] font-semibold leading-tight tracking-tight outline-none transition-colors field-sizing-content font-serif hover:border-line focus:border-marking focus:bg-white md:text-[40px]"
             />
             <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
               {t("Enter to save, Esc to cancel")}
@@ -163,7 +163,7 @@ export function IssueDetail() {
               }}
               placeholder={t("Add a description…")}
               aria-label={t("Description")}
-              className="-mx-2 min-h-28 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-gray-700 outline-none transition-colors field-sizing-content placeholder:text-faint hover:border-line focus:border-marking focus:bg-white"
+              className="-mx-2 min-h-28 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[16px] leading-[1.75] text-ink-2 outline-none transition-colors field-sizing-content placeholder:text-faint hover:border-line focus:border-marking focus:bg-white"
             />
             <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
               {t("Saves when you click outside. Esc to cancel")}
@@ -177,7 +177,7 @@ export function IssueDetail() {
                 <>
                   {doneCount} of {subIssues.length} done
                   <span className="ml-2 inline-block h-1 w-20 overflow-hidden rounded-full bg-line-soft align-middle">
-                    <span className="block h-full bg-[#3a9a6b]" style={{ width: `${(doneCount / subIssues.length) * 100}%` }} />
+                    <span className="block h-full bg-sage" style={{ width: `${(doneCount / subIssues.length) * 100}%` }} />
                   </span>
                 </>
               )
@@ -193,14 +193,14 @@ export function IssueDetail() {
             {subIssues.length === 0 ? (
               <p className="text-faint">{t("No sub-tasks")}</p>
             ) : (
-              <ul className="divide-y divide-line-soft rounded-xl border border-line bg-white">
+              <ul className="divide-y divide-line-soft rounded-[14px] border border-line bg-white">
                 {subIssues.map((sub) => {
                   const state = stateOf(sub.state_id);
                   return (
                     <li key={sub.id}>
                       <Link href={`${base}/issues/${sub.id}`} className="flex items-center gap-3 px-3.5 py-2.5 hover:bg-gray-50">
                         {state && <StateIcon group={state.group} color={state.color} />}
-                        <span className="w-14 text-[12.5px] text-muted">{key(sub.sequence_id)}</span>
+                        <span className="font-id w-16 text-[12.5px] text-muted">{key(sub.sequence_id)}</span>
                         <span className="flex-1 truncate">{sub.title}</span>
                       </Link>
                     </li>
@@ -214,8 +214,8 @@ export function IssueDetail() {
         </div>
       </article>
 
-      <aside className="shrink-0 border-t border-line bg-white px-5 py-5 lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0">
-        <h2 className="mb-2 text-[13px] text-muted">{t("Properties")}</h2>
+      <aside className="shrink-0 border-t border-line bg-paper-2 px-6 py-6 lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0">
+        <p className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-faint">{t("Properties")}</p>
         <Property label={t("Status")}>
           <Dropdown
             variant="inline"
@@ -251,7 +251,7 @@ export function IssueDetail() {
             {issue.labels.map(({ label }) => (
               <span
                 key={label.id}
-                className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 py-px pl-2 pr-1 text-xs text-gray-600"
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white py-px pl-2 pr-1 text-xs font-medium text-ink-2"
               >
                 <span className="size-1.5 rounded-full" style={{ backgroundColor: label.color }} />
                 {label.name}
@@ -355,7 +355,7 @@ function SaveStatus({ pending, failed, saved }: { pending: boolean; failed: bool
   }
   if (saved) {
     return (
-      <span className="flex items-center gap-1.5 text-[#3a9a6b]" role="status">
+      <span className="flex items-center gap-1.5 text-sage" role="status">
         <Check className="size-3.5" /> {t("Saved")}
       </span>
     );
@@ -377,7 +377,7 @@ function Section({
   return (
     <section className="mt-8">
       <div className="mb-2.5 flex items-center gap-2.5">
-        <h3 className="text-[15px] font-semibold">{title}</h3>
+        <h3 className="font-serif text-[20px] font-semibold">{title}</h3>
         {meta && <span className="text-[13px] tabular-nums text-muted">{meta}</span>}
         <span className="ml-auto">{action}</span>
       </div>
@@ -409,7 +409,7 @@ function DateField({ value, onChange }: { value: string | null; onChange: (date:
       type="date"
       defaultValue={value?.slice(0, 10) ?? ""}
       onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : null)}
-      className="-ml-2 h-9 w-full rounded-lg bg-transparent px-2 text-sm text-ink outline-none hover:bg-gray-100 focus:bg-gray-100"
+      className="-ml-2 h-9 w-full rounded-lg bg-transparent px-2 text-sm text-ink outline-none hover:bg-white focus:bg-white"
     />
   );
 }

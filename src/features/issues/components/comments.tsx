@@ -127,7 +127,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
 
   return (
     <section className="mt-8">
-      <h3 className="mb-3 text-[15px] font-semibold">
+      <h3 className="mb-3 font-serif text-[20px] font-semibold">
         {t("Discussion")}
         {comments.length > 0 && <span className="ml-2 text-[13px] font-medium text-muted">{comments.length}</span>}
       </h3>
@@ -155,7 +155,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
           return (
             <li key={comment.id} className="flex gap-3">
               <Avatar name={comment.author.display_name} src={comment.author.avatar_url} size="md" />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 rounded-[14px] border border-line bg-white px-4 py-3">
                 <p className="text-[13.5px]">
                   <span className="font-semibold">{comment.author.display_name}</span>
                   <span className="ml-2 text-[12.5px] text-muted">
@@ -190,7 +190,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                     {editComment.isError && <p className="mt-1 text-xs text-red-600">{t("Couldn't save the comment")}</p>}
                   </div>
                 ) : (
-                  <p className="mt-0.5 whitespace-pre-line leading-relaxed text-gray-700">{comment.body}</p>
+                  <p className="mt-0.5 whitespace-pre-line leading-relaxed text-ink-2">{comment.body}</p>
                 )}
 
                 {isMine && !comment.deleted_at && !isEditing && (
@@ -231,7 +231,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
 
       <form
         onSubmit={handleSend}
-        className="mt-5 flex items-center gap-2 rounded-xl border border-line bg-white p-2 pl-3.5 focus-within:border-asphalt focus-within:ring-[3px] focus-within:ring-marking-soft"
+        className="mt-5 flex items-center gap-2 rounded-[14px] border border-line bg-white p-2 pl-3.5 focus-within:border-ink focus-within:ring-[3px] focus-within:ring-marking-soft"
       >
         <input
           value={text}
@@ -243,7 +243,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
         <button
           type="submit"
           disabled={addComment.isPending || !text.trim()}
-          className="grid size-8 place-items-center rounded-lg bg-asphalt text-white hover:bg-asphalt-2 disabled:opacity-40 dark:bg-marking dark:text-asphalt"
+          className="grid size-9 place-items-center rounded-[10px] bg-ink text-canvas hover:opacity-90 disabled:opacity-40"
           aria-label={t("Send comment")}
         >
           <Send className="size-4" />

@@ -7,6 +7,7 @@ import { Avatar } from "@/shared/ui/avatar";
 import { PriorityIcon, StateIcon, priorityLabels, priorityOrder } from "@/shared/ui/issue-icons";
 import { cn } from "@/shared/lib/utils";
 import { useT } from "@/shared/lib/i18n";
+import { ViewSwitch } from "./view-switch";
 
 interface IssueFiltersProps {
   members: User[];
@@ -46,8 +47,9 @@ export function IssueFilters({ members, labels, states, actions }: IssueFiltersP
   const titles: Record<FilterKey, string> = { state: t("Status"), priority: t("Priority"), assignee: t("Assignee"), label: t("Label") };
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 border-b border-line bg-white px-4 py-3 md:px-7">
-      <label className="flex h-9 w-full items-center gap-2 rounded-[9px] border border-line px-3 text-faint focus-within:border-asphalt focus-within:ring-[3px] focus-within:ring-marking-soft sm:w-60">
+    <div className="flex flex-wrap items-center gap-2.5 px-4 py-3 md:px-7">
+      <ViewSwitch />
+      <label className="flex h-10 w-full items-center gap-2 rounded-[12px] border border-line bg-white px-3 text-faint focus-within:border-ink focus-within:ring-[3px] focus-within:ring-marking-soft sm:w-60">
         <Search className="size-4" />
         <input type="search" placeholder={t("Search tasks")} className="w-full bg-transparent text-ink outline-none placeholder:text-faint" />
       </label>
@@ -55,12 +57,12 @@ export function IssueFilters({ members, labels, states, actions }: IssueFiltersP
       <div className="relative">
         <button
           onClick={() => setOpen((o) => !o)}
-          className={cn("flex h-9 items-center gap-2 rounded-[9px] px-2.5 font-medium hover:bg-gray-100", open && "bg-gray-100")}
+          className={cn("flex h-10 items-center gap-2 rounded-[12px] border border-dashed border-gray-300 px-3 font-medium text-ink-2 hover:border-solid hover:bg-white", open && "border-solid bg-white")}
           aria-expanded={open}
         >
           <ListFilter className="size-4 text-muted" />
           {t("Filter")}
-          {count > 0 && <span className="rounded-full bg-asphalt px-1.5 text-[11px] tabular-nums text-white">{count}</span>}
+          {count > 0 && <span className="rounded-full bg-marking px-1.5 text-[11px] tabular-nums text-white">{count}</span>}
         </button>
 
         {open && (
@@ -103,7 +105,7 @@ export function IssueFilters({ members, labels, states, actions }: IssueFiltersP
       {(Object.keys(selected) as FilterKey[])
         .filter((key) => selected[key].length > 0)
         .map((key) => (
-          <span key={key} className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-line-soft bg-canvas px-2.5 text-[13px]">
+          <span key={key} className="inline-flex h-10 items-center gap-1.5 rounded-[12px] border border-line bg-white px-3 text-[13px]">
             <span className="text-muted">{titles[key]}</span>
             {selected[key].map(names[key]).join(", ")}
             <button onClick={() => clear(key)} className="ml-0.5 text-faint hover:text-ink" aria-label={t("Clear {key}", { key: titles[key] })}>
@@ -125,7 +127,7 @@ export function IssueFilters({ members, labels, states, actions }: IssueFiltersP
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-1.5 px-1.5 text-[13px] text-muted">{title}</p>
+      <p className="mb-1.5 px-1.5 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-faint">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>
   );
@@ -134,7 +136,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 function Option({ checked, onChange, children }: { checked: boolean; onChange: () => void; children: React.ReactNode }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-sm hover:bg-gray-100">
-      <input type="checkbox" checked={checked} onChange={onChange} className="size-4 accent-[#23272f]" />
+      <input type="checkbox" checked={checked} onChange={onChange} className="size-4 accent-[#d9532b]" />
       {children}
     </label>
   );

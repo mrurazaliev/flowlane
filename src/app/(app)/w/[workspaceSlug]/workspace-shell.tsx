@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { UserMenu } from "@/features/auth";
 import { NotificationsLink } from "@/features/notifications";
 import { ProjectNav } from "@/features/projects";
-import { WorkspaceNav, WorkspaceSwitcher } from "@/features/workspaces";
+import { WorkspaceNav, WorkspaceSwitcher, WorkspaceTopBar } from "@/features/workspaces";
 import { AppShell } from "@/shared/layout/app-shell";
 
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
       }
       projects={<ProjectNav workspaceSlug={workspaceSlug} />}
       userMenu={<UserMenu />}
+      topBar={<WorkspaceTopBar workspaceSlug={workspaceSlug} />}
     >
       {children}
     </AppShell>

@@ -50,12 +50,12 @@ export const LoginForm = () => {
 
   return (
     <>
-      <h1 className="text-[26px] font-semibold tracking-tight">{t("login.title")}</h1>
-      <p className="mb-7 mt-1.5 text-muted">{t("login.subtitle")}</p>
+      <h1 className="font-serif text-[40px] font-semibold leading-tight tracking-tight">{t("login.title")}</h1>
+      <p className="mb-8 mt-2 text-[15px] text-muted">{t("login.subtitle")}</p>
 
       <form method="post" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         {notice && (
-          <p role="status" className="rounded-lg border border-[#3a9a6b]/30 bg-[#3a9a6b]/10 px-3.5 py-2.5 text-sm text-[#2f7d57] dark:text-[#7fd1a6]">
+          <p role="status" className="rounded-[12px] border border-sage/30 bg-sage/10 px-3.5 py-2.5 text-sm text-[#3f6b50] dark:text-[#8fc0a0]">
             {t("login.passwordChanged")}
           </p>
         )}
@@ -88,7 +88,7 @@ export const LoginForm = () => {
         <Button
           type="submit"
           disabled={login.isPending}
-          className="mt-2 h-[46px] w-full text-[15px] font-semibold"
+          className="mt-3 h-12 w-full rounded-[12px] text-[15px] font-semibold"
         >
           {login.isPending ? t("login.submitting") : t("login.submit")}
         </Button>

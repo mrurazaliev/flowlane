@@ -1,11 +1,11 @@
 import { cn } from "@/shared/lib/utils";
 
-export function LogoMark({ className }: { className?: string }) {
+export function LogoMark({ className, light = false }: { className?: string; light?: boolean }) {
   return (
-    <svg viewBox="0 0 34 34" aria-hidden className={cn("size-[26px] shrink-0", className)}>
-      <circle cx="17" cy="17" r="17" fill="#f2b630" />
-      <path d="M10 28 C10 18 24 16 24 6" stroke="#0d0f13" strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path d="M10 28 C10 18 24 16 24 6" stroke="#f2b630" strokeWidth="1.6" strokeDasharray="3 3" fill="none" />
+    <svg viewBox="0 0 32 32" aria-hidden className={cn("size-[28px] shrink-0", className)}>
+      <rect width="32" height="32" rx="8" fill={light ? "#f6f1e7" : "#1b2238"} />
+      <path d="M9 11.5h10M9 16h14M9 20.5h8" stroke={light ? "#1b2238" : "#f6f1e7"} strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="23" cy="11.5" r="2" fill="#d9532b" />
     </svg>
   );
 }
@@ -13,9 +13,9 @@ export function LogoMark({ className }: { className?: string }) {
 export function Logo({ withText = true, light = false, className }: { withText?: boolean; light?: boolean; className?: string }) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <LogoMark />
+      <LogoMark light={light} />
       {withText && (
-        <span className={cn("text-[17px] font-semibold tracking-tight", light ? "text-white" : "text-ink")}>Flowlane</span>
+        <span className={cn("font-serif text-[21px] font-semibold tracking-tight", light ? "text-[#f6f1e7]" : "text-ink")}>Flowlane</span>
       )}
     </div>
   );

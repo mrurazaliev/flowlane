@@ -19,7 +19,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, className }: Tab
           aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            "-mb-px border-b-[3px] pb-2.5 font-medium transition-colors",
+            "-mb-px border-b-2 pb-2.5 font-medium transition-colors",
             value === tab.value ? "border-marking text-ink" : "border-transparent text-muted hover:text-ink",
           )}
         >

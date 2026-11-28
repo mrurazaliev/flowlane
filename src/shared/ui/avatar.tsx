@@ -1,6 +1,6 @@
 import { cn, initials } from "@/shared/lib/utils";
 
-const palette = ["#5B6B8C", "#B5654A", "#4E8A73", "#8A6AA8", "#A0763A", "#4F7FA8"];
+const palette = ["#d9532b", "#5e8a6e", "#7a4e8c", "#3e6ea8", "#c98a12", "#4a5068"];
 
 function colorFor(name: string) {
   let sum = 0;

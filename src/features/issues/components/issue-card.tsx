@@ -36,17 +36,17 @@ export function IssueCard({
       onKeyDown={onKeyDown}
       aria-keyshortcuts={draggable ? "Alt+ArrowLeft Alt+ArrowRight" : undefined}
       className={cn(
-        "w-full rounded-[11px] border border-line bg-white px-[13px] pb-[11px] pt-3 text-left shadow-[0_1px_0_rgba(30,34,42,.04)] transition-[border-color,box-shadow] hover:border-gray-300 hover:shadow-[0_4px_14px_-6px_rgba(30,34,42,.18)]",
+        "w-full rounded-[12px] border border-line bg-white px-[14px] pb-3 pt-3 text-left shadow-[0_1px_0_var(--color-line)] transition-[border-color,box-shadow,transform] hover:border-gray-300 hover:shadow-[0_8px_20px_-10px_rgba(27,34,56,.25)]",
         draggable && "cursor-grab",
-        dragging && "cursor-grabbing opacity-50",
+        dragging && "cursor-grabbing -rotate-2 border-ink opacity-70",
       )}
     >
-      <div className="flex items-center text-xs text-muted">
+      <div className="font-id flex items-center text-[12px] text-muted">
         {identifier}-{issue.sequence_id}
         <PriorityIcon priority={issue.priority} className="ml-auto" />
       </div>
 
-      <p className={cn("mb-2.5 mt-1.5 text-[14.5px] font-medium leading-snug", isDone ? "text-muted" : "text-ink")}>
+      <p className={cn("mb-2.5 mt-1.5 text-[15px] font-semibold leading-snug", isDone ? "text-muted line-through decoration-faint" : "text-ink")}>
         {issue.title}
       </p>
 

@@ -20,7 +20,7 @@ export function ProjectHeader() {
   if (projectQuery.isPending) return <ProjectHeaderSkeleton />
   const project = projectQuery.data
   if (!project) {
-    return <p className="border-b border-line bg-white px-7 py-4 text-sm text-muted">
+    return <p className="border-b border-line px-7 py-4 text-sm text-muted">
       {projectErrorText(projectQuery.error, t("Could not load the project."))}
     </p>
   }
@@ -35,19 +35,19 @@ export function ProjectHeader() {
   ]
 
   return (
-    <header className="border-b border-line bg-white px-4 pt-4 md:px-7">
+    <header className="px-4 pb-3 pt-5 md:px-7">
       <p className="text-[13px] text-muted">
         {workspace?.name ?? workspaceSlug} / <span className="font-medium text-ink">{project.name}</span>
       </p>
       <div className="mt-1 flex items-center gap-3">
-        <h1 className="text-[22px] font-semibold tracking-tight md:text-[26px]">{project.name}</h1>
-        <span className="rounded-md border border-line px-1.5 text-xs text-muted">{project.identifier}</span>
+        <h1 className="font-serif text-[28px] font-semibold tracking-tight md:text-[38px]">{project.name}</h1>
+        <span className="font-id rounded-md border border-line bg-white px-1.5 text-xs text-muted">{project.identifier}</span>
         <div className="ml-auto hidden md:block">
           {members && <AvatarStack names={members.map((m) => m.user.display_name)} />}
         </div>
       </div>
 
-      <nav className="mt-3 flex gap-5 overflow-x-auto md:gap-7">
+      <nav className="mt-4 flex w-fit max-w-full gap-1 overflow-x-auto rounded-[12px] border border-line bg-paper-2 p-1">
         {tabs.map((tab) => {
           const active = pathname.startsWith(tab.href)
           return (
@@ -55,8 +55,8 @@ export function ProjectHeader() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                'shrink-0 border-b-[3px] pb-3 font-medium transition-colors',
-                active ? 'border-marking text-ink' : 'border-transparent text-muted hover:text-ink',
+                'shrink-0 rounded-[9px] px-3.5 py-1.5 font-medium transition-colors',
+                active ? 'bg-white text-ink shadow-[0_1px_2px_rgba(27,34,56,.12)]' : 'text-muted hover:text-ink',
               )}
             >
               {tab.label}
@@ -69,5 +69,5 @@ export function ProjectHeader() {
 }
 
 export function ProjectHeaderSkeleton() {
-  return <div className="h-[118px] border-b border-line bg-white" />
+  return <div className="h-[150px]" />
 }

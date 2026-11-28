@@ -92,7 +92,7 @@ export function Board() {
         {moveIssue.isPending ? t("Moving task…") : moveIssue.isSuccess ? t("Task status saved.") : ""}
       </p>
 
-      <div className="relative flex min-h-0 flex-1 snap-x overflow-x-auto px-2 md:px-3">
+      <div className="relative flex min-h-0 flex-1 snap-x overflow-x-auto px-4 pb-4 md:px-7">
         {states.map((state, index) => (
           <BoardColumn
             key={state.id}
@@ -115,10 +115,10 @@ export function Board() {
         {issues.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
             <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-line bg-white p-8 text-center shadow-[0_24px_60px_-24px_rgba(30,34,42,.35)]">
-              <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-marking-soft text-[#8a6410]">
+              <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-marking-soft text-marking-dark">
                 <FolderOpen className="size-6" />
               </span>
-              <h2 className="mt-4 text-lg font-semibold tracking-tight">{t("No tasks yet")}</h2>
+              <h2 className="mt-4 text-xl tracking-tight">{t("No tasks yet")}</h2>
               {canWrite && (
                 <>
                   <p className="mt-1 text-muted">{t("Create the first task and it will appear in its lane.")}</p>

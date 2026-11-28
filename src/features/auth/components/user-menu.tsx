@@ -62,12 +62,12 @@ export function UserMenu() {
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-asphalt-2"
+        className="flex w-full items-center gap-2.5 rounded-[10px] px-2 py-2 text-left hover:bg-side-hover"
       >
         <Avatar name={user.display_name} src={user.avatar_url} size="md" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm text-white">{user.display_name}</span>
-          <span className="block truncate text-xs text-[#8c93a0]">{user.email}</span>
+          <span className="block truncate text-sm font-semibold text-ink">{user.display_name}</span>
+          <span className="block truncate text-xs text-side-faint">{user.email}</span>
         </span>
       </button>
     </div>

@@ -10,8 +10,8 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink">{title}</h1>
-        {description && <p className="mt-1 text-muted">{description}</p>}
+        <h1 className="font-serif text-[34px] font-semibold leading-tight tracking-tight text-ink">{title}</h1>
+        {description && <p className="mt-1.5 text-[15px] text-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
     </div>
@@ -34,8 +34,8 @@ export function PageSkeleton() {
 
 export function EmptyState({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
   return (
-    <div className="rounded-xl border-[1.5px] border-dashed border-gray-300 bg-white/60 px-6 py-12 text-center">
-      <p className="font-medium text-ink">{title}</p>
+    <div className="rounded-[16px] border-[1.5px] border-dashed border-gray-300 bg-[repeating-linear-gradient(135deg,transparent_0_10px,color-mix(in_oklab,var(--color-line)_45%,transparent)_10px_11px)] px-6 py-12 text-center">
+      <p className="font-serif text-lg font-semibold text-ink">{title}</p>
       {description && <p className="mx-auto mt-1 max-w-sm text-muted">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
