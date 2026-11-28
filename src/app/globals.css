@@ -1,14 +1,7 @@
 @import "tailwindcss";
 
-/* Тёмная тема включается классом .dark на <html> (см. shared/lib/theme.ts) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/*
- * Дизайн «полосы движения»:
- *   asphalt — тёмный: сайдбар и главные кнопки
- *   marking — жёлтая разметка: только там, где «есть движение»
- *             (активная вкладка, текущий проект, задачи в работе, фокус)
- */
 @theme {
   --font-sans: var(--font-fira), "Segoe UI", system-ui, sans-serif;
 
@@ -24,7 +17,6 @@
   --color-marking: #f2b630;
   --color-marking-soft: #fdf3d9;
 
-  /* Нейтральная шкала проекта (холодный серый вместо стандартного) */
   --color-gray-50: #f7f8f9;
   --color-gray-100: #f2f3f5;
   --color-gray-200: #dde1e6;
@@ -36,7 +28,6 @@
   --color-gray-800: #262b34;
   --color-gray-900: #1e222a;
 
-  /* «indigo» в старых классах = фирменные цвета: кнопки — асфальт, акценты — разметка */
   --color-indigo-50: #fdf3d9;
   --color-indigo-100: #fbe7b5;
   --color-indigo-300: #f2b630;
@@ -45,21 +36,12 @@
   --color-indigo-600: #23272f;
   --color-indigo-700: #1e222a;
 
-  /* Фон карточек, полей, модалок. В светлой теме — белый */
   --color-surface: #ffffff;
 }
 
-/*
- * Тёмная тема: меняем значения тех же переменных, поэтому классы вроде
- * bg-canvas, text-ink, border-line, bg-gray-50 перекрашиваются сами.
- */
 .dark {
   color-scheme: dark;
 
-  /*
-   * «Ночная дорога»: 4 ступени глубины, от самой тёмной к светлой
-   *   asphalt (сайдбар) → canvas (фон) → surface (карточки) → gray-100 (наведение)
-   */
   --color-asphalt: #0d0f13;
   --color-asphalt-2: #1a1d23;
   --color-asphalt-line: #23272e;
@@ -92,13 +74,7 @@
   --color-red-200: #5c2a2e;
 }
 
-/*
- * В проекте много bg-white (карточки, поля, модалки). Чтобы не менять каждый файл,
- * в тёмной теме перекрашиваем их здесь. :where() не добавляет веса,
- * поэтому hover:bg-… на тех же элементах продолжает работать.
- */
 @layer utilities {
-  /* Тонкая граница между сайдбаром и контентом — в темноте они иначе сливаются */
   :where(.dark) aside.bg-asphalt {
     box-shadow: inset -1px 0 0 var(--color-asphalt-line);
   }
@@ -119,7 +95,6 @@ body {
   font-size: 14px;
 }
 
-/* Видимый фокус с клавиатуры — жёлтая разметка */
 :focus-visible {
   outline: 2px solid var(--color-marking);
   outline-offset: 2px;

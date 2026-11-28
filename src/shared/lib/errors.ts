@@ -1,9 +1,5 @@
 import { translate } from "@/shared/lib/i18n";
 
-// SHARED (F2.5): ошибки бэкенда приходят как { error: { code, message, details } }.
-// Разбираем их только здесь, чтобы везде были одинаковые тексты.
-
-/** Коды ошибок бэкенда (task-management-backend/src/lib/errors.ts) */
 export type ApiErrorCode =
   | "BAD_REQUEST"
   | "VALIDATION_ERROR"
@@ -19,7 +15,6 @@ export interface ApiErrorBody {
   error: { code: ApiErrorCode; message: string; details?: unknown };
 }
 
-/** Тексты на случай, если message от бэкенда пустой или слишком технический */
 const fallbackTexts: Record<ApiErrorCode, string> = {
   BAD_REQUEST: "The request is invalid.",
   VALIDATION_ERROR: "Please check the highlighted fields.",
@@ -41,11 +36,6 @@ export function isApiError(value: unknown): value is ApiErrorBody {
   );
 }
 
-/**
- * Понятный текст ошибки. Сообщения бэкенда обычно конкретные
- * ("Invalid email or password", "Email already registered") — показываем их,
- * кроме серверных ошибок и лимитов, где берём свой текст.
- */
 export function errorText(value: unknown, fallback = "Something went wrong. Please try again."): string {
   if (!isApiError(value)) return translate(fallback);
   const { code, message } = value.error;

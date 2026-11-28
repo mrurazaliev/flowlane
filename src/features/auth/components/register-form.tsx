@@ -39,7 +39,6 @@ export const RegisterForm = () => {
   } = useForm<RegisterFormData>({ resolver: zodResolver(registerSchema) });
 
   const onSubmit = async (data: RegisterFormData) => {
-    // confirm_password нужен только для проверки в форме, на бэкенд его не отправляем
     const { confirm_password: _confirm, ...body } = data;
     await registerUser.mutateAsync(body);
     router.push("/workspaces");
@@ -55,7 +54,6 @@ export const RegisterForm = () => {
       <h1 className="text-[26px] font-semibold tracking-tight">{t("register.title")}</h1>
       <p className="mb-7 mt-1.5 text-muted">{t("register.subtitle")}</p>
 
-      {/* method="post": если нажать кнопку до загрузки JS, браузер не положит пароль в адрес страницы */}
       <form method="post" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <ErrorBanner>{apiError}</ErrorBanner>
 

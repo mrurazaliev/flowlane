@@ -44,7 +44,7 @@ export function IssueDetail() {
   const { data: members } = useMemberUsers(workspaceSlug);
 
   const { data: issue, isLoading, isError } = useGetIssueQuery(workspaceSlug, projectId, issueId);
-  const { data: issues = [] } = useGetIssuesQuery(workspaceSlug, projectId); // для подзадач и родителя
+  const { data: issues = [] } = useGetIssuesQuery(workspaceSlug, projectId);
   const { data: labels } = useLabels(workspaceSlug, projectId);
   const editIssue = useEditIssueMutation(workspaceSlug, projectId, issueId);
   const addAssignee = useAddAssigneeMutation(workspaceSlug, projectId, issueId);
@@ -65,7 +65,6 @@ export function IssueDetail() {
   const deleteError =
     deleteIssue.error && isAxiosError(deleteIssue.error) ? errorText(deleteIssue.error.response?.data) : null;
 
-  // Исполнитель: в интерфейсе один, а бэкенд хранит список — снимаем старого и ставим нового
   const changeAssignee = async (userId: string) => {
     const current = issue.assignees[0]?.user_id;
     if (current === userId) return;
@@ -73,13 +72,9 @@ export function IssueDetail() {
     if (userId !== "none") await addAssignee.mutateAsync(userId);
   };
 
-  // Лейблы, которых ещё нет у задачи — их можно добавить
   const issueLabelIds = issue.labels.map(({ label }) => label.id);
   const availableLabels = labels.filter((l) => !issueLabelIds.includes(l.id));
 
-  // Индикатор «Saving… / Saved / Couldn't save» показывает ПОСЛЕДНЕЕ сохранение.
-  // Раньше брали «есть ли ошибка хоть где-то» — и старая ошибка (например, от исполнителя)
-  // висела на экране, даже когда новые изменения сохранялись успешно.
   const lastSave = [editIssue, addAssignee, removeAssignee, addLabel, removeLabel].reduce((latest, m) =>
     m.submittedAt > latest.submittedAt ? m : latest,
   );
@@ -93,7 +88,6 @@ export function IssueDetail() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
-      {/* Основная колонка */}
       <article className="min-w-0 flex-1 px-4 pb-12 pt-6 md:px-14 lg:overflow-y-auto">
         <div className="mx-auto max-w-[720px]">
           <div className="flex items-center gap-2 text-[13px] text-muted">
@@ -124,7 +118,6 @@ export function IssueDetail() {
             </Button>
           </div>
 
-          {/* Название: Enter — сохранить, Esc — отменить. Видно, что поле можно редактировать */}
           <div className="group mt-3">
             <textarea
               key={`title-${issue.id}`}
@@ -133,16 +126,16 @@ export function IssueDetail() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  e.currentTarget.blur(); // blur → onBlur → сохранение
+                  e.currentTarget.blur();
                 }
                 if (e.key === "Escape") {
-                  e.currentTarget.value = issue.title; // вернуть как было
+                  e.currentTarget.value = issue.title;
                   e.currentTarget.blur();
                 }
               }}
               onBlur={(e) => {
                 const title = e.target.value.trim();
-                if (!title) e.target.value = issue.title; // пустое название не сохраняем
+                if (!title) e.target.value = issue.title;
                 else if (title !== issue.title) editIssue.mutate({ title });
               }}
               rows={1}
@@ -154,7 +147,6 @@ export function IssueDetail() {
             </p>
           </div>
 
-          {/* Описание: сохраняется, когда кликаешь мимо поля */}
           <div className="group mt-2">
             <textarea
               key={`description-${issue.id}`}
@@ -218,12 +210,10 @@ export function IssueDetail() {
             )}
           </Section>
 
-
           <Discussion issueId={issue.id} />
         </div>
       </article>
 
-      {/* Свойства задачи: сохраняются сразу при выборе, статус сохранения — вверху страницы */}
       <aside className="shrink-0 border-t border-line bg-white px-5 py-5 lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0">
         <h2 className="mb-2 text-[13px] text-muted">{t("Properties")}</h2>
         <Property label={t("Status")}>
@@ -310,7 +300,6 @@ export function IssueDetail() {
         </p>
       </aside>
 
-      {/* Новая подзадача — та же форма, что на доске, только с parent_id */}
       <CreateIssueModal
         open={subTaskOpen}
         onClose={() => setSubTaskOpen(false)}
@@ -320,7 +309,6 @@ export function IssueDetail() {
         parentId={issue.id}
       />
 
-      {/* Подтверждение удаления — своё окно вместо браузерного confirm() */}
       <Modal
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -349,7 +337,6 @@ export function IssueDetail() {
   );
 }
 
-/** «Saving… / Saved / Couldn't save» — чтобы пользователь видел, что изменение сохранилось */
 function SaveStatus({ pending, failed, saved }: { pending: boolean; failed: boolean; saved: boolean }) {
   const t = useT();
   if (pending) {
@@ -416,7 +403,6 @@ function Property({ label, children }: { label: string; children: React.ReactNod
   );
 }
 
-// Дата из <input type="date"> → ISO для бэкенда (пусто → null)
 function DateField({ value, onChange }: { value: string | null; onChange: (date: string | null) => void }) {
   return (
     <input

@@ -5,7 +5,6 @@ import { Settings, Users } from "lucide-react";
 import { SidebarLink } from "@/shared/layout/sidebar-link";
 import { useT } from "@/shared/lib/i18n";
 
-/** Ссылки workspace в сайдбаре: участники и настройки */
 export function WorkspaceNav({ workspaceSlug }: { workspaceSlug: string }) {
   const t = useT();
   const pathname = usePathname();

@@ -4,8 +4,6 @@ import type { DropdownOption } from "./dropdown";
 import { PriorityIcon, StateIcon, priorityLabels, priorityOrder } from "./issue-icons";
 import { translate } from "@/shared/lib/i18n";
 
-/** Готовые варианты для <Dropdown>: статусы, приоритеты, участники */
-
 export function stateOptions(states: State[]): DropdownOption<string>[] {
   return states.map((s) => ({ value: s.id, label: s.name, icon: <StateIcon group={s.group} color={s.color} /> }));
 }

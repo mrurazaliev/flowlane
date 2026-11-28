@@ -1,4 +1,3 @@
-/** Заголовок страницы внутри приложения */
 export function PageHeader({
   title,
   description,
@@ -19,7 +18,6 @@ export function PageHeader({
   );
 }
 
-/** Заглушка, пока страница ждёт параметры URL (fallback для Suspense) */
 export function PageSkeleton() {
   return (
     <div className="space-y-4 p-7">
@@ -34,7 +32,6 @@ export function PageSkeleton() {
   );
 }
 
-/** Пустое состояние: что здесь будет и что сделать */
 export function EmptyState({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
   return (
     <div className="rounded-xl border-[1.5px] border-dashed border-gray-300 bg-white/60 px-6 py-12 text-center">

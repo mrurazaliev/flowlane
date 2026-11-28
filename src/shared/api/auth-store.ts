@@ -1,6 +1,5 @@
 import { create } from "zustand"
 
-
 const REFRESH_KEY = "refresh_token"
 
 type AuthState = {
@@ -8,7 +7,6 @@ type AuthState = {
     setTokens:(access:string , refreshh:string)=>void
     clearTokens:()=>void
 }
-
 
 export const  useAuthStore = create<AuthState>((set)=>({
 

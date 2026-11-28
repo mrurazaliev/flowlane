@@ -1,4 +1,3 @@
-
 export type Priority = "urgent" | "high" | "medium" | "low" | "none";
 export type StateGroup = "backlog" | "unstarted" | "started" | "completed" | "cancelled";
 export type WorkspaceRole = "owner" | "admin" | "member" | "guest";
@@ -33,7 +32,7 @@ export interface Project {
   id: string;
   workspace_id: string;
   name: string;
-  identifier: string; // "WEB" → задачи WEB-1, WEB-2...
+  identifier: string;
   description: string | null;
   lead_id: string | null;
   is_archived: boolean;
@@ -64,13 +63,12 @@ export interface Issue {
   state_id: string;
   priority: Priority;
   cycle_id: string | null;
-  parent_id: string | null; // подзадача: только 1 уровень
+  parent_id: string | null;
   start_date: string | null;
   due_date: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
-  // Бэкенд возвращает связи в такой форме:
   assignees: { user_id: string; user: User }[];
   labels: { label: Label }[];
 }
@@ -92,15 +90,6 @@ export interface ProjectMember {
   user: User;
 }
 
-export interface WorkspaceInvite {
-  id: string;
-  workspace_id: string;
-  email: string;
-  role: WorkspaceRole;
-  expires_at: string;
-}
-
-/** Прогресс приходит только в GET /cycles/:id (и /modules/:id) */
 export interface Progress {
   total: number;
   backlog: number;
@@ -118,7 +107,7 @@ export interface Cycle {
   description: string | null;
   start_date: string | null;
   end_date: string | null;
-  status: CycleStatus; // вычисляется бэкендом по датам
+  status: CycleStatus;
   progress?: Progress;
 }
 
@@ -132,16 +121,6 @@ export interface Module {
   start_date: string | null;
   target_date: string | null;
   progress?: Progress;
-}
-
-export interface Attachment {
-  id: string;
-  issue_id: string;
-  file_name: string;
-  file_size: number; // байты
-  mime_type: string;
-  created_at: string;
-  uploaded_by: Pick<User, "id" | "display_name">;
 }
 
 export interface Notification {

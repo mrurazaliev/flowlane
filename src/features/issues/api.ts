@@ -18,7 +18,7 @@ assignee_ids?: string[];
 label_ids?: string[];
 start_date?: string | null;
 due_date?: string | null;
-parent_id?: string; // если задаём — это подзадача
+parent_id?: string;
 };
 
 export type IssueUpdate = {
@@ -30,9 +30,6 @@ export type IssueUpdate = {
   due_date?: string | null;
 };
 
-// Бэкенд в ответе задачи может прислать в labels/assignees пустые объекты {}
-// (в его схеме ответа у этих полей не описаны свойства). Убираем такие записи,
-// чтобы страницы не падали на label.id или user.display_name.
 const normalizeIssue = (issue: Issue): Issue => ({
   ...issue,
   labels: (issue.labels ?? []).filter((item) => item?.label?.id),
@@ -42,7 +39,6 @@ const normalizeIssue = (issue: Issue): Issue => ({
 const issuesUrl = (workspaceSlug: string, projectId: string) =>
   `/workspaces/${workspaceSlug}/projects/${projectId}/issues`;
 
-// GET /workspaces/:slug/projects/:projectId/issues
 export const useGetIssuesQuery = (
   workspaceSlug: string,
   projectId: string,
@@ -68,8 +64,6 @@ export const useGetIssuesQuery = (
   });
 };
 
-
-// POST /workspaces/:slug/projects/:projectId/issues
 export const useAddIssueMutation = (workspaceSlug: string, projectId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -84,9 +78,6 @@ export const useAddIssueMutation = (workspaceSlug: string, projectId: string) =>
   });
 };
 
-
-
-// GET одной задачи
 export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issueId: string) => {
   const client = useQueryClient();
   const url = issuesUrl(workspaceSlug, projectId);
@@ -100,7 +91,6 @@ export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issue
   });
 };
 
-// PATCH
 async function editIssue(workspaceSlug: string, projectId: string, issueId: string, changes: IssueUpdate) {
   const { data } = await api.patch<Issue>(
     `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
@@ -137,7 +127,6 @@ export const useMoveIssueMutation = (workspaceSlug: string, projectId: string) =
   })
 }
 
-// DELETE
 export const useDeleteIssueMutation = (workspaceSlug: string, projectId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -147,11 +136,9 @@ export const useDeleteIssueMutation = (workspaceSlug: string, projectId: string)
   });
 };
 
-// ---------- Комментарии ----------
 const commentsUrl = (workspaceSlug: string, projectId: string, issueId: string) =>
   `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/comments`;
 
-// GET
 export const useGetCommentsQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
   useQuery({
     queryKey: queryKeys.issues.comments(issueId),
@@ -161,7 +148,6 @@ export const useGetCommentsQuery = (workspaceSlug: string, projectId: string, is
     },
   });
 
-// POST
 export const useAddCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -170,7 +156,6 @@ export const useAddCommentMutation = (workspaceSlug: string, projectId: string, 
   });
 };
 
-// PATCH
 export const useEditCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -180,7 +165,6 @@ export const useEditCommentMutation = (workspaceSlug: string, projectId: string,
   });
 };
 
-// DELETE
 export const useDeleteCommentMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -190,11 +174,9 @@ export const useDeleteCommentMutation = (workspaceSlug: string, projectId: strin
   });
 };
 
-// ---------- Исполнители и лейблы задачи ----------
 const issueUrl = (workspaceSlug: string, projectId: string, issueId: string) =>
   `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`;
 
-// POST {i}/assignees — назначить исполнителя
 export const useAddAssigneeMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -204,7 +186,6 @@ export const useAddAssigneeMutation = (workspaceSlug: string, projectId: string,
   });
 };
 
-// DELETE {i}/assignees/:userId — снять исполнителя
 export const useRemoveAssigneeMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -213,7 +194,6 @@ export const useRemoveAssigneeMutation = (workspaceSlug: string, projectId: stri
   });
 };
 
-// POST {i}/labels — добавить лейбл
 export const useAddLabelMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -223,7 +203,6 @@ export const useAddLabelMutation = (workspaceSlug: string, projectId: string, is
   });
 };
 
-// DELETE {i}/labels/:labelId — убрать лейбл
 export const useRemoveLabelMutation = (workspaceSlug: string, projectId: string, issueId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -232,18 +211,16 @@ export const useRemoveLabelMutation = (workspaceSlug: string, projectId: string,
   });
 };
 
-// ---------- История изменений ----------
 export type ActivityEntry = {
   id: string;
-  action: string; // "issue.created", "issue.updated", "issue.assignee_added", ...
-  field: string | null; // для issue.updated: "state_id", "priority", "title", ...
+  action: string;
+  field: string | null;
   old_value: string | null;
-  new_value: string | null; // для статуса/исполнителя/лейбла — это id
+  new_value: string | null;
   created_at: string;
   actor: { id: string; display_name: string; avatar_url: string | null };
 };
 
-// GET {i}/activity — бэкенд отдаёт от новых к старым
 export const useGetActivityQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
   useQuery({
     queryKey: queryKeys.issues.activity(issueId),

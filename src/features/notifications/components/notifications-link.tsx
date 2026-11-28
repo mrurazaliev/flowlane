@@ -6,7 +6,6 @@ import { SidebarLink } from '@/shared/layout/sidebar-link'
 import { useT } from "@/shared/lib/i18n";
 import { useNotificationCount } from '../api'
 
-/** D2.15 Колокольчик со счётчиком (слот в сайдбаре). */
 export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) {
   const t = useT();
   const pathname = usePathname()

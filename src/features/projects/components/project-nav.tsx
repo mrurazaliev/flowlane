@@ -12,7 +12,6 @@ import { useProjectAccess } from '../use-project-access'
 import { CreateProjectModal } from './create-project-modal';
 import { useT } from "@/shared/lib/i18n";
 
-/** Список проектов в сайдбаре + «+» для создания (слот в AppShell) */
 export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
   const t = useT();
   const { projectId } = useParams<{ projectId?: string }>()

@@ -15,7 +15,6 @@ import { useProjectAccess } from '../use-project-access'
 import { useT } from "@/shared/lib/i18n";
 import { CreateProjectModal } from './create-project-modal';
 
-/** D2.7 Список проектов /w/:slug/projects. */
 export function ProjectsList() {
   const t = useT();
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()

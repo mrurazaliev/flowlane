@@ -3,18 +3,14 @@ import { api } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/queryKeys";
 import type { Label } from "@/shared/api/types";
 
-// Лейблы проекта: создать, изменить, удалить. Список берётся из useLabels (shared/api/lookups).
-// Создавать и менять лейблы может только admin или owner.
-
 export type LabelInput = {
   name: string;
-  color: string; // "#3B82F6"
+  color: string;
 };
 
 const labelsUrl = (workspaceSlug: string, projectId: string) =>
   `/workspaces/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectId)}/labels`;
 
-// После изменения обновляем и список лейблов, и задачи (на карточках видны имена и цвета лейблов)
 const useRefreshLabels = (workspaceSlug: string, projectId: string) => {
   const queryClient = useQueryClient();
   return () => Promise.all([
@@ -23,7 +19,6 @@ const useRefreshLabels = (workspaceSlug: string, projectId: string) => {
   ]);
 };
 
-// POST
 export const useAddLabelMutation = (workspaceSlug: string, projectId: string) => {
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({
@@ -35,7 +30,6 @@ export const useAddLabelMutation = (workspaceSlug: string, projectId: string) =>
   });
 };
 
-// PATCH
 export const useEditLabelMutation = (workspaceSlug: string, projectId: string) => {
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({
@@ -47,7 +41,6 @@ export const useEditLabelMutation = (workspaceSlug: string, projectId: string) =
   });
 };
 
-// DELETE
 export const useDeleteLabelMutation = (workspaceSlug: string, projectId: string) => {
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({

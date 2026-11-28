@@ -21,7 +21,6 @@ import { workspaceErrorText, workspaceFormSchema, type WorkspaceFormData } from 
 import { ConfirmDeleteModal } from './confirm-delete-modal';
 import { useT } from "@/shared/lib/i18n";
 
-/** D2.3 Workspace settings at /w/:workspaceSlug/settings. */
 export function WorkspaceSettings() {
   const t = useT();
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()

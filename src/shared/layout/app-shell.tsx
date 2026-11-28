@@ -8,32 +8,22 @@ import { useT } from "@/shared/lib/i18n";
 import { cn } from "@/shared/lib/utils";
 
 interface AppShellProps {
-  /** Переключатель workspace — Dev 2 */
   switcher: React.ReactNode;
-  /** Ссылки workspace: уведомления, участники, настройки — Dev 2 */
   nav: React.ReactNode;
-  /** Список проектов — Dev 2 */
   projects: React.ReactNode;
-  /** Меню профиля — Dev 1 */
   userMenu: React.ReactNode;
   children: React.ReactNode;
 }
 
-/**
- * SHARED (F2.2): каркас приложения — тёмный сайдбар со слотами + основная область.
- * На узком экране сайдбар прячется и открывается кнопкой меню.
- */
 export function AppShell({ switcher, nav, projects, userMenu, children }: AppShellProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Перешли на другую страницу — закрываем мобильное меню
   useEffect(() => setOpen(false), [pathname]);
 
   return (
     <div className="flex h-dvh overflow-hidden">
-      {/* Затемнение под мобильным меню */}
       {open && <div className="fixed inset-0 z-40 bg-asphalt/50 md:hidden" onClick={() => setOpen(false)} />}
 
       <aside
@@ -55,7 +45,6 @@ export function AppShell({ switcher, nav, projects, userMenu, children }: AppShe
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Верхняя панель на телефоне */}
         <header className="flex items-center gap-3 bg-asphalt px-4 py-3 text-white md:hidden">
           <button onClick={() => setOpen(true)} aria-label={t("Open menu")} className="-ml-1 rounded-lg p-1">
             <Menu className="size-5" />

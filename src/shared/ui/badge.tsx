@@ -20,7 +20,6 @@ export function Badge({ tone = "gray", className, children }: { tone?: Tone; cla
   );
 }
 
-/** Метка задачи: цветная точка + название */
 export function LabelChip({ name, color }: { name: string; color: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2 py-px text-xs text-gray-600">

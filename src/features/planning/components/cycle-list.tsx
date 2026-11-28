@@ -19,7 +19,6 @@ import { CycleModal } from "./cycle-modal";
 
 const statusTone = { active: "marking", upcoming: "blue", completed: "green" } as const;
 
-
 const emptyTitles: Record<CycleStatus, string> = {
   active: "No active cycles",
   upcoming: "No upcoming cycles",

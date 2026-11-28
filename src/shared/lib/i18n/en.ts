@@ -1,23 +1,18 @@
-// Английские тексты. Ключи — общие для всех языков: добавили ключ сюда → добавьте и в ru.ts
 export const en = {
-  // Общее
   "common.language": "Language",
   "theme.dark": "Dark mode",
   "theme.light": "Light mode",
   "theme.toggle": "Switch theme",
 
-  // Экран входа (левая часть)
   "auth.hero.title": "Start working with your team",
   "auth.hero.subtitle": "One space for tasks, sprints and people.",
   "auth.register.heroTitle": "Flowlane — where every journey begins.",
   "auth.register.heroSubtitle": "Create an account, invite your team and send the first task down its lane. Signing up takes a minute.",
 
-  // Поля
   "field.email": "Email",
   "field.password": "Password",
   "field.emailPlaceholder": "you@company.com",
 
-  // Логин
   "login.title": "Log in",
   "login.subtitle": "Welcome back. Use your work email.",
   "login.submit": "Log in",
@@ -25,7 +20,6 @@ export const en = {
   "login.noAccount": "New here?",
   "login.createAccount": "Create an account",
 
-  // Регистрация
   "register.title": "Create an account",
   "register.subtitle": "Start organizing work with your team.",
   "register.name": "Your name",
@@ -37,7 +31,6 @@ export const en = {
   "register.haveAccount": "Already have an account?",
   "register.login": "Log in",
 
-  // Ошибки проверки полей (Zod)
   "validation.email": "Enter a valid email",
   "validation.passwordRequired": "Enter your password",
   "validation.nameRequired": "Enter your name",
@@ -46,16 +39,13 @@ export const en = {
   "validation.confirmRequired": "Repeat your password",
   "validation.passwordsMismatch": "Passwords don't match",
 
-  // Поле пароля
   "password.show": "Show password",
   "password.hide": "Hide password",
 
-  // Меню профиля в сайдбаре
   "menu.profile": "Profile",
   "menu.logout": "Log out",
   "menu.loggingOut": "Logging out...",
 
-  // Профиль
   "profile.back": "Back",
   "profile.title": "Profile",
   "profile.description": "Your personal account settings",

@@ -1,6 +1,5 @@
 import type { TranslationKey } from "./en";
 
-// Русские тексты. Тип Record<TranslationKey, string> не даст забыть ключ из en.ts
 export const ru: Record<TranslationKey, string> = {
   "common.language": "Язык",
   "theme.dark": "Тёмная тема",

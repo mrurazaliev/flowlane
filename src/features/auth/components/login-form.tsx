@@ -14,7 +14,6 @@ import { useLoginMutation } from "../api";
 import { PasswordInput } from "./password-input";
 import { useT } from "@/shared/lib/i18n";
 
-// В сообщениях — ключи переводов, переводим их при показе: t(errors.email.message)
 const loginSchema = z.object({
   email: z.string().email("validation.email"),
   password: z.string().min(1, "validation.passwordRequired"),
@@ -28,7 +27,6 @@ export const LoginForm = () => {
   const login = useLoginMutation();
   const [notice, setNotice] = useState(false);
 
-  // Пришли со страницы профиля после смены пароля — показываем зелёное сообщение один раз
   useEffect(() => {
     if (sessionStorage.getItem("password-changed")) {
       sessionStorage.removeItem("password-changed");
@@ -55,7 +53,6 @@ export const LoginForm = () => {
       <h1 className="text-[26px] font-semibold tracking-tight">{t("login.title")}</h1>
       <p className="mb-7 mt-1.5 text-muted">{t("login.subtitle")}</p>
 
-      {/* method="post": если нажать кнопку до загрузки JS, браузер не положит пароль в адрес страницы */}
       <form method="post" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         {notice && (
           <p role="status" className="rounded-lg border border-[#3a9a6b]/30 bg-[#3a9a6b]/10 px-3.5 py-2.5 text-sm text-[#2f7d57] dark:text-[#7fd1a6]">

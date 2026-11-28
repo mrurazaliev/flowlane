@@ -1,8 +1,3 @@
-/**
- * Русские переводы для текстов, которые в коде написаны по-английски: t("Save changes").
- * Ключ — английский текст как в коде, значение — перевод. Нет перевода → покажется английский.
- * {name} и т.п. — подстановки, их не переводим.
- */
 export const ruTexts: Record<string, string> = {
   "+ Add label": "+ Добавить метку",
   "a task": "задачу",
@@ -409,7 +404,6 @@ export const ruTexts: Record<string, string> = {
   "Write a comment…": "Напишите комментарий…",
   "You are not in any workspace yet — create one.": "Вы пока не состоите ни в одном пространстве — создайте его.",
   "You don't have permission to do this.": "У вас нет прав на это действие.",
-  // Главная страница (лендинг)
   "Get started": "Начать работу",
   "Tasks keep moving.": "Задачи движутся.",
   "Your team sees the road.": "Команда видит путь.",

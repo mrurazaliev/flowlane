@@ -18,7 +18,6 @@ function useProjectParams() {
   return useParams<{ workspaceSlug: string; projectId: string }>()
 }
 
-/** Меню настроек проекта: General & members / Statuses / Labels */
 function SettingsLayout({ children }: { children: React.ReactNode }) {
   const t = useT();
   const { workspaceSlug, projectId } = useProjectParams()
@@ -52,7 +51,6 @@ function SettingsLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** D2.8 /w/:slug/p/:projectId/settings */
 export function ProjectSettingsPage() {
   const t = useT();
   const { workspaceSlug, projectId } = useProjectParams()
@@ -87,7 +85,6 @@ export function ProjectSettingsPage() {
   )
 }
 
-/** D2.9 .../settings/states */
 export function StatesSettingsPage() {
   const { workspaceSlug, projectId } = useProjectParams()
   const { canManage } = useProjectAccess(workspaceSlug)
@@ -98,7 +95,6 @@ export function StatesSettingsPage() {
   )
 }
 
-/** D2.10 .../settings/labels */
 export function LabelsSettingsPage() {
   const { workspaceSlug, projectId } = useProjectParams()
   const { canManage } = useProjectAccess(workspaceSlug)

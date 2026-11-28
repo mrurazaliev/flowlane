@@ -7,7 +7,6 @@ import { ProjectNav } from "@/features/projects";
 import { WorkspaceNav, WorkspaceSwitcher } from "@/features/workspaces";
 import { AppShell } from "@/shared/layout/app-shell";
 
-/** Собирает сайдбар из слотов разных фич (SHARED, app/) */
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>();
 

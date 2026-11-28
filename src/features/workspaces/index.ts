@@ -1,4 +1,3 @@
-// Публичный API фичи workspaces (Dev 2).
 export { WorkspacePicker } from './components/workspace-picker'
 export { WorkspaceSwitcher } from './components/workspace-switcher'
 export { WorkspaceSettings } from './components/workspace-settings'

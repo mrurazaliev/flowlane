@@ -20,7 +20,6 @@ function formValues(project: Project): SettingsForm {
   return { name: project.name, description: project.description ?? '', lead_id: project.lead_id ?? '' }
 }
 
-/** D2.8 Основные настройки проекта. */
 export function GeneralSettings({ project, workspaceSlug, workspaceMembers, canManage }: {
   project: Project;
   workspaceSlug: string;

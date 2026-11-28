@@ -9,7 +9,7 @@ export interface DropdownOption<T extends string> {
   value: T;
   label: string;
   icon?: React.ReactNode;
-  hint?: string; // справа: горячая клавиша или счётчик
+  hint?: string;
 }
 
 interface DropdownProps<T extends string> {
@@ -18,18 +18,13 @@ interface DropdownProps<T extends string> {
   onChange?: (value: T) => void;
   placeholder?: string;
   searchPlaceholder?: string;
-  /** "field" — как поле формы, "inline" — как строка свойства, "ghost" — как текст в тулбаре */
   variant?: "field" | "inline" | "ghost";
-  prefix?: string; // для ghost: "Sort", "Group"
+  prefix?: string;
   align?: "left" | "right";
   className?: string;
   ariaLabel?: string;
 }
 
-/**
- * Выпадающее меню вместо нативного <select>: иконки, поиск, клавиатура.
- * ↑/↓ — выбор, Enter — подтвердить, Esc — закрыть.
- */
 export function Dropdown<T extends string>({
   value,
   options,

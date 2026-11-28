@@ -93,7 +93,6 @@ export function useFindNotificationProject(slug: string) {
         staleTime: 30_000,
       })
 
-      // The notification carries the issue ID. Issue details are scoped to a project.
       for (const project of projects) {
         try {
           await api.get(`${projectsUrl}${encodeURIComponent(project.id)}/issues/${encodeURIComponent(issueId)}`)

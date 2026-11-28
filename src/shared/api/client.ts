@@ -1,8 +1,6 @@
 import axios from "axios";
 import { getRefreshToken, useAuthStore } from "./auth-store";
 
-
-
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
 export const api= axios.create(

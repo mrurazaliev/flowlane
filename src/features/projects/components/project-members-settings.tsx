@@ -12,7 +12,6 @@ import { useAddProjectMember, useProjectMembers, useRemoveProjectMember } from '
 import { projectErrorText, projectRoles } from '../project-form';
 import { useT } from "@/shared/lib/i18n";
 
-/** Участники проекта. Добавлять можно только тех, кто уже в workspace */
 export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMembers, canManage }: {
   workspaceSlug: string;
   projectId: string;

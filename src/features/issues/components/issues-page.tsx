@@ -11,7 +11,6 @@ import { IssueFilters } from "./issue-filters";
 import { useT } from "@/shared/lib/i18n";
 import { IssueList } from "./issue-list";
 
-/** Страница /w/:slug/p/:projectId/issues — список задач с фильтрами, группировкой и сортировкой */
 export function IssuesPage() {
   const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
@@ -30,7 +29,6 @@ export function IssuesPage() {
         states={states}
         actions={
           <>
-            {/* D1.7 Позже: group_by, sort_by, order — в URL и в запрос */}
             <Dropdown
               variant="ghost"
               prefix={t("Group")}

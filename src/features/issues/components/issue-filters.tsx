@@ -12,17 +12,11 @@ interface IssueFiltersProps {
   members: User[];
   labels: Label[];
   states: State[];
-  /** Кнопки справа (New task, сортировка…) */
   actions?: React.ReactNode;
 }
 
 type FilterKey = "state" | "priority" | "assignee" | "label";
 
-/**
- * D1.6 Поиск и фильтры: одна кнопка «Filter» + чипы выбранных значений.
- * Позже: значения хранятся в URL (?state=…&priority=…&search=…), чтобы пережить reload,
- * и уходят в GET /issues как state[], priority[], assignee[], label[], search.
- */
 export function IssueFilters({ members, labels, states, actions }: IssueFiltersProps) {
   const t = useT();
   const [open, setOpen] = useState(false);

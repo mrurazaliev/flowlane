@@ -2,7 +2,6 @@ import { cn, initials } from "@/shared/lib/utils";
 
 const palette = ["#5B6B8C", "#B5654A", "#4E8A73", "#8A6AA8", "#A0763A", "#4F7FA8"];
 
-/** Цвет аватара зависит от имени — у одного человека всегда один цвет */
 function colorFor(name: string) {
   let sum = 0;
   for (const ch of name) sum += ch.charCodeAt(0);
@@ -39,7 +38,6 @@ export function Avatar({ name, src, size = "sm", className }: AvatarProps) {
   );
 }
 
-/** Несколько аватаров внахлёст */
 export function AvatarStack({ names, max = 4 }: { names: string[]; max?: number }) {
   const shown = names.slice(0, max);
   const rest = names.length - shown.length;
