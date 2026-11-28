@@ -12,6 +12,7 @@ import { ErrorBanner, FieldError, Input, Label } from "@/shared/ui/form";
 import { errorText } from "@/shared/lib/errors";
 import { useLoginMutation } from "../api";
 import { PasswordInput } from "./password-input";
+import { GoogleButton } from "./google-button";
 import { useT } from "@/shared/lib/i18n";
 
 const loginSchema = z.object({
@@ -93,6 +94,8 @@ export const LoginForm = () => {
           {login.isPending ? t("login.submitting") : t("login.submit")}
         </Button>
       </form>
+
+      <GoogleButton />
 
       <p className="mt-6 text-center text-muted">
         {t("login.noAccount")}{" "}

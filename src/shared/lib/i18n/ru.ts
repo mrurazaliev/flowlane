@@ -77,4 +77,6 @@ export const ru: Record<TranslationKey, string> = {
   "validation.imageType": "Выберите картинку (JPG, PNG или WebP)",
   "validation.imageSize": "Картинка должна быть меньше 5 МБ",
   "login.passwordChanged": "Пароль изменён. Войдите с новым паролем.",
+  "auth.or": "или",
+  "auth.googleError": "Не удалось войти через Google. Попробуйте ещё раз.",
 };

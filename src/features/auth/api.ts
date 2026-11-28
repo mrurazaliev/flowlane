@@ -43,6 +43,17 @@ export const useLoginMutation =()=>
         }
     })
 
+export const useGoogleLoginMutation = () =>
+  useMutation({
+    mutationFn: async (credential: string) => {
+      const { data } = await api.post<AuthResponse>('/auth/google', { credential });
+      return data;
+    },
+    onSuccess: (data) => {
+      useAuthStore.getState().setTokens(data.access_token, data.refresh_token);
+    },
+  });
+
 export const useGetMeQuery = () =>
   useQuery({
     queryKey: queryKeys.me,
