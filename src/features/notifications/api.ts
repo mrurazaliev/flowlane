@@ -1,21 +1,13 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { api } from '@/shared/api/client'
 import { queryKeys } from '@/shared/api/queryKeys'
-import type { Notification } from '@/shared/api/types'
+import type { Notification, Project } from '@/shared/api/types'
 
 export type NotificationFilter = 'all' | 'unread'
 
-export type NotificationItem = Notification & {
-  issue?: {
-    project_id: string
-    project_identifier: string
-    sequence_id: number
-    title: string
-  } | null
-}
-
 type NotificationsResponse = {
-  data: NotificationItem[]
+  data: Notification[]
   unread_count: number
   next_cursor: string | null
 }
@@ -31,8 +23,8 @@ async function getNotifications(slug: string, params: NotificationParams, signal
   return data
 }
 
-async function markNotificationRead(slug: string, notificationId: string): Promise<NotificationItem> {
-  const { data } = await api.post<NotificationItem>(`${notificationsUrl(slug)}/${encodeURIComponent(notificationId)}/read`)
+async function markNotificationRead(slug: string, notificationId: string): Promise<Notification> {
+  const { data } = await api.post<Notification>(`${notificationsUrl(slug)}/${encodeURIComponent(notificationId)}/read`)
   return data
 }
 
@@ -82,6 +74,35 @@ export function useMarkAllNotificationsRead(slug: string) {
     mutationFn: () => markAllNotificationsRead(slug),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all(slug) })
+    },
+  })
+}
+
+export function useFindNotificationProject(slug: string) {
+  const queryClient = useQueryClient()
+  const projectsUrl = `/workspaces/${encodeURIComponent(slug)}/projects/`
+
+  return useMutation({
+    mutationFn: async (issueId: string) => {
+      const projects = await queryClient.fetchQuery({
+        queryKey: queryKeys.projects.all(slug),
+        queryFn: async ({ signal }) => {
+          const { data } = await api.get<Project[]>(projectsUrl, { signal })
+          return data
+        },
+        staleTime: 30_000,
+      })
+
+      // The notification carries the issue ID. Issue details are scoped to a project.
+      for (const project of projects) {
+        try {
+          await api.get(`${projectsUrl}${encodeURIComponent(project.id)}/issues/${encodeURIComponent(issueId)}`)
+          return project.id
+        } catch (error) {
+          if (!isAxiosError(error) || error.response?.status !== 404) throw error
+        }
+      }
+      return null
     },
   })
 }

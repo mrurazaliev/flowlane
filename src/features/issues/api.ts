@@ -2,6 +2,7 @@ import { api } from "@/shared/api/client";
 import { queryKeys } from "@/shared/api/queryKeys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Comment, Issue, Priority } from "@/shared/api/types";
+import { getIssuesPage, resolveIssueLabels } from "./issue-labels";
 
 export type IssueFilters = {
     cycle?: string;
@@ -38,34 +39,34 @@ const normalizeIssue = (issue: Issue): Issue => ({
   assignees: (issue.assignees ?? []).filter((item) => item?.user_id && item?.user),
 });
 
-type IssuesResponse = {
-  data: Issue[];
-  next_cursor: string | null;
-};
+const issuesUrl = (workspaceSlug: string, projectId: string) =>
+  `/workspaces/${workspaceSlug}/projects/${projectId}/issues`;
+
 // GET /workspaces/:slug/projects/:projectId/issues
 export const useGetIssuesQuery = (
   workspaceSlug: string,
   projectId: string,
   filters: IssueFilters = {},
   { allPages = false, enabled = true } = {},
-) =>
-  useQuery({
+) => {
+  const client = useQueryClient();
+  const url = issuesUrl(workspaceSlug, projectId);
+  return useQuery({
     queryKey: queryKeys.issues.list(workspaceSlug, projectId, allPages ? { ...filters, allPages } : filters),
     enabled,
     queryFn: async ({ signal }) => {
       const issues: Issue[] = [];
       let cursor: string | null = null;
       do {
-        const { data }: { data: IssuesResponse } = await api.get<IssuesResponse>(
-          `/workspaces/${workspaceSlug}/projects/${projectId}/issues`,
-          { params: { limit: 100, ...filters, cursor: cursor ?? undefined }, signal },
-        );
-        issues.push(...data.data.map(normalizeIssue));
-        cursor = data.next_cursor;
+        const page = await getIssuesPage(url, filters, cursor, signal);
+        issues.push(...page.data);
+        cursor = page.next_cursor;
       } while (allPages && cursor);
-      return issues;
+      return (await resolveIssueLabels(issues, { workspaceSlug, projectId }, url, filters, client, signal))
+        .map(normalizeIssue);
     },
   });
+};
 
 
 // POST /workspaces/:slug/projects/:projectId/issues
@@ -86,16 +87,18 @@ export const useAddIssueMutation = (workspaceSlug: string, projectId: string) =>
 
 
 // GET одной задачи
-export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
-  useQuery({
+export const useGetIssueQuery = (workspaceSlug: string, projectId: string, issueId: string) => {
+  const client = useQueryClient();
+  const url = issuesUrl(workspaceSlug, projectId);
+  return useQuery({
     queryKey: queryKeys.issues.detail(workspaceSlug, projectId, issueId),
-    queryFn: async () => {
-      const { data } = await api.get<Issue>(
-        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`,
-      );
-      return normalizeIssue(data);
+    queryFn: async ({ signal }) => {
+      const { data } = await api.get<Issue>(`${url}/${issueId}`, { signal });
+      const [issue] = await resolveIssueLabels([data], { workspaceSlug, projectId }, url, { search: data.title }, client, signal);
+      return normalizeIssue(issue);
     },
   });
+};
 
 // PATCH
 async function editIssue(workspaceSlug: string, projectId: string, issueId: string, changes: IssueUpdate) {

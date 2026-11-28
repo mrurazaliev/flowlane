@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { Bell } from 'lucide-react'
-import { useInvites } from '@/features/workspaces'
 import { SidebarLink } from '@/shared/layout/sidebar-link'
 import { useT } from "@/shared/lib/i18n";
 import { useNotificationCount } from '../api'
@@ -12,9 +11,7 @@ export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) 
   const t = useT();
   const pathname = usePathname()
   const href = `/w/${workspaceSlug}/notifications`
-  const { data: notificationCount = 0 } = useNotificationCount(workspaceSlug)
-  const { data: invites = [] } = useInvites()
-  const unreadCount = notificationCount + invites.length
+  const { data: unreadCount = 0 } = useNotificationCount(workspaceSlug)
 
   return (
     <SidebarLink href={href} active={pathname === href}>

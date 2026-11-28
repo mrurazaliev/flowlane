@@ -59,13 +59,15 @@ export const useStates = (workspaceSlug: string, projectId: string) => {
   return { ...query, data: query.data ?? [] };
 };
 
+export async function getLabels(workspaceSlug: string, projectId: string, signal: AbortSignal) {
+  const { data } = await api.get<Label[]>(`/workspaces/${workspaceSlug}/projects/${projectId}/labels`, { signal });
+  return data;
+}
+
 export const useLabels = (workspaceSlug: string, projectId: string) => {
   const query = useQuery({
     queryKey: queryKeys.labels(workspaceSlug, projectId),
-    queryFn: async () => {
-      const { data } = await api.get<Label[]>(`/workspaces/${workspaceSlug}/projects/${projectId}/labels`);
-      return data;
-    },
+    queryFn: ({ signal }) => getLabels(workspaceSlug, projectId, signal),
   });
   return { ...query, data: query.data ?? [] };
 };
