@@ -62,21 +62,21 @@ export function BoardColumn({
         onMove(draggedIssue, state.id);
       }}
       className={cn(
-        "relative flex w-[290px] shrink-0 snap-start flex-col px-3.5 pt-[18px]",
-        !first && "bg-[linear-gradient(var(--color-gray-200)_55%,transparent_0)] bg-[length:2px_22px] bg-repeat-y",
-        canDrop && isOver && "bg-marking-soft",
+        "relative mx-1.5 my-1 flex w-[290px] shrink-0 snap-start flex-col rounded-[16px] border border-line bg-paper-2 px-3 pt-3.5 transition-colors",
+        first && "ml-0",
+        canDrop && isOver && "border-dashed border-marking bg-marking-soft",
       )}
     >
-      {moving && <span className="absolute inset-x-3.5 top-0 h-[3px] rounded-b bg-marking" />}
+      {moving && <span className="absolute inset-x-5 top-0 h-[3px] rounded-b bg-marking" />}
 
       <header className="mb-3.5 flex items-center gap-2 px-0.5">
         <StateIcon group={state.group} color={state.color} />
-        <h3 className="font-semibold">{state.name}</h3>
-        <span className="font-medium tabular-nums text-muted">{issues.length}</span>
+        <h3 className="text-[15px] font-semibold">{state.name}</h3>
+        <span className="rounded-full border border-line bg-white px-2 text-xs font-medium tabular-nums text-muted">{issues.length}</span>
         {onAddClick && (
           <button
             onClick={onAddClick}
-            className="ml-auto rounded p-0.5 text-faint hover:bg-white hover:text-ink"
+            className="ml-auto rounded-md p-0.5 text-faint hover:bg-white hover:text-ink"
             aria-label={t("Add task to {name}", { name: state.name })}
           >
             <Plus className="size-4" />
@@ -86,7 +86,7 @@ export function BoardColumn({
 
       <div className="flex min-h-24 flex-1 flex-col gap-2.5 overflow-y-auto pb-6">
         {issues.length === 0 ? (
-          <p className="rounded-[11px] border-[1.5px] border-dashed border-gray-300 px-3 py-6 text-center text-[13px] text-faint">
+          <p className="rounded-[12px] border-[1.5px] border-dashed border-gray-300 bg-[repeating-linear-gradient(135deg,transparent_0_10px,color-mix(in_oklab,var(--color-line)_50%,transparent)_10px_11px)] px-3 py-7 text-center text-[13px] text-faint">
             {t(emptyText[state.group])}
           </p>
         ) : (

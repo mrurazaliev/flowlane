@@ -430,4 +430,10 @@ export const ruTexts: Record<string, string> = {
   "Website": "Сайт",
   "Mobile": "Мобайл",
   "List": "Список",
+  "Flowlane · planning without the noise": "Flowlane · планирование без шума",
+  "Drag-and-drop on the board": "Drag-and-drop на доске",
+  "Refresh token does not update": "Refresh-токен не обновляется",
+  "Feature": "Фича",
+  "Bug": "Баг",
+  "Design": "Дизайн",
 };

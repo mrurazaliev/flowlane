@@ -94,5 +94,5 @@ export const useProjectMembers = (workspaceSlug: string, projectId: string) => {
   return { ...query, data: query.data ?? [] };
 };
 
-const projectColors = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#06B6D4"];
+const projectColors = ["#D9532B", "#5E8A6E", "#7A4E8C", "#3E6EA8", "#C98A12"];
 export const projectColor = (index: number) => projectColors[index % projectColors.length];

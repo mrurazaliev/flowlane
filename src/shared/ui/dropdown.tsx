@@ -86,7 +86,7 @@ export function Dropdown<T extends string>({
   };
 
   const trigger = {
-    field: "h-11 w-full justify-between rounded-[10px] border border-line bg-white px-3.5 text-[15px]",
+    field: "h-11 w-full justify-between rounded-[12px] border border-line bg-white px-3.5 text-[15px]",
     inline: "min-h-9 w-full rounded-lg px-2 -ml-2 hover:bg-gray-100",
     ghost: "h-9 rounded-[9px] px-2.5 text-muted hover:bg-gray-100",
   }[variant];

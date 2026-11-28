@@ -24,14 +24,14 @@ export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-1.5 flex items-center justify-between px-2.5 text-[12.5px] text-[#8c93a0]">
-        <Link href={`/w/${workspaceSlug}/projects`} className="hover:text-white">
+      <div className="mb-1.5 flex items-center justify-between px-2.5 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-side-faint">
+        <Link href={`/w/${workspaceSlug}/projects`} className="hover:text-ink">
           {t("Projects")}
         </Link>
         {canManage && <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          className="rounded p-0.5 hover:bg-asphalt-2 hover:text-white"
+          className="rounded p-0.5 hover:bg-side-hover hover:text-ink"
           aria-label={t("New project")}
         >
           <Plus className="size-4" />
@@ -39,11 +39,11 @@ export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto">
-        {projectsQuery.isPending && <p className="px-2.5 py-2 text-sm text-[#8c93a0]">{t("Loading projects…")}</p>}
-        {projectsQuery.isError && <p className="px-2.5 py-2 text-sm text-[#8c93a0]">{t("Could not load projects")}</p>}
+        {projectsQuery.isPending && <p className="px-2.5 py-2 text-sm text-side-faint">{t("Loading projects…")}</p>}
+        {projectsQuery.isError && <p className="px-2.5 py-2 text-sm text-side-faint">{t("Could not load projects")}</p>}
         {projectsQuery.isSuccess && activeProjects.length === 0 && (
           <div className="px-2.5 py-2 text-sm">
-            <p className="text-[#8c93a0]">{projects.length ? t("No active projects") : t("No projects yet")}</p>
+            <p className="text-side-faint">{projects.length ? t("No active projects") : t("No projects yet")}</p>
             {canManage && <button type="button" onClick={() => setCreateOpen(true)} className="mt-1 font-medium text-marking hover:underline">
               {t("Create a project")}
             </button>}
@@ -55,9 +55,9 @@ export function ProjectNav({ workspaceSlug }: { workspaceSlug: string }) {
               href={projectSettingsHref(workspaceSlug, project.id)}
               active={project.id === projectId}
             >
-              <span className="size-2 rounded-[3px]" style={{ backgroundColor: projectColor(index) }} />
+              <span className="size-2.5 rounded-full" style={{ backgroundColor: projectColor(index) }} />
               <span className="flex-1 truncate">{project.name}</span>
-              <span className="text-xs text-[#7d8492]">{project.identifier}</span>
+              <span className="font-id text-[11px] text-side-faint">{project.identifier}</span>
             </SidebarLink>
         ))}
       </nav>

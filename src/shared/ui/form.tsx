@@ -3,13 +3,13 @@ import { cn } from "@/shared/lib/utils";
 import { translate } from "@/shared/lib/i18n";
 
 const fieldBase =
-  "w-full rounded-[10px] border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-faint transition-shadow " +
-  "focus:border-asphalt focus:outline-none focus:ring-[3px] focus:ring-marking-soft";
+  "w-full rounded-[12px] border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-faint transition-shadow " +
+  "focus:border-ink focus:outline-none focus:ring-[3px] focus:ring-marking-soft";
 
 const fieldError = "border-red-400 focus:border-red-500 focus:ring-red-100";
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn("mb-1.5 block text-[13.5px] font-medium text-ink", className)} {...props} />;
+  return <label className={cn("mb-1.5 block text-[13.5px] font-semibold text-ink", className)} {...props} />;
 }
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {

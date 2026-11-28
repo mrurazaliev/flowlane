@@ -51,8 +51,8 @@ export const RegisterForm = () => {
 
   return (
     <>
-      <h1 className="text-[26px] font-semibold tracking-tight">{t("register.title")}</h1>
-      <p className="mb-7 mt-1.5 text-muted">{t("register.subtitle")}</p>
+      <h1 className="font-serif text-[40px] font-semibold leading-tight tracking-tight">{t("register.title")}</h1>
+      <p className="mb-8 mt-2 text-[15px] text-muted">{t("register.subtitle")}</p>
 
       <form method="post" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <ErrorBanner>{apiError}</ErrorBanner>
@@ -111,7 +111,7 @@ export const RegisterForm = () => {
         <Button
           type="submit"
           disabled={registerUser.isPending}
-          className="mt-2 h-[46px] w-full text-[15px] font-semibold"
+          className="mt-3 h-12 w-full rounded-[12px] text-[15px] font-semibold"
         >
           {registerUser.isPending ? t("register.submitting") : t("register.submit")}
         </Button>

@@ -16,7 +16,7 @@ function StartButton({ className }: { className?: string }) {
   return (
     <Link
       href="/register"
-      className={cn("rounded-[10px] bg-marking px-5 py-2.5 text-[15px] font-semibold text-asphalt transition hover:brightness-105", className)}
+      className={cn("rounded-[10px] bg-marking px-5 py-2.5 text-[15px] font-semibold text-white shadow-[inset_0_-2px_0_var(--color-marking-dark)] transition hover:bg-marking-dark", className)}
     >
       {t("Get started")}
     </Link>
@@ -76,7 +76,7 @@ export function LandingPage() {
               <div className="flex items-center gap-2 text-[12.5px]">
                 <span className="rounded-full bg-gray-200 px-2.5 py-1 text-gray-700">{t("Todo")}</span>
                 <span className="text-faint">→</span>
-                <span className="rounded-full bg-marking-soft px-2.5 py-1 text-[#7a5300]">{t("In progress")}</span>
+                <span className="rounded-full bg-marking-soft px-2.5 py-1 text-marking-dark">{t("In progress")}</span>
               </div>
             </Feature>
             <Feature icon={<CalendarRange className="size-5" />} title={t("Cycles and modules")} text={t("Sprints by dates, progress is counted automatically.")}>
@@ -86,7 +86,7 @@ export function LandingPage() {
                   <span>{t("{done} of {total}", { done: 7, total: 10 })}</span>
                 </div>
                 <div className="mt-2 flex h-1.5 overflow-hidden rounded-full bg-gray-200">
-                  <span className="w-[70%] bg-[#3a9a6b]" />
+                  <span className="w-[70%] bg-sage" />
                   <span className="w-[10%] bg-marking" />
                 </div>
               </div>
@@ -125,7 +125,7 @@ function Feature({ icon, title, text, children }: { icon: React.ReactNode; title
     <div className="rounded-2xl bg-canvas p-5">
       <div className="flex h-16 items-center">{children}</div>
       <p className="mt-3 flex items-center gap-2 text-[15px] font-semibold text-ink">
-        <span className="text-[#b88512]">{icon}</span>
+        <span className="text-marking">{icon}</span>
         {title}
       </p>
       <p className="mt-1 text-sm leading-relaxed text-muted">{text}</p>
@@ -147,7 +147,7 @@ function BoardPreview() {
     { name: t("Backlog"), color: "text-[#8c93a0]", cards: [["MOB-12", t("Dark theme")], ["MOB-14", t("Push notifications")]] },
     { name: t("Todo"), color: "text-[#8c93a0]", cards: [["MOB-9", t("Profile screen")]] },
     { name: t("In progress"), color: "text-marking", cards: [["MOB-11", t("Onboarding")]] },
-    { name: t("Done"), color: "text-[#5DCAA5]", cards: [["MOB-4", t("Email sign-in")]] },
+    { name: t("Done"), color: "text-[#8fc0a0]", cards: [["MOB-4", t("Email sign-in")]] },
   ];
 
   return (
@@ -155,9 +155,9 @@ function BoardPreview() {
       <div className="border-r border-asphalt-line bg-asphalt p-4 text-[13px] leading-8 text-[#8c93a0]">
         <p className="mb-1 font-semibold text-white">Acme</p>
         {[
-          [t("Website"), "#7F77DD"],
+          [t("Website"), "#d9532b"],
           [t("Mobile"), "var(--color-marking)"],
-          ["API", "#5DCAA5"],
+          ["API", "#5e8a6e"],
         ].map(([name, color], i) => (
           <p key={name} className={cn("-mx-2 flex items-center gap-2 rounded-md px-2", i === 1 && "bg-asphalt-2 text-white")}>
             <span className="size-2 rounded-sm" style={{ backgroundColor: color }} />
@@ -198,7 +198,7 @@ function BoardPreview() {
             title={t("Sync")}
             className={cn(
               "absolute top-[30px] w-[calc(25%-24px)] transition-[left,border-color] duration-1000 ease-in-out motion-reduce:transition-none",
-              moved ? "left-[calc(75%+12px)] border-[#5DCAA5]" : "left-[calc(50%+12px)] border-marking",
+              moved ? "left-[calc(75%+12px)] border-[#8fc0a0]" : "left-[calc(50%+12px)] border-marking",
             )}
           />
         </div>

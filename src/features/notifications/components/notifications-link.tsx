@@ -14,10 +14,10 @@ export function NotificationsLink({ workspaceSlug }: { workspaceSlug: string }) 
 
   return (
     <SidebarLink href={href} active={pathname === href}>
-      <Bell className="size-4 text-[#8c93a0]" />
+      <Bell className="size-4 text-side-faint" />
       <span className="flex-1">{t("Notifications")}</span>
       {unreadCount > 0 && (
-        <span className="rounded-full bg-marking px-1.5 text-xs font-semibold tabular-nums text-asphalt">{unreadCount}</span>
+        <span className="rounded-full bg-marking px-1.5 text-xs font-semibold tabular-nums text-white">{unreadCount}</span>
       )}
     </SidebarLink>
   )

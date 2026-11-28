@@ -53,7 +53,7 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-asphalt/45" onClick={onClose} />
+      <div className="absolute inset-0 bg-asphalt/40 backdrop-blur-[2px]" onClick={onClose} />
       <div
         ref={ref}
         role="dialog"
@@ -61,12 +61,12 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
         aria-label={title}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-lg rounded-t-2xl bg-white shadow-[0_24px_60px_-20px_rgba(30,34,42,.45)] outline-none sm:rounded-2xl",
+          "relative w-full max-w-lg rounded-t-[22px] border border-line bg-white shadow-[0_30px_70px_-24px_rgba(27,34,56,.5)] outline-none sm:rounded-[22px]",
           className,
         )}
       >
-        <div className="flex items-center justify-between px-6 pt-5">
-          <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-ink">
+        <div className="flex items-center justify-between px-7 pt-6">
+          <h2 className="flex items-center gap-2 text-[22px] font-semibold tracking-tight text-ink">
             {icon}
             {title}
           </h2>
@@ -74,8 +74,8 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
             <X className="size-5" />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-line-soft px-6 py-4">{footer}</div>}
+        <div className="px-7 py-5">{children}</div>
+        {footer && <div className="flex justify-end gap-2 border-t border-line px-7 py-4">{footer}</div>}
       </div>
     </div>
   );

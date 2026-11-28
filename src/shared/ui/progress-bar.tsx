@@ -2,11 +2,11 @@ import type { Progress } from "@/shared/api/types";
 import { translate } from "@/shared/lib/i18n";
 
 const segments = [
-  { key: "completed", label: "Completed", color: "#3a9a6b" },
-  { key: "started", label: "Started", color: "#f2b630" },
-  { key: "unstarted", label: "Unstarted", color: "#c3c9d1" },
-  { key: "backlog", label: "Backlog", color: "#dde1e6" },
-  { key: "cancelled", label: "Cancelled", color: "#d64545" },
+  { key: "completed", label: "Completed", color: "#5e8a6e" },
+  { key: "started", label: "Started", color: "#c98a12" },
+  { key: "unstarted", label: "Unstarted", color: "#3e6ea8" },
+  { key: "backlog", label: "Backlog", color: "#d4c8b1" },
+  { key: "cancelled", label: "Cancelled", color: "#d9532b" },
 ] as const;
 
 export function ProgressBar({ progress, showLegend = false }: { progress: Progress; showLegend?: boolean }) {

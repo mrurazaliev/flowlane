@@ -16,10 +16,8 @@ export function SidebarLink({
     <Link
       href={href}
       className={cn(
-        "relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
-        active ? "bg-asphalt-2 text-white" : "text-[#c9cdd4] hover:bg-asphalt-2/60 hover:text-white",
-        active &&
-          "before:absolute before:-left-3 before:bottom-2 before:top-2 before:w-[3px] before:rounded-r before:bg-marking",
+        "relative flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[14.5px] transition-colors",
+        active ? "bg-side-active font-medium text-ink shadow-[0_0_0_1px_var(--color-line)]" : "text-side-text hover:bg-side-hover hover:text-ink",
         className,
       )}
     >

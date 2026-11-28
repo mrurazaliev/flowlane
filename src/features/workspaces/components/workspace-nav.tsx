@@ -17,7 +17,7 @@ export function WorkspaceNav({ workspaceSlug }: { workspaceSlug: string }) {
     <>
       {links.map(({ href, label, icon: Icon }) => (
         <SidebarLink key={href} href={href} active={pathname === href}>
-          <Icon className="size-4 text-[#8c93a0]" />
+          <Icon className="size-4 text-side-faint" />
           {label}
         </SidebarLink>
       ))}

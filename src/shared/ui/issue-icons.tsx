@@ -17,7 +17,7 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
     return (
       <span
         aria-label={translate("Urgent")}
-        className={cn("inline-grid size-[15px] place-items-center rounded-[4px] bg-[#d64545] text-[11px] font-bold leading-none text-white", className)}
+        className={cn("inline-grid size-[15px] place-items-center rounded-[4px] bg-marking text-[11px] font-bold leading-none text-white", className)}
       >
         !
       </span>
@@ -28,7 +28,7 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
   }
 
   const filled = { high: 3, medium: 2, low: 1 }[priority];
-  const color = { high: "#e07b39", medium: "#c9a227", low: "#5b8def" }[priority];
+  const color = { high: "#d9532b", medium: "#c98a12", low: "#5e8a6e" }[priority];
 
   return (
     <span aria-label={translate(priorityLabels[priority])} className={cn("inline-flex h-3 items-end gap-[2px]", className)}>
@@ -36,7 +36,7 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
         <span
           key={height}
           className="w-[3px] rounded-[1px]"
-          style={{ height, backgroundColor: i < filled ? color : "#d5d9df" }}
+          style={{ height, backgroundColor: i < filled ? color : "#d4c8b1" }}
         />
       ))}
     </span>

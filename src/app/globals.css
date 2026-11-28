@@ -3,96 +3,136 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: var(--font-fira), "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), var(--font-fira), "Segoe UI", system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --font-mono: var(--font-anon), ui-monospace, monospace;
 
-  --color-asphalt: #23272f;
-  --color-asphalt-2: #2d323c;
-  --color-asphalt-line: #3a404b;
-  --color-canvas: #f2f3f5;
-  --color-line: #dde1e6;
-  --color-line-soft: #e9ecef;
-  --color-ink: #1e222a;
-  --color-muted: #6a7180;
-  --color-faint: #9aa1ad;
-  --color-marking: #f2b630;
-  --color-marking-soft: #fdf3d9;
+  --color-asphalt: #1b2238;
+  --color-asphalt-2: #262e48;
+  --color-asphalt-line: #353e5c;
+  --color-canvas: #f6f1e7;
+  --color-paper-2: #efe7d8;
+  --color-line: #e3d9c6;
+  --color-line-soft: #ece4d4;
+  --color-ink: #1b2238;
+  --color-ink-2: #4a5068;
+  --color-muted: #6b6f82;
+  --color-faint: #9a9aa6;
+  --color-marking: #d9532b;
+  --color-marking-dark: #b8421f;
+  --color-marking-soft: #f8e0d5;
 
-  --color-gray-50: #f7f8f9;
-  --color-gray-100: #f2f3f5;
-  --color-gray-200: #dde1e6;
-  --color-gray-300: #cdd2d9;
-  --color-gray-400: #9aa1ad;
-  --color-gray-500: #6a7180;
-  --color-gray-600: #4a5160;
-  --color-gray-700: #353b47;
-  --color-gray-800: #262b34;
-  --color-gray-900: #1e222a;
+  --color-sage: #5e8a6e;
+  --color-plum: #7a4e8c;
+  --color-sky: #3e6ea8;
+  --color-sun: #c98a12;
 
-  --color-indigo-50: #fdf3d9;
-  --color-indigo-100: #fbe7b5;
-  --color-indigo-300: #f2b630;
-  --color-indigo-400: #f2b630;
-  --color-indigo-500: #f2b630;
-  --color-indigo-600: #23272f;
-  --color-indigo-700: #1e222a;
+  --color-side: #efe7d8;
+  --color-side-hover: #e7dcc8;
+  --color-side-active: #fffdf8;
+  --color-side-text: #4a5068;
+  --color-side-faint: #8b8778;
 
-  --color-surface: #ffffff;
+  --color-gray-50: #f9f5ec;
+  --color-gray-100: #f1eadc;
+  --color-gray-200: #e3d9c6;
+  --color-gray-300: #d4c8b1;
+  --color-gray-400: #9a9aa6;
+  --color-gray-500: #6b6f82;
+  --color-gray-600: #4a5068;
+  --color-gray-700: #353b52;
+  --color-gray-800: #262c42;
+  --color-gray-900: #1b2238;
+
+  --color-indigo-50: #fbece5;
+  --color-indigo-100: #f8e0d5;
+  --color-indigo-300: #e98d6f;
+  --color-indigo-400: #e06a45;
+  --color-indigo-500: #d9532b;
+  --color-indigo-600: #d9532b;
+  --color-indigo-700: #b8421f;
+
+  --color-surface: #fffdf8;
+
+  --radius-card: 14px;
 }
 
 .dark {
   color-scheme: dark;
 
-  --color-asphalt: #0d0f13;
-  --color-asphalt-2: #1a1d23;
-  --color-asphalt-line: #23272e;
-  --color-canvas: #16181d;
-  --color-surface: #1e2127;
-  --color-line: #2c3039;
-  --color-line-soft: #24282f;
-  --color-ink: #eceef1;
-  --color-muted: #a0a6b1;
-  --color-faint: #6c7380;
-  --color-marking-soft: #3a3018;
+  --color-asphalt: #0f1322;
+  --color-asphalt-2: #1c2236;
+  --color-asphalt-line: #2a3149;
+  --color-canvas: #141a2b;
+  --color-paper-2: #1a2034;
+  --color-surface: #1e2539;
+  --color-line: #2d3550;
+  --color-line-soft: #252c43;
+  --color-ink: #f3eee3;
+  --color-ink-2: #c9c6bd;
+  --color-muted: #a8acbd;
+  --color-faint: #6f7590;
+  --color-marking: #e8693f;
+  --color-marking-dark: #c9532c;
+  --color-marking-soft: #3d2620;
 
-  --color-gray-50: #1b1e24;
-  --color-gray-100: #262a31;
-  --color-gray-200: #2f343d;
-  --color-gray-300: #3c424d;
-  --color-gray-400: #6c7380;
-  --color-gray-500: #a0a6b1;
-  --color-gray-600: #b9bec6;
-  --color-gray-700: #d0d4da;
-  --color-gray-800: #e2e5e9;
-  --color-gray-900: #eceef1;
+  --color-side: #111628;
+  --color-side-hover: #1c2236;
+  --color-side-active: #232a42;
+  --color-side-text: #c9c6bd;
+  --color-side-faint: #7b8098;
 
-  --color-indigo-50: #3a3018;
-  --color-indigo-100: #463a1c;
-  --color-indigo-600: #f2c75a;
-  --color-indigo-700: #f5d27a;
+  --color-gray-50: #1a2034;
+  --color-gray-100: #232a40;
+  --color-gray-200: #2d3550;
+  --color-gray-300: #3a4362;
+  --color-gray-400: #6f7590;
+  --color-gray-500: #a8acbd;
+  --color-gray-600: #c2c4cf;
+  --color-gray-700: #d8d6cf;
+  --color-gray-800: #e8e4da;
+  --color-gray-900: #f3eee3;
+
+  --color-indigo-50: #3d2620;
+  --color-indigo-100: #4a2c22;
+  --color-indigo-600: #f08a64;
+  --color-indigo-700: #f5a283;
 
   --color-red-50: #3a1d20;
   --color-red-200: #5c2a2e;
 }
 
 @layer utilities {
-  :where(.dark) aside.bg-asphalt {
-    box-shadow: inset -1px 0 0 var(--color-asphalt-line);
-  }
-  :where(.dark) .bg-white {
+  .bg-white {
     background-color: var(--color-surface);
   }
-  :where(.dark) .bg-white\/60 {
+  .bg-white\/60 {
     background-color: color-mix(in oklab, var(--color-surface) 60%, transparent);
   }
   :where(.dark) .text-red-600,
   :where(.dark) .text-red-700 {
     color: #f08a8a;
   }
+  .font-id {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
 }
 
 body {
   @apply bg-canvas text-ink antialiased;
   font-size: 14px;
+}
+
+h1,
+h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--color-marking-soft);
 }
 
 :focus-visible {
