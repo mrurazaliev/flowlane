@@ -227,3 +227,27 @@ export const useRemoveLabelMutation = (workspaceSlug: string, projectId: string,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.issues.all }),
   });
 };
+
+// ---------- История изменений ----------
+export type ActivityEntry = {
+  id: string;
+  action: string; // "issue.created", "issue.updated", "issue.assignee_added", ...
+  field: string | null; // для issue.updated: "state_id", "priority", "title", ...
+  old_value: string | null;
+  new_value: string | null; // для статуса/исполнителя/лейбла — это id
+  created_at: string;
+  actor: { id: string; display_name: string; avatar_url: string | null };
+};
+
+// GET {i}/activity — бэкенд отдаёт от новых к старым
+export const useGetActivityQuery = (workspaceSlug: string, projectId: string, issueId: string) =>
+  useQuery({
+    queryKey: queryKeys.issues.activity(issueId),
+    queryFn: async () => {
+      const { data } = await api.get<{ data: ActivityEntry[]; next_cursor: string | null }>(
+        `/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/activity`,
+        { params: { limit: 100 } },
+      );
+      return data.data;
+    },
+  });
