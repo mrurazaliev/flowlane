@@ -11,12 +11,9 @@ import { PriorityIcon, StateIcon } from "@/shared/ui/issue-icons";
 import { EmptyState } from "@/shared/ui/page";
 import { cn, formatDate } from "@/shared/lib/utils";
 import { useT } from "@/shared/lib/i18n";
-import { useGetIssuesQuery } from "../api";
+import { useGetIssuesQuery, type IssueFilters } from "../api";
 
-export interface IssueListFilter {
-  cycle?: string;
-  module?: string;
-}
+export type IssueListFilter = IssueFilters;
 
 interface IssueListProps {
   workspaceSlug: string;
@@ -37,6 +34,8 @@ if (isLoading) return <p className="p-4 text-muted">{t("Loading tasks...")}</p>;
 if (isError) return <p className="p-4 text-red-600">{t("Could not load tasks")}</p>;
 
 if (issues.length === 0) {
+  const isFiltered = !!(filter.search || filter.state?.length || filter.priority?.length || filter.assignee?.length || filter.label?.length);
+  if (isFiltered) return <EmptyState title={t("No matching tasks")} />;
   return <EmptyState title={t("No tasks here yet")} description={t("Tasks you add will show up in this list.")} />;
 }
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { ListFilter, Search, X } from "lucide-react";
 import type { Label, Priority, State, User } from "@/shared/api/types";
 import { Avatar } from "@/shared/ui/avatar";
 import { PriorityIcon, StateIcon, priorityLabels, priorityOrder } from "@/shared/ui/issue-icons";
 import { cn } from "@/shared/lib/utils";
 import { useT } from "@/shared/lib/i18n";
+import type { IssueFilters as IssueQueryFilters } from "../api";
 import { ViewSwitch } from "./view-switch";
 
 interface IssueFiltersProps {
@@ -14,27 +15,36 @@ interface IssueFiltersProps {
   labels: Label[];
   states: State[];
   actions?: React.ReactNode;
+  search: string;
+  onSearchChange: (value: string) => void;
+  selected: FilterSelection;
+  onSelectedChange: Dispatch<SetStateAction<FilterSelection>>;
 }
 
-type FilterKey = "state" | "priority" | "assignee" | "label";
+export type FilterKey = "state" | "priority" | "assignee" | "label";
+export type FilterSelection = Record<FilterKey, string[]>;
 
-export function IssueFilters({ members, labels, states, actions }: IssueFiltersProps) {
+export const emptyFilters: FilterSelection = { state: [], priority: [], assignee: [], label: [] };
+
+export function toIssueQuery(selected: FilterSelection, search: string): IssueQueryFilters {
+  const query: IssueQueryFilters = {};
+  if (search) query.search = search;
+  for (const key of Object.keys(selected) as FilterKey[]) {
+    if (selected[key].length) query[key] = selected[key];
+  }
+  return query;
+}
+
+export function IssueFilters({ members, labels, states, actions, search, onSearchChange, selected, onSelectedChange }: IssueFiltersProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Record<FilterKey, string[]>>({
-    state: [],
-    priority: ["urgent", "high"],
-    assignee: [],
-    label: [],
-  });
-
   const toggle = (key: FilterKey, value: string) =>
-    setSelected((prev) => ({
+    onSelectedChange((prev) => ({
       ...prev,
       [key]: prev[key].includes(value) ? prev[key].filter((v) => v !== value) : [...prev[key], value],
     }));
   const clear = (key?: FilterKey) =>
-    setSelected((prev) => (key ? { ...prev, [key]: [] } : { state: [], priority: [], assignee: [], label: [] }));
+    onSelectedChange((prev) => (key ? { ...prev, [key]: [] } : emptyFilters));
 
   const count = Object.values(selected).reduce((n, list) => n + list.length, 0);
 
@@ -51,7 +61,13 @@ export function IssueFilters({ members, labels, states, actions }: IssueFiltersP
       <ViewSwitch />
       <label className="flex h-10 w-full items-center gap-2 rounded-[12px] border border-line bg-white px-3 text-faint focus-within:border-ink focus-within:ring-[3px] focus-within:ring-marking-soft sm:w-60">
         <Search className="size-4" />
-        <input type="search" placeholder={t("Search tasks")} className="w-full bg-transparent text-ink outline-none placeholder:text-faint" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={t("Search tasks")}
+          className="w-full bg-transparent text-ink outline-none placeholder:text-faint"
+        />
       </label>
 
       <div className="relative">

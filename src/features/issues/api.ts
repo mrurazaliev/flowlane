@@ -7,6 +7,11 @@ import { getIssuesPage, resolveIssueLabels } from "./issue-labels";
 export type IssueFilters = {
     cycle?: string;
     module?: string;
+    search?: string;
+    state?: string[];
+    priority?: string[];
+    assignee?: string[];
+    label?: string[];
 };
 
 export type IssueInput = {
@@ -50,6 +55,8 @@ export const useGetIssuesQuery = (
   return useQuery({
     queryKey: queryKeys.issues.list(workspaceSlug, projectId, allPages ? { ...filters, allPages } : filters),
     enabled,
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === projectId ? previous : undefined,
     queryFn: async ({ signal }) => {
       const issues: Issue[] = [];
       let cursor: string | null = null;
