@@ -75,8 +75,12 @@ export function IssueDetail() {
   const issueLabelIds = issue.labels.map(({ label }) => label.id);
   const availableLabels = labels.filter((l) => !issueLabelIds.includes(l.id));
 
-  // Любое сохранение на странице — для индикатора «Saving… / Saved»
-  const saving = [editIssue, addAssignee, removeAssignee, addLabel, removeLabel];
+  // Индикатор «Saving… / Saved / Couldn't save» показывает ПОСЛЕДНЕЕ сохранение.
+  // Раньше брали «есть ли ошибка хоть где-то» — и старая ошибка (например, от исполнителя)
+  // висела на экране, даже когда новые изменения сохранялись успешно.
+  const lastSave = [editIssue, addAssignee, removeAssignee, addLabel, removeLabel].reduce((latest, m) =>
+    m.submittedAt > latest.submittedAt ? m : latest,
+  );
 
   const key = (seq: number) => `${project.identifier}-${seq}`;
   const base = `/w/${workspaceSlug}/p/${projectId}`;
@@ -106,11 +110,7 @@ export function IssueDetail() {
             <span className="font-medium text-ink">{key(issue.sequence_id)}</span>
 
             <span className="ml-auto">
-              <SaveStatus
-                pending={saving.some((m) => m.isPending)}
-                failed={saving.some((m) => m.isError)}
-                saved={saving.some((m) => m.isSuccess)}
-              />
+              <SaveStatus pending={lastSave.isPending} failed={lastSave.isError} saved={lastSave.isSuccess} />
             </span>
             <Button
               variant="ghost"
