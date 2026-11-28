@@ -4,18 +4,40 @@ import { getLabels } from '@/shared/api/lookups'
 import { queryKeys } from '@/shared/api/queryKeys'
 import type { Issue } from '@/shared/api/types'
 
-type IssueFilters = { cycle?: string; module?: string; search?: string }
+type ListParam = string[] | undefined
+type IssueFilters = {
+  cycle?: string
+  module?: string
+  search?: string
+  state?: string[]
+  priority?: string[]
+  assignee?: string[]
+  label?: string[]
+}
+
+const asList = (value: ListParam) => {
+  if (!value?.length) return undefined
+  return value.length === 1 ? [value[0], value[0]] : value
+}
 type IssuesResponse = { data: Issue[]; next_cursor: string | null }
 
 export async function getIssuesPage(
   url: string,
-  filters: IssueFilters & { label?: string },
+  filters: Omit<IssueFilters, 'label'> & { label?: string | string[] },
   cursor: string | null,
   signal: AbortSignal,
 ) {
-  const { label, ...issueFilters } = filters
+  const { label, state, priority, assignee, ...issueFilters } = filters
   const { data } = await api.get<IssuesResponse>(url, {
-    params: { limit: 100, ...issueFilters, label: label ? [label, label] : undefined, cursor: cursor ?? undefined },
+    params: {
+      limit: 100,
+      ...issueFilters,
+      state: asList(state),
+      priority: asList(priority),
+      assignee: asList(assignee),
+      label: asList(typeof label === 'string' ? [label] : label),
+      cursor: cursor ?? undefined,
+    },
     paramsSerializer: { indexes: null },
     signal,
   })

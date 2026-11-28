@@ -12,9 +12,10 @@ import { ErrorBanner } from "@/shared/ui/form";
 import { errorText } from "@/shared/lib/errors";
 import { BoardColumn } from "./board-column";
 import { CreateIssueModal } from "./create-issue-modal";
-import { IssueFilters } from "./issue-filters";
+import { IssueFilters, emptyFilters, toIssueQuery, type FilterSelection } from "./issue-filters";
 import { useGetIssuesQuery, useMoveIssueMutation } from "../api";
 import { useT } from "@/shared/lib/i18n";
+import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
 
 export function Board() {
   const t = useT();
@@ -23,13 +24,23 @@ export function Board() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createInState, setCreateInState] = useState<string | undefined>();
   const [draggedIssue, setDraggedIssue] = useState<Issue | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const [selected, setSelected] = useState<FilterSelection>(emptyFilters);
+  const query = toIssueQuery(selected, debouncedSearch);
+  const isFiltered = Object.keys(query).length > 0;
 
   const { data: project } = useProject(workspaceSlug, projectId);
   const { data: states } = useStates(workspaceSlug, projectId);
   const { data: members } = useMemberUsers(workspaceSlug);
   const { data: labels } = useLabels(workspaceSlug, projectId);
   const { canWrite } = useProjectAccess(workspaceSlug);
-  const { data: issues = [], isLoading, isError } = useGetIssuesQuery(workspaceSlug, projectId, {}, { allPages: true });
+  const { data: issues = [], isLoading, isError } = useGetIssuesQuery(
+    workspaceSlug,
+    projectId,
+    query,
+    { allPages: true },
+  );
   const moveIssue = useMoveIssueMutation(workspaceSlug, projectId);
 
   if (!project) return <p className="p-7 text-muted">{t("Project not found")}</p>;
@@ -74,6 +85,10 @@ export function Board() {
         members={members}
         labels={labels}
         states={states}
+        search={search}
+        onSearchChange={setSearch}
+        selected={selected}
+        onSelectedChange={setSelected}
         actions={canWrite && (
           <Button onClick={() => openCreate()}>
             <Plus className="size-4" strokeWidth={2.2} /> {t("New task")} <Kbd>C</Kbd>
@@ -112,7 +127,13 @@ export function Board() {
           />
         ))}
 
-        {issues.length === 0 && (
+        {issues.length === 0 && isFiltered && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+            <p className="rounded-xl border border-line bg-white px-6 py-4 text-muted">{t("No matching tasks")}</p>
+          </div>
+        )}
+
+        {issues.length === 0 && !isFiltered && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
             <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-line bg-white p-8 text-center shadow-[0_24px_60px_-24px_rgba(30,34,42,.35)]">
               <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-marking-soft text-marking-dark">

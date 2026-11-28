@@ -7,8 +7,9 @@ import { useLabels, useMemberUsers, useStates } from "@/shared/api/lookups";
 import { Button, Kbd } from "@/shared/ui/button";
 import { Dropdown } from "@/shared/ui/dropdown";
 import { CreateIssueModal } from "./create-issue-modal";
-import { IssueFilters } from "./issue-filters";
+import { IssueFilters, emptyFilters, toIssueQuery, type FilterSelection } from "./issue-filters";
 import { useT } from "@/shared/lib/i18n";
+import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
 import { IssueList } from "./issue-list";
 
 export function IssuesPage() {
@@ -16,6 +17,9 @@ export function IssuesPage() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<"state" | "none">("state");
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const [selected, setSelected] = useState<FilterSelection>(emptyFilters);
 
   const { data: states } = useStates(workspaceSlug, projectId);
   const { data: members } = useMemberUsers(workspaceSlug);
@@ -27,6 +31,10 @@ export function IssuesPage() {
         members={members}
         labels={labels}
         states={states}
+        search={search}
+        onSearchChange={setSearch}
+        selected={selected}
+        onSelectedChange={setSelected}
         actions={
           <>
             <Dropdown
@@ -61,7 +69,12 @@ export function IssuesPage() {
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-5 md:px-7">
-        <IssueList workspaceSlug={workspaceSlug} projectId={projectId} groupBy={groupBy} />
+        <IssueList
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          groupBy={groupBy}
+          filter={toIssueQuery(selected, debouncedSearch)}
+        />
       </div>
 
       <CreateIssueModal open={createOpen} onClose={() => setCreateOpen(false)} states={states} members={members} labels={labels} />
