@@ -8,10 +8,12 @@ import { ErrorBanner, FieldError, FieldHint, Input, Label, Select } from '@/shar
 import { Modal } from '@/shared/ui/modal'
 import { useAddWorkspaceMember, type AssignableWorkspaceRole } from '../api'
 import { assignableWorkspaceRoles, workspaceErrorText } from '../workspace-form'
+import { useT } from "@/shared/lib/i18n";
 
 const userIdSchema = z.string().trim().uuid('Enter a valid user ID (UUID)')
 
 export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: string; onClose: () => void }) {
+  const t = useT();
   const addMutation = useAddWorkspaceMember(workspaceSlug)
   const [userId, setUserId] = useState('')
   const [role, setRole] = useState<AssignableWorkspaceRole>('member')
@@ -39,21 +41,21 @@ export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: stri
       await addMutation.mutateAsync({ user_id: id.data, role })
       onClose()
     } catch (error) {
-      setActionError(workspaceErrorText(error, 'Could not add the member. Please try again.'))
+      setActionError(workspaceErrorText(error, t("Could not add the member. Please try again.")))
     }
   }
 
   return (
     <Modal
       open
-      title="Add workspace member"
+      title={t("Add workspace member")}
       icon={<UserPlus className="size-5 text-indigo-600" />}
       onClose={close}
       footer={
         <>
-          <Button variant="secondary" disabled={busy} onClick={close}>Cancel</Button>
+          <Button variant="secondary" disabled={busy} onClick={close}>{t("Cancel")}</Button>
           <Button type="submit" form="add-member-form" disabled={busy}>
-            {busy ? 'Adding…' : 'Add member'}
+            {busy ? t("Adding…") : t("Add member")}
           </Button>
         </>
       }
@@ -64,7 +66,7 @@ export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: stri
         )}
 
         <div>
-          <Label htmlFor="member-user-id">User ID</Label>
+          <Label htmlFor="member-user-id">{t("User ID")}</Label>
           <Input
             id="member-user-id"
             name="user_id"
@@ -83,13 +85,13 @@ export function AddMemberModal({ workspaceSlug, onClose }: { workspaceSlug: stri
             {userIdError ? (
               <FieldError>{userIdError}</FieldError>
             ) : (
-              <FieldHint>Enter the UUID of an existing Flowlane user.</FieldHint>
+              <FieldHint>{t("Enter the UUID of an existing Flowlane user.")}</FieldHint>
             )}
           </div>
         </div>
 
         <div>
-          <Label htmlFor="add-member-role">Role</Label>
+          <Label htmlFor="add-member-role">{t("Role")}</Label>
           <Select id="add-member-role" disabled={busy} value={role}
             onChange={(event) => setRole(event.currentTarget.value as AssignableWorkspaceRole)}>
             {assignableWorkspaceRoles.map((item) => <option key={item} value={item}>{item}</option>)}

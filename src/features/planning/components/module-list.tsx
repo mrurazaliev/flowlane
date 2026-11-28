@@ -14,9 +14,11 @@ import { useProjectMembers } from "@/shared/api/lookups";
 import { useModules } from "../api";
 import { planningErrorText } from "../planning-form";
 import { ModuleModal } from "./module-modal";
+import { useT } from "@/shared/lib/i18n";
 import { ModuleStatusBadge } from "./module-status";
 
 export function ModuleList() {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
   const { data: members } = useProjectMembers(workspaceSlug, projectId);
@@ -28,20 +30,20 @@ export function ModuleList() {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
-        title="Modules"
-        description="Group tasks by feature. One task can be in several modules."
+        title={t("Modules")}
+        description={t("Group tasks by feature. One task can be in several modules.")}
         actions={canWrite && (
           <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" /> New module
+            <Plus className="size-4" /> {t("New module")}
           </Button>
         )}
       />
 
       {isError ? (
-        <EmptyState title={planningErrorText(error, "Could not load modules.")}
-          action={<Button variant="secondary" onClick={() => void refetch()}>Try again</Button>} />
+        <EmptyState title={planningErrorText(error, t("Could not load modules."))}
+          action={<Button variant="secondary" onClick={() => void refetch()}>{t("Try again")}</Button>} />
       ) : projectModules.length === 0 ? (
-        <EmptyState title="No modules yet" description="Create a module to group related tasks." />
+        <EmptyState title={t("No modules yet")} description={t("Create a module to group related tasks.")} />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {projectModules.map((mod) => {
@@ -56,7 +58,7 @@ export function ModuleList() {
                     <h2 className="font-semibold text-gray-900">{mod.name}</h2>
                     <ModuleStatusBadge status={mod.status} />
                   </div>
-                  <p className="mt-1 line-clamp-2 flex-1 text-sm text-gray-500">{mod.description ?? "No description"}</p>
+                  <p className="mt-1 line-clamp-2 flex-1 text-sm text-gray-500">{mod.description ?? t("No description")}</p>
 
                   <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                     <span className="flex items-center gap-1.5">
@@ -65,7 +67,7 @@ export function ModuleList() {
                           <Avatar name={lead.display_name} src={lead.avatar_url} /> {lead.display_name}
                         </>
                       ) : (
-                        mod.lead_id ? "Lead unavailable" : "No lead"
+                        mod.lead_id ? t("Lead unavailable") : t("No lead")
                       )}
                     </span>
                     <span className="flex items-center gap-1">
@@ -77,7 +79,7 @@ export function ModuleList() {
                   {mod.progress && (
                     <div className="mt-4">
                       <div className="mb-1.5 flex justify-between text-xs">
-                        <span className="text-gray-500">Progress</span>
+                        <span className="text-gray-500">{t("Progress")}</span>
                         <span className="font-medium text-gray-900">
                           {mod.progress.completed} / {mod.progress.total} tasks
                         </span>

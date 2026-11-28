@@ -12,6 +12,7 @@ import { GeneralSettings } from './general-settings'
 import { LabelsSettings } from './labels-settings'
 import { ProjectMembersSettings } from './project-members-settings'
 import { StatesSettings } from './states-settings'
+import { useT } from "@/shared/lib/i18n";
 
 function useProjectParams() {
   return useParams<{ workspaceSlug: string; projectId: string }>()
@@ -19,13 +20,14 @@ function useProjectParams() {
 
 /** Меню настроек проекта: General & members / Statuses / Labels */
 function SettingsLayout({ children }: { children: React.ReactNode }) {
+  const t = useT();
   const { workspaceSlug, projectId } = useProjectParams()
   const pathname = usePathname()
   const base = `/w/${workspaceSlug}/p/${projectId}/settings`
   const links = [
-    { href: base, label: 'General & members' },
-    { href: `${base}/states`, label: 'Statuses' },
-    { href: `${base}/labels`, label: 'Labels' },
+    { href: base, label: t("General & members") },
+    { href: `${base}/states`, label: t("Statuses") },
+    { href: `${base}/labels`, label: t("Labels") },
   ]
 
   return (
@@ -52,6 +54,7 @@ function SettingsLayout({ children }: { children: React.ReactNode }) {
 
 /** D2.8 /w/:slug/p/:projectId/settings */
 export function ProjectSettingsPage() {
+  const t = useT();
   const { workspaceSlug, projectId } = useProjectParams()
   const projectQuery = useProject(workspaceSlug, projectId)
   const { membersQuery, canManage } = useProjectAccess(workspaceSlug)
@@ -60,12 +63,12 @@ export function ProjectSettingsPage() {
 
   return (
     <SettingsLayout>
-      {projectQuery.isPending && <p role="status" className="text-sm text-muted">Loading project…</p>}
+      {projectQuery.isPending && <p role="status" className="text-sm text-muted">{t("Loading project…")}</p>}
       {projectQuery.isError && (
         <div className="space-y-2">
-          <div role="alert"><ErrorBanner>{projectErrorText(projectQuery.error, 'Could not load the project.')}</ErrorBanner></div>
+          <div role="alert"><ErrorBanner>{projectErrorText(projectQuery.error, t("Could not load the project."))}</ErrorBanner></div>
           <Button variant="secondary" disabled={projectQuery.isFetching} onClick={() => void projectQuery.refetch()}>
-            Try again
+            {t("Try again")}
           </Button>
         </div>
       )}
@@ -73,7 +76,7 @@ export function ProjectSettingsPage() {
         <div key={project.id} className="space-y-8">
           <GeneralSettings project={project} workspaceSlug={workspaceSlug} workspaceMembers={workspaceMembers} canManage={canManage} />
           <section>
-            <h2 className="mb-3 text-base font-semibold text-gray-900">Members</h2>
+            <h2 className="mb-3 text-base font-semibold text-gray-900">{t("Members")}</h2>
             <ProjectMembersSettings
               workspaceSlug={workspaceSlug} projectId={projectId} workspaceMembers={workspaceMembers} canManage={canManage}
             />

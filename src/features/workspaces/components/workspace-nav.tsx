@@ -3,13 +3,15 @@
 import { usePathname } from "next/navigation";
 import { Settings, Users } from "lucide-react";
 import { SidebarLink } from "@/shared/layout/sidebar-link";
+import { useT } from "@/shared/lib/i18n";
 
 /** Ссылки workspace в сайдбаре: участники и настройки */
 export function WorkspaceNav({ workspaceSlug }: { workspaceSlug: string }) {
+  const t = useT();
   const pathname = usePathname();
   const links = [
-    { href: `/w/${workspaceSlug}/members`, label: "Members", icon: Users },
-    { href: `/w/${workspaceSlug}/settings`, label: "Settings", icon: Settings },
+    { href: `/w/${workspaceSlug}/members`, label: t("Members"), icon: Users },
+    { href: `/w/${workspaceSlug}/settings`, label: t("Settings"), icon: Settings },
   ];
 
   return (

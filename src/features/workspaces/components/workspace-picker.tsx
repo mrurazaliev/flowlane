@@ -10,17 +10,19 @@ import { useWorkspaces } from '../api'
 import { workspaceErrorText } from '../workspace-form'
 import { CreateWorkspaceForm } from './create-workspace-form'
 import { IncomingInvites } from './incoming-invites'
+import { useT } from "@/shared/lib/i18n";
 
 /** D2.1 Выбор и создание workspace */
 export function WorkspacePicker() {
+  const t = useT();
   const { data: workspaces, error, isPending, isError, isFetching, refetch } = useWorkspaces()
   const { data: currentUser } = useMe()
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-4 py-12">
       <Logo withText={false} />
-      <h1 className="mt-4 text-2xl font-semibold text-gray-900">Select a workspace</h1>
-      <p className="mt-1 text-sm text-gray-500">Choose an existing workspace or create a new one.</p>
+      <h1 className="mt-4 text-2xl font-semibold text-gray-900">{t("Select a workspace")}</h1>
+      <p className="mt-1 text-sm text-gray-500">{t("Choose an existing workspace or create a new one.")}</p>
       <IncomingInvites className="mt-8 w-full" />
 
       <div className="mt-10 grid w-full gap-6 md:grid-cols-2">
@@ -33,17 +35,17 @@ export function WorkspacePicker() {
             <span className="text-gray-400">{currentUser?.email}</span>
           </div>
 
-          {isPending && <p role="status" className="text-sm text-gray-500">Loading workspaces...</p>}
+          {isPending && <p role="status" className="text-sm text-gray-500">{t("Loading workspaces...")}</p>}
 
           {isError && (
             <div className="mb-3 space-y-2">
               <div role="alert">
                 <ErrorBanner>
-                  {workspaceErrorText(error, 'Could not load your workspaces.')}
+                  {workspaceErrorText(error, t("Could not load your workspaces."))}
                 </ErrorBanner>
               </div>
               <Button variant="secondary" disabled={isFetching} onClick={() => void refetch()}>
-                {isFetching ? 'Retrying...' : 'Try again'}
+                {isFetching ? t("Retrying...") : t("Try again")}
               </Button>
             </div>
           )}
@@ -72,7 +74,7 @@ export function WorkspacePicker() {
 
           {workspaces?.length === 0 && !isError && (
             <p className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
-              You are not in any workspace yet — create one.
+              {t("You are not in any workspace yet — create one.")}
             </p>
           )}
         </section>

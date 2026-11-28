@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button'
 import { ErrorBanner, FieldError, Input } from '@/shared/ui/form'
 import { Modal } from '@/shared/ui/modal'
 import { useAddLabelMutation, useDeleteLabelMutation, useEditLabelMutation } from '../labels-api'
+import { useT } from "@/shared/lib/i18n";
 import { projectErrorText, projectLabelSchema } from '../project-form'
 
 type LabelFormValues = z.infer<typeof projectLabelSchema>
@@ -22,6 +23,7 @@ function LabelForm({ workspaceSlug, projectId, label, onClose }: {
   label?: ProjectLabel
   onClose?: () => void
 }) {
+  const t = useT();
   const formId = useId()
   const add = useAddLabelMutation(workspaceSlug, projectId)
   const edit = useEditLabelMutation(workspaceSlug, projectId)
@@ -48,7 +50,7 @@ function LabelForm({ workspaceSlug, projectId, label, onClose }: {
         reset()
       }
     } catch (error) {
-      setError('root.server', { message: projectErrorText(error, 'Could not save the label.') })
+      setError('root.server', { message: projectErrorText(error, t("Could not save the label.")) })
     }
   }
 
@@ -57,16 +59,16 @@ function LabelForm({ workspaceSlug, projectId, label, onClose }: {
       onSubmit={handleSubmit(onSubmit)}>
       {errors.root?.server?.message && <div role="alert"><ErrorBanner>{errors.root.server.message}</ErrorBanner></div>}
       <div className="flex flex-wrap items-start gap-2">
-        <Input type="color" aria-label="Label color" className="w-12 shrink-0 cursor-pointer p-1" disabled={isSubmitting}
+        <Input type="color" aria-label={t("Label color")} className="w-12 shrink-0 cursor-pointer p-1" disabled={isSubmitting}
           invalid={!!errors.color} aria-invalid={!!errors.color} {...register('color')} />
         <div className="min-w-28 flex-1">
-          <Input aria-label="Label name" placeholder={label ? 'Label name' : 'New label name'} maxLength={50} readOnly={isSubmitting}
+          <Input aria-label={t("Label name")} placeholder={label ? t("Label name") : t("New label name")} maxLength={50} readOnly={isSubmitting}
             invalid={!!errors.name} aria-invalid={!!errors.name} {...register('name')} />
           <FieldError>{errors.name?.message}</FieldError>
         </div>
         {!label && (
           <Button type="submit" className="h-11" disabled={isSubmitting}>
-            <Plus className="size-4" /> {isSubmitting ? 'Adding…' : 'Add label'}
+            <Plus className="size-4" /> {isSubmitting ? t("Adding…") : t("Add label")}
           </Button>
         )}
       </div>
@@ -80,12 +82,12 @@ function LabelForm({ workspaceSlug, projectId, label, onClose }: {
     <Modal
       open
       onClose={close}
-      title="Edit label"
+      title={t("Edit label")}
       footer={
         <>
-          <Button variant="secondary" disabled={isSubmitting} onClick={close}>Cancel</Button>
+          <Button variant="secondary" disabled={isSubmitting} onClick={close}>{t("Cancel")}</Button>
           <Button type="submit" form={formId} disabled={!isDirty || isSubmitting}>
-            {isSubmitting ? 'Saving…' : 'Save changes'}
+            {isSubmitting ? t("Saving…") : t("Save changes")}
           </Button>
         </>
       }
@@ -100,6 +102,7 @@ export function LabelsSettings({ workspaceSlug, projectId, canManage }: {
   projectId: string
   canManage: boolean
 }) {
+  const t = useT();
   const labelsQuery = useLabels(workspaceSlug, projectId)
   const labels = labelsQuery.data
   const [editing, setEditing] = useState<ProjectLabel | null>(null)
@@ -119,13 +122,13 @@ export function LabelsSettings({ workspaceSlug, projectId, canManage }: {
     removeLabel(deleting.id, { onSuccess: () => setDeleting(null) })
   }
 
-  if (labelsQuery.isPending) return <p role="status" className="text-sm text-muted">Loading labels…</p>
+  if (labelsQuery.isPending) return <p role="status" className="text-sm text-muted">{t("Loading labels…")}</p>
 
   if (labelsQuery.isError) {
     return (
       <div className="space-y-2">
-        <div role="alert"><ErrorBanner>{projectErrorText(labelsQuery.error, 'Could not load project labels.')}</ErrorBanner></div>
-        <Button variant="secondary" disabled={labelsQuery.isFetching} onClick={() => void labelsQuery.refetch()}>Try again</Button>
+        <div role="alert"><ErrorBanner>{projectErrorText(labelsQuery.error, t("Could not load project labels."))}</ErrorBanner></div>
+        <Button variant="secondary" disabled={labelsQuery.isFetching} onClick={() => void labelsQuery.refetch()}>{t("Try again")}</Button>
       </div>
     )
   }
@@ -135,7 +138,7 @@ export function LabelsSettings({ workspaceSlug, projectId, canManage }: {
       {canManage && <LabelForm workspaceSlug={workspaceSlug} projectId={projectId} />}
 
       {labels.length === 0 ? (
-        <p className="text-sm text-muted">No labels yet</p>
+        <p className="text-sm text-muted">{t("No labels yet")}</p>
       ) : (
         <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
           {labels.map((label) => (
@@ -145,11 +148,11 @@ export function LabelsSettings({ workspaceSlug, projectId, canManage }: {
               {canManage && (
                 <div className="ml-auto flex shrink-0 gap-1">
                   <button type="button" className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-                    aria-label={`Edit ${label.name}`} onClick={() => setEditing(label)}>
+                    aria-label={t("Edit {name}", { name: label.name })} onClick={() => setEditing(label)}>
                     <Pencil className="size-4" />
                   </button>
                   <button type="button" className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                    aria-label={`Delete ${label.name}`} onClick={() => setDeleting(label)}>
+                    aria-label={t("Delete {name}", { name: label.name })} onClick={() => setDeleting(label)}>
                     <Trash2 className="size-4" />
                   </button>
                 </div>
@@ -164,11 +167,11 @@ export function LabelsSettings({ workspaceSlug, projectId, canManage }: {
       )}
       {canManage && deleting && (
         <ConfirmDeleteModal
-          title="Delete label?"
+          title={t("Delete label?")}
           description={`“${deleting.name}” will be removed from this project and its tasks.`}
-          confirmLabel="Delete label"
+          confirmLabel={t("Delete label")}
           pending={isDeleting}
-          error={deleteError ? projectErrorText(deleteError, 'Could not delete the label.') : undefined}
+          error={deleteError ? projectErrorText(deleteError, t("Could not delete the label.")) : undefined}
           onClose={closeDelete}
           onConfirm={handleDelete}
         />

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { translate } from "@/shared/lib/i18n";
 
 interface ModalProps {
   open: boolean;
@@ -71,7 +72,7 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
             {icon}
             {title}
           </h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-faint hover:bg-gray-100 hover:text-ink" aria-label="Close">
+          <button onClick={onClose} className="rounded-lg p-1.5 text-faint hover:bg-gray-100 hover:text-ink" aria-label={translate("Close")}>
             <X className="size-5" />
           </button>
         </div>

@@ -14,11 +14,19 @@ import { Tabs } from "@/shared/ui/tabs";
 import { formatDateRange } from "@/shared/lib/utils";
 import { useCycles } from "../api";
 import { planningErrorText } from "../planning-form";
+import { useT } from "@/shared/lib/i18n";
 import { CycleModal } from "./cycle-modal";
 
 const statusTone = { active: "marking", upcoming: "blue", completed: "green" } as const;
 
+
+const emptyTitles: Record<CycleStatus, string> = {
+  active: "No active cycles",
+  upcoming: "No upcoming cycles",
+  completed: "No completed cycles",
+};
 export function CycleList() {
+  const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [tab, setTab] = useState<CycleStatus>("active");
   const [createOpen, setCreateOpen] = useState(false);
@@ -32,11 +40,11 @@ export function CycleList() {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
-        title="Cycles"
-        description="Time-boxed sprints. Status is calculated from the dates."
+        title={t("Cycles")}
+        description={t("Time-boxed sprints. Status is calculated from the dates.")}
         actions={canWrite && (
           <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" /> New cycle
+            <Plus className="size-4" /> {t("New cycle")}
           </Button>
         )}
       />
@@ -46,17 +54,17 @@ export function CycleList() {
         value={tab}
         onChange={setTab}
         tabs={[
-          { value: "active", label: "Active", count: count("active") },
-          { value: "upcoming", label: "Upcoming", count: count("upcoming") },
-          { value: "completed", label: "Completed", count: count("completed") },
+          { value: "active", label: t("Active"), count: count("active") },
+          { value: "upcoming", label: t("Upcoming"), count: count("upcoming") },
+          { value: "completed", label: t("Completed"), count: count("completed") },
         ]}
       />
 
       {isError ? (
-        <EmptyState title={planningErrorText(error, "Could not load cycles.")}
-          action={<Button variant="secondary" onClick={() => void refetch()}>Try again</Button>} />
+        <EmptyState title={planningErrorText(error, t("Could not load cycles."))}
+          action={<Button variant="secondary" onClick={() => void refetch()}>{t("Try again")}</Button>} />
       ) : visible.length === 0 ? (
-        <EmptyState title={`No ${tab} cycles`} description="Create a cycle to plan the next sprint." />
+        <EmptyState title={t(emptyTitles[tab])} description={t("Create a cycle to plan the next sprint.")} />
       ) : (
         <ul className="space-y-3">
           {visible.map((cycle) => (

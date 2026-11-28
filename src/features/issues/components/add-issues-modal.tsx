@@ -8,6 +8,7 @@ import { ErrorBanner } from '@/shared/ui/form'
 import { PriorityIcon } from '@/shared/ui/issue-icons'
 import { Modal } from '@/shared/ui/modal'
 import { useGetIssuesQuery, type IssueFilters } from '../api'
+import { useT } from "@/shared/lib/i18n";
 
 interface AddIssuesModalProps {
   onClose: () => void
@@ -25,6 +26,7 @@ interface AddIssuesModalProps {
 export function AddIssuesModal({
   onClose, title, hint, workspaceSlug, projectId, filter, action, onConfirm, pending, error,
 }: AddIssuesModalProps) {
+  const t = useT();
   const { data: project } = useProject(workspaceSlug, projectId)
   const isAdding = action === 'add'
   const projectIssues = useGetIssuesQuery(workspaceSlug, projectId, {}, { allPages: true, enabled: isAdding })
@@ -64,13 +66,13 @@ export function AddIssuesModal({
       className="max-w-xl"
       footer={
         <>
-          <Button variant="secondary" onClick={close} disabled={pending}>Cancel</Button>
+          <Button variant="secondary" onClick={close} disabled={pending}>{t("Cancel")}</Button>
           <Button
             variant={isAdding ? 'primary' : 'danger'}
             disabled={!first || pending || isLoading || failed}
             onClick={() => first && onConfirm([first, ...rest])}
           >
-            {pending ? 'Saving…' : isAdding ? 'Add selected' : 'Remove task'}
+            {pending ? t("Saving…") : isAdding ? t("Add selected") : t("Remove task")}
           </Button>
         </>
       }
@@ -79,8 +81,8 @@ export function AddIssuesModal({
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
         <input
-          aria-label="Search tasks"
-          placeholder="Search tasks…"
+          aria-label={t("Search tasks")}
+          placeholder={t("Search tasks…")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           className="h-10 w-full rounded-md border border-gray-200 pl-9 pr-3 text-sm focus:border-indigo-500 focus:outline-none"
@@ -88,10 +90,10 @@ export function AddIssuesModal({
       </div>
 
       <ul className="mt-3 max-h-72 divide-y divide-gray-100 overflow-y-auto rounded-lg border border-gray-200">
-        {isLoading && <li className="p-4 text-center text-sm text-muted">Loading tasks…</li>}
-        {failed && <li role="alert" className="p-4 text-center text-sm text-red-600">Could not load tasks.</li>}
+        {isLoading && <li className="p-4 text-center text-sm text-muted">{t("Loading tasks…")}</li>}
+        {failed && <li role="alert" className="p-4 text-center text-sm text-red-600">{t("Could not load tasks.")}</li>}
         {!isLoading && !failed && visible.length === 0 && (
-          <li className="p-4 text-center text-sm text-muted">No matching tasks</li>
+          <li className="p-4 text-center text-sm text-muted">{t("No matching tasks")}</li>
         )}
         {!isLoading && !failed && visible.map((issue) => (
           <li key={issue.id}>

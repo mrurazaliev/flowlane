@@ -12,10 +12,12 @@ import { EmptyState, PageHeader } from '@/shared/ui/page'
 import { useProjects } from '../api'
 import { projectErrorText, projectSettingsHref } from '../project-form'
 import { useProjectAccess } from '../use-project-access'
+import { useT } from "@/shared/lib/i18n";
 import { CreateProjectModal } from './create-project-modal';
 
 /** D2.7 Список проектов /w/:slug/projects. */
 export function ProjectsList() {
+  const t = useT();
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
   const [createOpen, setCreateOpen] = useState(false)
   const projectsQuery = useProjects(workspaceSlug)
@@ -24,29 +26,29 @@ export function ProjectsList() {
   const closeCreate = useCallback(() => setCreateOpen(false), [])
   const createButton = canManage && (
     <Button onClick={() => setCreateOpen(true)}>
-      <Plus className="size-4" /> New project
+      <Plus className="size-4" /> {t("New project")}
     </Button>
   )
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
-      <PageHeader title="Projects" actions={createButton} />
+      <PageHeader title={t("Projects")} actions={createButton} />
 
-      {projectsQuery.isPending && <p role="status" className="text-sm text-muted">Loading projects…</p>}
+      {projectsQuery.isPending && <p role="status" className="text-sm text-muted">{t("Loading projects…")}</p>}
       {projectsQuery.isError && (
         <div className="mb-4 max-w-xl space-y-2">
           <div role="alert">
-            <ErrorBanner>{projectErrorText(projectsQuery.error, 'Could not load projects.')}</ErrorBanner>
+            <ErrorBanner>{projectErrorText(projectsQuery.error, t("Could not load projects."))}</ErrorBanner>
           </div>
           <Button variant="secondary" disabled={projectsQuery.isFetching} onClick={() => void projectsQuery.refetch()}>
-            Try again
+            {t("Try again")}
           </Button>
         </div>
       )}
       {projectsQuery.isSuccess && projectsQuery.data.length === 0 && (
         <EmptyState
-          title="No projects yet"
-          description={canManage ? 'Create your first project to start tracking tasks.' : undefined}
+          title={t("No projects yet")}
+          description={canManage ? t("Create your first project to start tracking tasks.") : undefined}
           action={createButton}
         />
       )}
@@ -69,9 +71,9 @@ export function ProjectsList() {
                     <h2 className="font-semibold text-gray-900">{project.name}</h2>
                     <p className="text-xs text-gray-500">{project.identifier}</p>
                   </div>
-                  {project.is_archived && <Badge className="ml-auto">Archived</Badge>}
+                  {project.is_archived && <Badge className="ml-auto">{t("Archived")}</Badge>}
                 </div>
-                <p className="mt-3 line-clamp-2 text-sm text-gray-500">{project.description ?? 'No description'}</p>
+                <p className="mt-3 line-clamp-2 text-sm text-gray-500">{project.description ?? t("No description")}</p>
               </Link>
             </li>
           ))}

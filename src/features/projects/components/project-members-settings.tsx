@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 import { ConfirmDeleteModal } from '@/features/workspaces'
@@ -8,6 +10,7 @@ import { Button } from '@/shared/ui/button'
 import { ErrorBanner, Select } from '@/shared/ui/form'
 import { useAddProjectMember, useProjectMembers, useRemoveProjectMember } from '../api'
 import { projectErrorText, projectRoles } from '../project-form';
+import { useT } from "@/shared/lib/i18n";
 
 /** Участники проекта. Добавлять можно только тех, кто уже в workspace */
 export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMembers, canManage }: {
@@ -16,6 +19,7 @@ export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMemb
   workspaceMembers: WorkspaceMember[];
   canManage: boolean;
 }) {
+  const t = useT();
   const membersQuery = useProjectMembers(workspaceSlug, projectId)
   const projectMembers = membersQuery.data ?? []
   const add = useAddProjectMember(workspaceSlug, projectId)
@@ -53,16 +57,16 @@ export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMemb
 
   return (
     <div className="space-y-4">
-      {membersQuery.isPending && <p role="status" className="text-sm text-muted">Loading project members…</p>}
+      {membersQuery.isPending && <p role="status" className="text-sm text-muted">{t("Loading project members…")}</p>}
       {membersQuery.isError && (
         <div className="space-y-2">
-          <div role="alert"><ErrorBanner>{projectErrorText(membersQuery.error, 'Could not load project members.')}</ErrorBanner></div>
+          <div role="alert"><ErrorBanner>{projectErrorText(membersQuery.error, t("Could not load project members."))}</ErrorBanner></div>
           <Button variant="secondary" disabled={membersQuery.isFetching} onClick={() => void membersQuery.refetch()}>
-            Try again
+            {t("Try again")}
           </Button>
         </div>
       )}
-      {add.error && <div role="alert"><ErrorBanner>{projectErrorText(add.error, 'Could not add the project member.')}</ErrorBanner></div>}
+      {add.error && <div role="alert"><ErrorBanner>{projectErrorText(add.error, t("Could not add the project member."))}</ErrorBanner></div>}
 
       {canEdit && (
         <form className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white p-4" onSubmit={handleAdd}>
@@ -70,23 +74,23 @@ export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMemb
             value={selectedMember?.user_id ?? ''}
             onChange={(event) => setSelectedUserId(event.currentTarget.value)}
             className="min-w-0 flex-1"
-            aria-label="Workspace member"
+            aria-label={t("Workspace member")}
             disabled={isBusy || notInProject.length === 0}
           >
-            <option value="" disabled>{notInProject.length ? 'Add a workspace member…' : 'No workspace members to add'}</option>
+            <option value="" disabled>{notInProject.length ? t("Add a workspace member…") : t("No workspace members to add")}</option>
             {notInProject.map((member) => (
               <option key={member.user_id} value={member.user_id}>{member.user.display_name} ({member.user.email})</option>
             ))}
           </Select>
           <Select value={role} onChange={(event) => setRole(event.currentTarget.value as ProjectRole)}
-            className="w-28" aria-label="Project role" disabled={isBusy || notInProject.length === 0}>
+            className="w-28" aria-label={t("Project role")} disabled={isBusy || notInProject.length === 0}>
             {projectRoles.map((item) => <option key={item} value={item}>{item}</option>)}
           </Select>
-          <Button type="submit" disabled={isBusy || !selectedMember}>{add.isPending ? 'Adding…' : 'Add'}</Button>
+          <Button type="submit" disabled={isBusy || !selectedMember}>{add.isPending ? t("Adding…") : t("Add")}</Button>
         </form>
       )}
 
-      {membersQuery.isSuccess && projectMembers.length === 0 && <p className="text-sm text-muted">No project members yet.</p>}
+      {membersQuery.isSuccess && projectMembers.length === 0 && <p className="text-sm text-muted">{t("No project members yet.")}</p>}
       {projectMembers.length > 0 && (
         <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
           {projectMembers.map((member) => (
@@ -100,7 +104,7 @@ export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMemb
               {canEdit && (
                 <button type="button" disabled={isBusy} onClick={() => setMemberToRemove(member)}
                   className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                  aria-label={`Remove ${member.user.display_name}`}>
+                  aria-label={t("Remove {display_name}", { display_name: member.user.display_name })}>
                   <X className="size-4" />
                 </button>
               )}
@@ -111,11 +115,11 @@ export function ProjectMembersSettings({ workspaceSlug, projectId, workspaceMemb
 
       {memberToRemove && (
         <ConfirmDeleteModal
-          title="Remove project member?"
-          description={`Remove ${memberToRemove.user.display_name} from this project’s member list?`}
-          confirmLabel="Remove member"
+          title={t("Remove project member?")}
+          description={t("Remove {display_name} from this project’s member list?", { display_name: memberToRemove.user.display_name })}
+          confirmLabel={t("Remove member")}
           pending={isRemoving}
-          error={removeError ? projectErrorText(removeError, 'Could not remove the project member.') : undefined}
+          error={removeError ? projectErrorText(removeError, t("Could not remove the project member.")) : undefined}
           onClose={closeRemove}
           onConfirm={handleRemove}
         />

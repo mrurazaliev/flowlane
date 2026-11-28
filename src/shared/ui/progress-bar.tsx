@@ -1,4 +1,5 @@
 import type { Progress } from "@/shared/api/types";
+import { translate } from "@/shared/lib/i18n";
 
 const segments = [
   { key: "completed", label: "Completed", color: "#3a9a6b" },
@@ -27,7 +28,7 @@ export function ProgressBar({ progress, showLegend = false }: { progress: Progre
           {segments.map((s) => (
             <span key={s.key} className="flex items-center gap-1.5">
               <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-              {s.label} <span className="font-medium tabular-nums text-ink">{progress[s.key]}</span>
+              {translate(s.label)} <span className="font-medium tabular-nums text-ink">{progress[s.key]}</span>
             </span>
           ))}
         </div>

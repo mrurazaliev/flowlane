@@ -19,25 +19,27 @@ import {
 } from '../api'
 import { workspaceErrorText, workspaceFormSchema, type WorkspaceFormData } from '../workspace-form'
 import { ConfirmDeleteModal } from './confirm-delete-modal';
+import { useT } from "@/shared/lib/i18n";
 
 /** D2.3 Workspace settings at /w/:workspaceSlug/settings. */
 export function WorkspaceSettings() {
+  const t = useT();
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
   const workspaceQuery = useWorkspace(workspaceSlug)
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
-      <PageHeader title="Workspace settings" description={workspaceQuery.data?.name} />
+      <PageHeader title={t("Workspace settings")} description={workspaceQuery.data?.name} />
 
-      {workspaceQuery.isPending && <p role="status" className="text-sm text-gray-500">Loading workspace…</p>}
+      {workspaceQuery.isPending && <p role="status" className="text-sm text-gray-500">{t("Loading workspace…")}</p>}
 
       {workspaceQuery.isError && (
         <div className="max-w-3xl space-y-3">
           <div role="alert">
-            <ErrorBanner>{workspaceErrorText(workspaceQuery.error, 'Could not load workspace settings.')}</ErrorBanner>
+            <ErrorBanner>{workspaceErrorText(workspaceQuery.error, t("Could not load workspace settings."))}</ErrorBanner>
           </div>
           <Button variant="secondary" disabled={workspaceQuery.isFetching} onClick={() => void workspaceQuery.refetch()}>
-            Try again
+            {t("Try again")}
           </Button>
         </div>
       )}
@@ -50,6 +52,7 @@ export function WorkspaceSettings() {
 }
 
 function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
+  const t = useT();
   const router = useRouter()
   const { data: me } = useMe()
   const { data: members } = useWorkspaceMembers(workspace.slug)
@@ -98,13 +101,13 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
       }
     } catch (error) {
       if (isAxiosError(error) && error.response?.status === 409) {
-        setError('slug', { type: 'server', message: 'This workspace URL is already taken' }, { shouldFocus: true })
+        setError('slug', { type: 'server', message: t("This workspace URL is already taken") }, { shouldFocus: true })
         return
       }
 
       setError('root.server', {
         type: 'server',
-        message: workspaceErrorText(error, 'Could not save the workspace. Please try again.'),
+        message: workspaceErrorText(error, t("Could not save the workspace. Please try again.")),
       })
     }
   }
@@ -117,7 +120,7 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
         )}
 
         <div>
-          <Label htmlFor="ws-name">Workspace name</Label>
+          <Label htmlFor="ws-name">{t("Workspace name")}</Label>
           <Input
             id="ws-name"
             readOnly={!canEdit || isSubmitting || isDeleting}
@@ -130,7 +133,7 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
         </div>
 
         <div>
-          <Label htmlFor="ws-slug">Workspace URL</Label>
+          <Label htmlFor="ws-slug">{t("Workspace URL")}</Label>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">/w/</span>
             <Input
@@ -146,16 +149,16 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
             {errors.slug ? (
               <FieldError>{errors.slug.message}</FieldError>
             ) : (
-              <FieldHint>Lowercase letters, digits and hyphens only</FieldHint>
+              <FieldHint>{t("Lowercase letters, digits and hyphens only")}</FieldHint>
             )}
           </div>
         </div>
 
         {canEdit && (
           <div className="flex items-center justify-end gap-3">
-            {updateWorkspace.isSuccess && !isDirty && <p role="status" className="text-sm text-gray-500">Changes saved.</p>}
+            {updateWorkspace.isSuccess && !isDirty && <p role="status" className="text-sm text-gray-500">{t("Changes saved.")}</p>}
             <Button type="submit" disabled={!isDirty || isSubmitting || isDeleting}>
-              {isSubmitting ? 'Saving…' : 'Save changes'}
+              {isSubmitting ? t("Saving…") : t("Save changes")}
             </Button>
           </div>
         )}
@@ -163,11 +166,11 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
 
       {isOwner && (
         <section className="space-y-4 rounded-xl border border-red-200 bg-white p-6">
-          <h2 className="text-base font-semibold text-red-700">Danger zone</h2>
+          <h2 className="text-base font-semibold text-red-700">{t("Danger zone")}</h2>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-gray-600">Permanently delete this workspace and all its projects.</p>
+            <p className="text-sm text-gray-600">{t("Permanently delete this workspace and all its projects.")}</p>
             <Button variant="danger" disabled={isSubmitting} onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="size-4" /> Delete workspace
+              <Trash2 className="size-4" /> {t("Delete workspace")}
             </Button>
           </div>
         </section>
@@ -175,11 +178,11 @@ function WorkspaceSettingsContent({ workspace }: { workspace: Workspace }) {
 
       {deleteOpen && (
         <ConfirmDeleteModal
-          title="Delete workspace?"
+          title={t("Delete workspace?")}
           description={`“${workspace.name}” and its projects will be permanently deleted.`}
-          confirmLabel="Delete workspace"
+          confirmLabel={t("Delete workspace")}
           pending={isDeleting}
-          error={deleteError ? workspaceErrorText(deleteError, 'Could not delete the workspace.') : undefined}
+          error={deleteError ? workspaceErrorText(deleteError, t("Could not delete the workspace.")) : undefined}
           onClose={closeDelete}
           onConfirm={handleDelete}
         />

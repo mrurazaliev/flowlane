@@ -6,6 +6,7 @@ import { AddIssuesModal, IssueList } from '@/features/issues'
 import { Button } from '@/shared/ui/button'
 import { useChangePlanningTasks } from '../api'
 import { planningErrorText } from '../planning-form'
+import { useT } from "@/shared/lib/i18n";
 
 export function PlanningTasks({ workspaceSlug, projectId, kind, id, name, canWrite }: {
   workspaceSlug: string
@@ -15,6 +16,7 @@ export function PlanningTasks({ workspaceSlug, projectId, kind, id, name, canWri
   name: string
   canWrite: boolean
 }) {
+  const t = useT();
   const [action, setAction] = useState<'add' | 'remove' | null>(null)
   const changeTasks = useChangePlanningTasks({ workspaceSlug, projectId, kind, id }, action ?? 'add')
   const { reset } = changeTasks
@@ -28,14 +30,14 @@ export function PlanningTasks({ workspaceSlug, projectId, kind, id, name, canWri
   return (
     <section className="mt-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-gray-900">Tasks</h2>
+        <h2 className="text-sm font-semibold text-gray-900">{t("Tasks")}</h2>
         {canWrite && (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="secondary" onClick={() => setAction('remove')}>
-              <Minus className="size-4" /> Remove task
+              <Minus className="size-4" /> {t("Remove task")}
             </Button>
             <Button size="sm" onClick={() => setAction('add')}>
-              <Plus className="size-4" /> Add existing tasks
+              <Plus className="size-4" /> {t("Add existing tasks")}
             </Button>
           </div>
         )}
@@ -45,14 +47,14 @@ export function PlanningTasks({ workspaceSlug, projectId, kind, id, name, canWri
       {canWrite && action && (
         <AddIssuesModal
           onClose={close}
-          title={action === 'add' ? `Add tasks to ${name}` : `Remove a task from ${name}`}
-          hint={action === 'add' && kind === 'cycles' ? 'Tasks already in another cycle will move to this one.' : undefined}
+          title={action === 'add' ? t("Add tasks to {name}", { name }) : t("Remove a task from {name}", { name })}
+          hint={action === 'add' && kind === 'cycles' ? t("Tasks already in another cycle will move to this one.") : undefined}
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           filter={filter}
           action={action}
           pending={changeTasks.isPending}
-          error={changeTasks.isError ? planningErrorText(changeTasks.error, 'Could not update the task list.') : undefined}
+          error={changeTasks.isError ? planningErrorText(changeTasks.error, t("Could not update the task list.")) : undefined}
           onConfirm={(issueIds) => changeTasks.mutate(issueIds, { onSuccess: close })}
         />
       )}

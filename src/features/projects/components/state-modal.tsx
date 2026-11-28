@@ -10,6 +10,7 @@ import { ErrorBanner, FieldError, Input, Label, Select } from '@/shared/ui/form'
 import { Modal } from '@/shared/ui/modal'
 import { useDeleteProjectState, useSaveProjectState } from '../api'
 import { projectErrorText, projectStateSchema, stateGroups } from '../project-form'
+import { useT } from "@/shared/lib/i18n";
 
 type StateForm = z.infer<typeof projectStateSchema>
 
@@ -29,6 +30,7 @@ export function StateModal({ workspaceSlug, projectId, state, group, order, onCl
   order: number
   onClose: () => void
 }) {
+  const t = useT();
   const save = useSaveProjectState(workspaceSlug, projectId)
   const { register, handleSubmit, setError, formState: { errors, isDirty, isSubmitting } } = useForm<StateForm>({
     resolver: zodResolver(projectStateSchema),
@@ -63,20 +65,20 @@ export function StateModal({ workspaceSlug, projectId, state, group, order, onCl
       }
       onClose()
     } catch (error) {
-      setError('root.server', { message: projectErrorText(error, 'Could not save the status.') })
+      setError('root.server', { message: projectErrorText(error, t("Could not save the status.")) })
     }
   }
 
   return (
     <Modal
       open
-      title={state ? 'Edit status' : 'New status'}
+      title={state ? t("Edit status") : t("New status")}
       onClose={close}
       footer={
         <>
-          <Button variant="secondary" onClick={close} disabled={isSubmitting}>Cancel</Button>
+          <Button variant="secondary" onClick={close} disabled={isSubmitting}>{t("Cancel")}</Button>
           <Button type="submit" form="project-state-form" disabled={isSubmitting || (!!state && !isDirty)}>
-            {isSubmitting ? 'Saving…' : state ? 'Save changes' : 'Add status'}
+            {isSubmitting ? t("Saving…") : state ? t("Save changes") : t("Add status")}
           </Button>
         </>
       }
@@ -85,13 +87,13 @@ export function StateModal({ workspaceSlug, projectId, state, group, order, onCl
         {errors.root?.server?.message && <div role="alert"><ErrorBanner>{errors.root.server.message}</ErrorBanner></div>}
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <Label htmlFor="state-name">Name *</Label>
-            <Input id="state-name" maxLength={50} placeholder="In review" readOnly={isSubmitting}
+            <Label htmlFor="state-name">{t("Name")} *</Label>
+            <Input id="state-name" maxLength={50} placeholder={t("In review")} readOnly={isSubmitting}
               invalid={!!errors.name} aria-invalid={!!errors.name} {...register('name')} />
             <FieldError>{errors.name?.message}</FieldError>
           </div>
           <div>
-            <Label htmlFor="state-color">Color</Label>
+            <Label htmlFor="state-color">{t("Color")}</Label>
             <Input id="state-color" type="color" className="w-14 cursor-pointer p-1" disabled={isSubmitting}
               invalid={!!errors.color} aria-invalid={!!errors.color} {...register('color')} />
             <FieldError>{errors.color?.message}</FieldError>
@@ -99,14 +101,14 @@ export function StateModal({ workspaceSlug, projectId, state, group, order, onCl
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="state-group">Group</Label>
+            <Label htmlFor="state-group">{t("Group")}</Label>
             <Select id="state-group" disabled={isSubmitting} {...register('group')}>
-              {stateGroups.map((item) => <option key={item} value={item}>{stateGroupLabels[item]}</option>)}
+              {stateGroups.map((item) => <option key={item} value={item}>{t(stateGroupLabels[item])}</option>)}
             </Select>
             <FieldError>{errors.group?.message}</FieldError>
           </div>
           <div>
-            <Label htmlFor="state-order">Board order</Label>
+            <Label htmlFor="state-order">{t("Board order")}</Label>
             <Input id="state-order" type="number" min={0} max={2147483647} step={1} readOnly={isSubmitting}
               invalid={!!errors.order} aria-invalid={!!errors.order} {...register('order', { valueAsNumber: true })} />
             <FieldError>{errors.order?.message}</FieldError>
@@ -114,7 +116,7 @@ export function StateModal({ workspaceSlug, projectId, state, group, order, onCl
         </div>
         <label className="flex items-center gap-2 text-sm text-ink">
           <input type="checkbox" className="size-4 accent-indigo-600" disabled={isSubmitting} {...register('is_default')} />
-          Default status for this group
+          {t("Default status for this group")}
         </label>
       </form>
     </Modal>
@@ -128,6 +130,7 @@ export function DeleteStateModal({ workspaceSlug, projectId, state, states, onCl
   states: State[]
   onClose: () => void
 }) {
+  const t = useT();
   const [transferToStateId, setTransferToStateId] = useState('')
   const remove = useDeleteProjectState(workspaceSlug, projectId)
   const destinations = states.filter((item) => item.id !== state.id)
@@ -146,33 +149,33 @@ export function DeleteStateModal({ workspaceSlug, projectId, state, states, onCl
     <Modal
       open
       onClose={close}
-      title={`Delete status “${state.name}”`}
+      title={t("Delete status “{name}”", { name: state.name })}
       footer={
         <>
-          <Button variant="secondary" onClick={close} disabled={remove.isPending}>Cancel</Button>
+          <Button variant="secondary" onClick={close} disabled={remove.isPending}>{t("Cancel")}</Button>
           <Button variant="danger" onClick={handleDelete} disabled={remove.isPending || !canDelete}>
-            {remove.isPending ? 'Deleting…' : 'Delete status'}
+            {remove.isPending ? t("Deleting…") : t("Delete status")}
           </Button>
         </>
       }
     >
       {remove.error && (
-        <div role="alert" className="mb-3"><ErrorBanner>{projectErrorText(remove.error, 'Could not delete the status.')}</ErrorBanner></div>
+        <div role="alert" className="mb-3"><ErrorBanner>{projectErrorText(remove.error, t("Could not delete the status."))}</ErrorBanner></div>
       )}
       {destinations.length > 0 ? (
         <>
-          <p className="text-sm text-muted">Tasks in this status will be moved to another status.</p>
+          <p className="text-sm text-muted">{t("Tasks in this status will be moved to another status.")}</p>
           <div className="mt-4">
-            <Label htmlFor="move-to">Move tasks to *</Label>
+            <Label htmlFor="move-to">{t("Move tasks to")} *</Label>
             <Select id="move-to" value={selected?.id ?? ''} onChange={(event) => setTransferToStateId(event.currentTarget.value)}
               disabled={remove.isPending}>
-              <option value="" disabled>Select a status…</option>
+              <option value="" disabled>{t("Select a status…")}</option>
               {destinations.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </Select>
           </div>
         </>
       ) : (
-        <p className="text-sm text-muted">This is the last status. It can be deleted if it has no tasks.</p>
+        <p className="text-sm text-muted">{t("This is the last status. It can be deleted if it has no tasks.")}</p>
       )}
     </Modal>
   )

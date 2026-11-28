@@ -26,8 +26,10 @@ import {
   useRemoveAssigneeMutation,
   useRemoveLabelMutation,
 } from "../api";
+import { useT } from "@/shared/lib/i18n";
 
 export function IssueDetail() {
+  const t = useT();
   const { workspaceSlug, projectId, issueId } = useParams<{
     workspaceSlug: string;
     projectId: string;
@@ -51,8 +53,8 @@ export function IssueDetail() {
   const removeLabel = useRemoveLabelMutation(workspaceSlug, projectId, issueId);
   const deleteIssue = useDeleteIssueMutation(workspaceSlug, projectId);
 
-  if (isLoading) return <p className="p-7 text-muted">Loading task...</p>;
-  if (isError || !issue || !project) return <p className="p-7 text-muted">Task not found</p>;
+  if (isLoading) return <p className="p-7 text-muted">{t("Loading task...")}</p>;
+  if (isError || !issue || !project) return <p className="p-7 text-muted">{t("Task not found")}</p>;
 
   const handleDelete = async () => {
     await deleteIssue.mutateAsync(issue.id);
@@ -96,7 +98,7 @@ export function IssueDetail() {
         <div className="mx-auto max-w-[720px]">
           <div className="flex items-center gap-2 text-[13px] text-muted">
             <Link href={`${base}/board`} className="flex items-center gap-0.5 hover:text-ink">
-              <ChevronLeft className="size-4" /> Board
+              <ChevronLeft className="size-4" /> {t("Board")}
             </Link>
             <span className="text-faint">/</span>
             {parent && (
@@ -118,7 +120,7 @@ export function IssueDetail() {
               onClick={() => setDeleteOpen(true)}
               className="text-red-600 hover:bg-red-50 hover:text-red-700"
             >
-              <Trash2 className="size-4" /> Delete
+              <Trash2 className="size-4" /> {t("Delete")}
             </Button>
           </div>
 
@@ -127,7 +129,7 @@ export function IssueDetail() {
             <textarea
               key={`title-${issue.id}`}
               defaultValue={issue.title}
-              placeholder="Task title"
+              placeholder={t("Task title")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -144,11 +146,11 @@ export function IssueDetail() {
                 else if (title !== issue.title) editIssue.mutate({ title });
               }}
               rows={1}
-              aria-label="Title"
+              aria-label={t("Title")}
               className="-mx-2 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1 text-[28px] font-semibold leading-tight tracking-tight outline-none transition-colors field-sizing-content hover:border-line focus:border-marking focus:bg-white md:text-[30px]"
             />
             <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
-              Enter to save, Esc to cancel
+              {t("Enter to save, Esc to cancel")}
             </p>
           </div>
 
@@ -167,17 +169,17 @@ export function IssueDetail() {
                 const description = e.target.value;
                 if (description !== (issue.description ?? "")) editIssue.mutate({ description: description || null });
               }}
-              placeholder="Add a description…"
-              aria-label="Description"
+              placeholder={t("Add a description…")}
+              aria-label={t("Description")}
               className="-mx-2 min-h-28 w-[calc(100%+1rem)] resize-none rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-gray-700 outline-none transition-colors field-sizing-content placeholder:text-faint hover:border-line focus:border-marking focus:bg-white"
             />
             <p className="hidden px-0.5 pt-1 text-xs text-muted group-focus-within:block">
-              Saves when you click outside. Esc to cancel
+              {t("Saves when you click outside. Esc to cancel")}
             </p>
           </div>
 
           <Section
-            title="Sub-tasks"
+            title={t("Sub-tasks")}
             meta={
               subIssues.length > 0 && (
                 <>
@@ -191,13 +193,13 @@ export function IssueDetail() {
             action={
               !issue.parent_id && (
                 <SectionAction onClick={() => setSubTaskOpen(true)}>
-                  <Plus className="size-3.5" /> Add sub-task
+                  <Plus className="size-3.5" /> {t("Add sub-task")}
                 </SectionAction>
               )
             }
           >
             {subIssues.length === 0 ? (
-              <p className="text-faint">No sub-tasks</p>
+              <p className="text-faint">{t("No sub-tasks")}</p>
             ) : (
               <ul className="divide-y divide-line-soft rounded-xl border border-line bg-white">
                 {subIssues.map((sub) => {
@@ -223,38 +225,38 @@ export function IssueDetail() {
 
       {/* Свойства задачи: сохраняются сразу при выборе, статус сохранения — вверху страницы */}
       <aside className="shrink-0 border-t border-line bg-white px-5 py-5 lg:w-[340px] lg:overflow-y-auto lg:border-l lg:border-t-0">
-        <h2 className="mb-2 text-[13px] text-muted">Properties</h2>
-        <Property label="Status">
+        <h2 className="mb-2 text-[13px] text-muted">{t("Properties")}</h2>
+        <Property label={t("Status")}>
           <Dropdown
             variant="inline"
             value={issue.state_id}
             onChange={(state_id) => editIssue.mutate({ state_id })}
             options={stateOptions(states)}
-            ariaLabel="Status"
+            ariaLabel={t("Status")}
           />
         </Property>
-        <Property label="Priority">
+        <Property label={t("Priority")}>
           <Dropdown
             variant="inline"
             value={issue.priority}
             onChange={(priority) => editIssue.mutate({ priority })}
             options={priorityOptions()}
-            ariaLabel="Priority"
-            searchPlaceholder="Change priority…"
+            ariaLabel={t("Priority")}
+            searchPlaceholder={t("Change priority…")}
           />
         </Property>
-        <Property label="Assignee">
+        <Property label={t("Assignee")}>
           <Dropdown
             key={`assignee-${issue.assignees[0]?.user_id ?? "none"}`}
             variant="inline"
             value={issue.assignees[0]?.user_id ?? "none"}
             onChange={(userId) => void changeAssignee(userId)}
             options={memberOptions(members)}
-            ariaLabel="Assignee"
-            searchPlaceholder="Assign to…"
+            ariaLabel={t("Assignee")}
+            searchPlaceholder={t("Assign to…")}
           />
         </Property>
-        <Property label="Labels">
+        <Property label={t("Labels")}>
           <div className="flex flex-wrap items-center gap-1 py-1.5">
             {issue.labels.map(({ label }) => (
               <span
@@ -266,7 +268,7 @@ export function IssueDetail() {
                 <button
                   onClick={() => removeLabel.mutate(label.id)}
                   disabled={removeLabel.isPending}
-                  aria-label={`Remove label ${label.name}`}
+                  aria-label={t("Remove label {name}", { name: label.name })}
                   className="grid size-4 place-items-center rounded-full text-faint hover:bg-gray-200 hover:text-ink"
                 >
                   <X className="size-3" />
@@ -279,25 +281,25 @@ export function IssueDetail() {
                 key={`add-label-${issue.labels.length}`}
                 variant="ghost"
                 value={null}
-                placeholder="+ Add label"
+                placeholder={t("+ Add label")}
                 onChange={(labelId) => addLabel.mutate(labelId)}
                 options={availableLabels.map((l) => ({
                   value: l.id,
                   label: l.name,
                   icon: <span className="size-2 rounded-full" style={{ backgroundColor: l.color }} />,
                 }))}
-                ariaLabel="Add label"
-                searchPlaceholder="Find a label…"
+                ariaLabel={t("Add label")}
+                searchPlaceholder={t("Find a label…")}
               />
             ) : (
-              issue.labels.length === 0 && <span className="text-faint">No labels in this project yet</span>
+              issue.labels.length === 0 && <span className="text-faint">{t("No labels in this project yet")}</span>
             )}
           </div>
         </Property>
-        <Property label="Start">
+        <Property label={t("Start")}>
           <DateField value={issue.start_date} onChange={(start_date) => editIssue.mutate({ start_date })} />
         </Property>
-        <Property label="Due">
+        <Property label={t("Due")}>
           <DateField value={issue.due_date} onChange={(due_date) => editIssue.mutate({ due_date })} />
         </Property>
 
@@ -322,15 +324,15 @@ export function IssueDetail() {
       <Modal
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
-        title="Delete this task?"
+        title={t("Delete this task?")}
         icon={<Trash2 className="size-5 text-red-600" />}
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteOpen(false)} disabled={deleteIssue.isPending}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button variant="danger" onClick={handleDelete} disabled={deleteIssue.isPending}>
-              {deleteIssue.isPending ? "Deleting..." : "Delete task"}
+              {deleteIssue.isPending ? t("Deleting...") : t("Delete task")}
             </Button>
           </>
         }
@@ -349,24 +351,25 @@ export function IssueDetail() {
 
 /** «Saving… / Saved / Couldn't save» — чтобы пользователь видел, что изменение сохранилось */
 function SaveStatus({ pending, failed, saved }: { pending: boolean; failed: boolean; saved: boolean }) {
+  const t = useT();
   if (pending) {
     return (
       <span className="flex items-center gap-1.5 text-muted" role="status">
-        <Loader2 className="size-3.5 animate-spin" /> Saving…
+        <Loader2 className="size-3.5 animate-spin" /> {t("Saving…")}
       </span>
     );
   }
   if (failed) {
     return (
       <span className="flex items-center gap-1.5 text-red-600" role="alert">
-        <AlertCircle className="size-3.5" /> Couldn&apos;t save
+        <AlertCircle className="size-3.5" /> {t("Couldn't save")}
       </span>
     );
   }
   if (saved) {
     return (
       <span className="flex items-center gap-1.5 text-[#3a9a6b]" role="status">
-        <Check className="size-3.5" /> Saved
+        <Check className="size-3.5" /> {t("Saved")}
       </span>
     );
   }

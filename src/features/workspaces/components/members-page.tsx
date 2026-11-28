@@ -21,6 +21,7 @@ import { assignableWorkspaceRoles, workspaceErrorText } from '../workspace-form'
 import { AddMemberModal } from './add-member-modal'
 import { ConfirmDeleteModal } from './confirm-delete-modal'
 import { InviteModal } from './invite-modal'
+import { useT } from "@/shared/lib/i18n";
 
 /** D2.4 Workspace members at /w/:workspaceSlug/members. */
 export function MembersPage() {
@@ -30,6 +31,7 @@ export function MembersPage() {
 }
 
 function WorkspaceMembers({ workspaceSlug }: { workspaceSlug: string }) {
+  const t = useT();
   const [modal, setModal] = useState<'add' | 'invite' | null>(null)
   const [memberToRemove, setMemberToRemove] = useState<WorkspaceMember | null>(null)
   const { data: workspace } = useWorkspace(workspaceSlug)
@@ -62,41 +64,41 @@ function WorkspaceMembers({ workspaceSlug }: { workspaceSlug: string }) {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-7">
       <PageHeader
-        title="Members"
+        title={t("Members")}
         description={workspace?.name}
         actions={canManageMembers && (
           <>
             <Button variant="secondary" disabled={isChangingMembers} onClick={() => setModal('add')}>
-              <Plus className="size-4" /> Add
+              <Plus className="size-4" /> {t("Add")}
             </Button>
             <Button disabled={isChangingMembers} onClick={() => setModal('invite')}>
-              <UserPlus className="size-4" /> Invite
+              <UserPlus className="size-4" /> {t("Invite")}
             </Button>
           </>
         )}
       />
 
       <div className="max-w-3xl space-y-3">
-        {membersQuery.isPending && <p role="status" className="text-sm text-gray-500">Loading members…</p>}
+        {membersQuery.isPending && <p role="status" className="text-sm text-gray-500">{t("Loading members…")}</p>}
 
         {membersQuery.isError && (
           <div className="space-y-2">
             <div role="alert">
-              <ErrorBanner>{workspaceErrorText(membersQuery.error, 'Could not load workspace members.')}</ErrorBanner>
+              <ErrorBanner>{workspaceErrorText(membersQuery.error, t("Could not load workspace members."))}</ErrorBanner>
             </div>
             <Button variant="secondary" disabled={membersQuery.isFetching} onClick={() => void membersQuery.refetch()}>
-              Try again
+              {t("Try again")}
             </Button>
           </div>
         )}
 
         {changeRole.error && (
           <div role="alert">
-            <ErrorBanner>{workspaceErrorText(changeRole.error, 'Could not change the member’s role.')}</ErrorBanner>
+            <ErrorBanner>{workspaceErrorText(changeRole.error, t("Could not change the member’s role."))}</ErrorBanner>
           </div>
         )}
 
-        {membersQuery.isSuccess && members?.length === 0 && <EmptyState title="No workspace members" />}
+        {membersQuery.isSuccess && members?.length === 0 && <EmptyState title={t("No workspace members")} />}
 
         {members && members.length > 0 && (
           <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
@@ -123,7 +125,7 @@ function WorkspaceMembers({ workspaceSlug }: { workspaceSlug: string }) {
                       <Select
                         value={currentRole}
                         disabled={isChangingMembers}
-                        aria-label={`Role for ${member.user.display_name}`}
+                        aria-label={t("Role for {display_name}", { display_name: member.user.display_name })}
                         className="h-9 w-24 sm:w-28"
                         onChange={(event) => handleRoleChange(member.user_id, event.currentTarget.value as AssignableWorkspaceRole)}
                       >
@@ -134,7 +136,7 @@ function WorkspaceMembers({ workspaceSlug }: { workspaceSlug: string }) {
                         disabled={isChangingMembers}
                         onClick={() => setMemberToRemove(member)}
                         className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                        aria-label={`Remove ${member.user.display_name}`}
+                        aria-label={t("Remove {display_name}", { display_name: member.user.display_name })}
                       >
                         <X className="size-4" />
                       </button>
@@ -154,11 +156,11 @@ function WorkspaceMembers({ workspaceSlug }: { workspaceSlug: string }) {
 
       {memberToRemove && (
         <ConfirmDeleteModal
-          title="Remove workspace member?"
+          title={t("Remove workspace member?")}
           description={`${memberToRemove.user.display_name} will lose access to this workspace.`}
-          confirmLabel="Remove member"
+          confirmLabel={t("Remove member")}
           pending={isRemoving}
-          error={removeError ? workspaceErrorText(removeError, 'Could not remove the workspace member.') : undefined}
+          error={removeError ? workspaceErrorText(removeError, t("Could not remove the workspace member.")) : undefined}
           onClose={closeRemove}
           onConfirm={handleRemove}
         />

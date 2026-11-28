@@ -1,5 +1,6 @@
 import { CircleAlert } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { translate } from "@/shared/lib/i18n";
 
 const fieldBase =
   "w-full rounded-[10px] border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-faint transition-shadow " +
@@ -35,7 +36,8 @@ export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLS
 /** Сообщение об ошибке под полем (позже сюда пойдут ошибки Zod) */
 export function FieldError({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
-  return <p className="mt-1.5 text-[13px] text-red-600">{children}</p>;
+  // Сообщения Zod пишем по-английски, а переводим здесь — в одном месте для всех форм
+  return <p className="mt-1.5 text-[13px] text-red-600">{typeof children === "string" ? translate(children) : children}</p>;
 }
 
 export function FieldHint({ children }: { children: React.ReactNode }) {
@@ -48,7 +50,7 @@ export function ErrorBanner({ children }: { children?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 rounded-[10px] bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
       <CircleAlert className="size-4 shrink-0" />
-      {children}
+      {typeof children === "string" ? translate(children) : children}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { translate } from "@/shared/lib/i18n";
+
 // SHARED (F2.5): ошибки бэкенда приходят как { error: { code, message, details } }.
 // Разбираем их только здесь, чтобы везде были одинаковые тексты.
 
@@ -45,10 +47,10 @@ export function isApiError(value: unknown): value is ApiErrorBody {
  * кроме серверных ошибок и лимитов, где берём свой текст.
  */
 export function errorText(value: unknown, fallback = "Something went wrong. Please try again."): string {
-  if (!isApiError(value)) return fallback;
+  if (!isApiError(value)) return translate(fallback);
   const { code, message } = value.error;
   if (code === "INTERNAL_ERROR" || code === "RATE_LIMITED" || !message) {
-    return fallbackTexts[code] ?? fallback;
+    return translate(fallbackTexts[code] ?? fallback);
   }
-  return message;
+  return translate(message);
 }

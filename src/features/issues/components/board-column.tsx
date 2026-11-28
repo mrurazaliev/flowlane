@@ -1,9 +1,12 @@
+"use client";
+
 import { useState, type DragEvent } from "react";
 import { Plus } from "lucide-react";
 import type { Issue, State } from "@/shared/api/types";
 import { StateIcon } from "@/shared/ui/issue-icons";
 import { cn } from "@/shared/lib/utils";
 import { IssueCard } from "./issue-card";
+import { useT } from "@/shared/lib/i18n";
 
 interface BoardColumnProps {
   state: State;
@@ -37,6 +40,7 @@ export function BoardColumn({
   state, issues, identifier, meta, onIssueClick, onAddClick, first,
   states, canMove, draggedIssue, onDragStart, onDragEnd, onMove,
 }: BoardColumnProps) {
+  const t = useT();
   const isDone = state.group === "completed" || state.group === "cancelled";
   const moving = state.group === "started";
   const [isOver, setIsOver] = useState(false);
@@ -77,7 +81,7 @@ export function BoardColumn({
           <button
             onClick={onAddClick}
             className="ml-auto rounded p-0.5 text-faint hover:bg-white hover:text-ink"
-            aria-label={`Add task to ${state.name}`}
+            aria-label={t("Add task to {name}", { name: state.name })}
           >
             <Plus className="size-4" />
           </button>
@@ -87,7 +91,7 @@ export function BoardColumn({
       <div className="flex min-h-24 flex-1 flex-col gap-2.5 overflow-y-auto pb-6">
         {issues.length === 0 ? (
           <p className="rounded-[11px] border-[1.5px] border-dashed border-gray-300 px-3 py-6 text-center text-[13px] text-faint">
-            {emptyText[state.group]}
+            {t(emptyText[state.group])}
           </p>
         ) : (
           issues.map((issue) => (

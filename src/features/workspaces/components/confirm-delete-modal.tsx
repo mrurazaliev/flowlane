@@ -1,5 +1,8 @@
+"use client";
+
 import { Button } from '@/shared/ui/button'
 import { ErrorBanner } from '@/shared/ui/form'
+import { useT } from "@/shared/lib/i18n";
 import { Modal } from '@/shared/ui/modal'
 
 export function ConfirmDeleteModal({
@@ -13,6 +16,7 @@ export function ConfirmDeleteModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const t = useT();
   return (
     <Modal
       open
@@ -20,9 +24,9 @@ export function ConfirmDeleteModal({
       onClose={onClose}
       footer={
         <>
-          <Button variant="secondary" disabled={pending} onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" disabled={pending} onClick={onClose}>{t("Cancel")}</Button>
           <Button variant="danger" disabled={pending} onClick={onConfirm}>
-            {pending ? 'Please wait…' : confirmLabel}
+            {pending ? t("Please wait…") : confirmLabel}
           </Button>
         </>
       }
