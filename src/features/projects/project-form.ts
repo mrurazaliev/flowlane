@@ -17,6 +17,19 @@ export const createProjectSchema = projectSettingsSchema.extend({
 
 export const projectRoles = ['admin', 'member', 'viewer'] as const
 
+export const stateGroups = ['backlog', 'unstarted', 'started', 'completed', 'cancelled'] as const
+
+export const projectLabelSchema = z.object({
+  name: z.string().trim().min(1, 'Enter a name').max(50, 'Use at most 50 characters'),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Use a hex color such as #4F46E5'),
+})
+
+export const projectStateSchema = projectLabelSchema.extend({
+  group: z.enum(stateGroups),
+  order: z.number().int().min(0).max(2147483647),
+  is_default: z.boolean(),
+})
+
 export function projectErrorText(error: unknown, fallback: string) {
   return errorText(isAxiosError(error) ? error.response?.data : undefined, fallback)
 }
