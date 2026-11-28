@@ -4,15 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Plus } from "lucide-react";
+import { useProjectAccess } from "@/features/projects/use-project-access";
 import type { CycleStatus } from "@/shared/api/types";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { EmptyState, PageHeader } from "@/shared/ui/page";
+import { EmptyState, PageHeader, PageSkeleton } from "@/shared/ui/page";
 import { ProgressBar } from "@/shared/ui/progress-bar";
 import { Tabs } from "@/shared/ui/tabs";
 import { formatDateRange } from "@/shared/lib/utils";
-import { cycles } from "../mocks";
-import { CreateCycleModal } from "./create-cycle-modal";
+import { useCycles } from "../api";
+import { planningErrorText } from "../planning-form";
+import { CycleModal } from "./cycle-modal";
 
 const statusTone = { active: "marking", upcoming: "blue", completed: "green" } as const;
 
@@ -20,9 +22,10 @@ export function CycleList() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [tab, setTab] = useState<CycleStatus>("active");
   const [createOpen, setCreateOpen] = useState(false);
+  const { canWrite } = useProjectAccess(workspaceSlug);
+  const { data: projectCycles = [], isPending, isError, error, refetch } = useCycles({ workspaceSlug, projectId });
 
-  // Позже: useCycles(workspaceSlug, projectId). Прогресс есть только в GET /cycles/:id
-  const projectCycles = cycles.filter((c) => c.project_id === projectId);
+  if (isPending) return <PageSkeleton />;
   const visible = projectCycles.filter((c) => c.status === tab);
   const count = (s: CycleStatus) => projectCycles.filter((c) => c.status === s).length;
 
@@ -31,11 +34,11 @@ export function CycleList() {
       <PageHeader
         title="Cycles"
         description="Time-boxed sprints. Status is calculated from the dates."
-        actions={
+        actions={canWrite && (
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" /> New cycle
           </Button>
-        }
+        )}
       />
 
       <Tabs
@@ -49,7 +52,10 @@ export function CycleList() {
         ]}
       />
 
-      {visible.length === 0 ? (
+      {isError ? (
+        <EmptyState title={planningErrorText(error, "Could not load cycles.")}
+          action={<Button variant="secondary" onClick={() => void refetch()}>Try again</Button>} />
+      ) : visible.length === 0 ? (
         <EmptyState title={`No ${tab} cycles`} description="Create a cycle to plan the next sprint." />
       ) : (
         <ul className="space-y-3">
@@ -80,7 +86,10 @@ export function CycleList() {
         </ul>
       )}
 
-      <CreateCycleModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      {canWrite && createOpen && (
+        <CycleModal workspaceSlug={workspaceSlug} projectId={projectId}
+          onClose={() => setCreateOpen(false)} onSaved={(cycle) => setTab(cycle.status)} />
+      )}
     </div>
   );
 }
