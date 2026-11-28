@@ -22,6 +22,8 @@ interface CreateIssueModalProps {
   members: User[];
   labels: LabelType[];
   defaultStateId?: string;
+  /** Если передан — создаём подзадачу этой задачи */
+  parentId?: string;
 }
 
 const issueSchema = z.object({
@@ -39,7 +41,7 @@ type IssueFormData = z.infer<typeof issueSchema>;
 
 const toIso = (date: string) => (date ? new Date(date).toISOString() : null);
 
-export const CreateIssueModal = ({ open, onClose, states, members, labels, defaultStateId }: CreateIssueModalProps) => {
+export const CreateIssueModal = ({ open, onClose, states, members, labels, defaultStateId, parentId }: CreateIssueModalProps) => {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const addIssue = useAddIssueMutation(workspaceSlug, projectId);
 
@@ -80,6 +82,7 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
       priority: data.priority,
       assignee_ids: data.assignee_id !== "none" ? [data.assignee_id] : [],
       label_ids: data.label_id ? [data.label_id] : [],
+      parent_id: parentId,
       start_date: toIso(data.start_date),
       due_date: toIso(data.due_date),
     });
@@ -93,7 +96,7 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
     <Modal
       open={open}
       onClose={onClose}
-      title="New task"
+      title={parentId ? "New sub-task" : "New task"}
       className="max-w-xl"
       footer={
         <>
