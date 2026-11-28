@@ -9,7 +9,6 @@ const segments = [
   { key: "cancelled", label: "Cancelled", color: "#d64545" },
 ] as const;
 
-/** Полоска прогресса цикла/модуля по группам статусов */
 export function ProgressBar({ progress, showLegend = false }: { progress: Progress; showLegend?: boolean }) {
   const total = progress.total || 1;
 

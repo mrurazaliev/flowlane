@@ -9,7 +9,6 @@ import { useProjectMembers, useProject } from '../api'
 import { projectErrorText } from '../project-form';
 import { useT } from "@/shared/lib/i18n";
 
-/** Шапка проекта: путь, название, команда и вкладки (активная — жёлтая разметка) */
 export function ProjectHeader() {
   const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>()

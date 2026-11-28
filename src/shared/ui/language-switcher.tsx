@@ -3,7 +3,6 @@
 import { locales, useLocaleStore, useT } from "@/shared/lib/i18n";
 import { cn } from "@/shared/lib/utils";
 
-/** Переключатель языка: EN | RU */
 export const LanguageSwitcher = ({ className }: { className?: string }) => {
   const t = useT();
   const locale = useLocaleStore((s) => s.locale);

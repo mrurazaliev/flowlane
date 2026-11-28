@@ -23,7 +23,6 @@ import { ConfirmDeleteModal } from './confirm-delete-modal'
 import { InviteModal } from './invite-modal'
 import { useT } from "@/shared/lib/i18n";
 
-/** D2.4 Workspace members at /w/:workspaceSlug/members. */
 export function MembersPage() {
   const { workspaceSlug } = useParams<{ workspaceSlug: string }>()
 

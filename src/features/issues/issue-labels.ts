@@ -15,7 +15,6 @@ export async function getIssuesPage(
 ) {
   const { label, ...issueFilters } = filters
   const { data } = await api.get<IssuesResponse>(url, {
-    // The existing API accepts repeated label parameters when a single value fails schema validation.
     params: { limit: 100, ...issueFilters, label: label ? [label, label] : undefined, cursor: cursor ?? undefined },
     paramsSerializer: { indexes: null },
     signal,
@@ -46,7 +45,6 @@ export async function resolveIssueLabels(
     staleTime: 30_000,
   })
 
-  // Older API responses serialize label links as {}. The list filter still returns matching issues.
   for (const label of projectLabels) {
     const candidates = new Set([...missing].filter(([, entry]) =>
       entry.remaining > 0 && !entry.labels.some((link) => link.label.id === label.id),

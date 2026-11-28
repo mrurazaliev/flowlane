@@ -7,10 +7,6 @@ import { useT } from "@/shared/lib/i18n";
 import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { LanguageSwitcher } from "@/shared/ui/language-switcher";
 
-/**
- * Экран входа/регистрации. Вход: тёмная панель слева, форма справа.
- * Регистрация: наоборот — форма слева, панель справа (зеркально).
- */
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   const t = useT();
   const isRegister = usePathname().startsWith("/register");
@@ -20,7 +16,6 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       <section className={cn("relative hidden flex-col bg-asphalt px-13 py-11 text-white lg:flex", isRegister && "lg:order-2")}>
         <Logo light />
 
-        {/* Жёлтая пунктирная разметка слева от текста — как полоса на дороге */}
         <div className="my-auto flex max-w-lg gap-7">
           <div
             aria-hidden
@@ -34,7 +29,6 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
       </section>
 
       <section className="relative flex items-center justify-center bg-white px-5 py-12">
-        {/* Язык и тема — в правом верхнем углу */}
         <div className="absolute right-5 top-5 flex items-center gap-2">
           <LanguageSwitcher />
           <ThemeToggle />

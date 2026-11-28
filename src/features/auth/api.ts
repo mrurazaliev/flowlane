@@ -43,7 +43,6 @@ export const useLoginMutation =()=>
         }
     })
 
-
 export const useGetMeQuery = () =>
   useQuery({
     queryKey: queryKeys.me,
@@ -69,7 +68,6 @@ export const useLogoutMutation = () => {
   });
 };
 
-// PATCH /auth/me — изменить имя и аватар
 export type MeUpdate = {
   display_name?: string;
   avatar_url?: string | null;
@@ -82,12 +80,10 @@ export const useEditMeMutation = () => {
       const { data } = await api.patch<User>('/auth/me', changes);
       return data;
     },
-    // Кладём ответ сразу в кэш «я» — имя в сайдбаре обновится без лишнего запроса
     onSuccess: (user) => queryClient.setQueryData(queryKeys.me, user),
   });
 };
 
-// POST /auth/change-password
 export type PasswordChange = {
   current_password: string;
   new_password: string;
@@ -97,8 +93,6 @@ export const useChangePasswordMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: PasswordChange) => api.post('/auth/change-password', body),
-    // Бэкенд после смены пароля отзывает ВСЕ refresh-токены (выход со всех устройств),
-    // значит наш тоже мёртв — сразу выходим, как при Log out
     onSuccess: () => {
       useAuthStore.getState().clearTokens();
       queryClient.clear();

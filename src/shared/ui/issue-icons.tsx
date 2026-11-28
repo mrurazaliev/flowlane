@@ -12,7 +12,6 @@ export const priorityLabels: Record<Priority, string> = {
 
 export const priorityOrder: Priority[] = ["urgent", "high", "medium", "low", "none"];
 
-/** Приоритет: красный квадрат «!» для urgent, столбики для остальных, тире для none */
 export function PriorityIcon({ priority, className }: { priority: Priority; className?: string }) {
   if (priority === "urgent") {
     return (
@@ -44,7 +43,6 @@ export function PriorityIcon({ priority, className }: { priority: Priority; clas
   );
 }
 
-/** Иконка статуса по группе, цвет — из state.color */
 export function StateIcon({ group, color, className }: { group: StateGroup; color: string; className?: string }) {
   const common = { width: 15, height: 15, viewBox: "0 0 16 16", className: cn("shrink-0", className) };
 

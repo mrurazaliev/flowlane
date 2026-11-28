@@ -1,11 +1,8 @@
-// SHARED (F1.4): справочные данные, которые нужны обоим разработчикам.
-// Массивы возвращаются пустыми ([]), пока данные грузятся, — компоненты могут сразу делать .map/.filter.
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./client";
 import { queryKeys } from "./queryKeys";
 import type { Label, Project, ProjectMember, State, Workspace, WorkspaceMember } from "./types";
 
-// ---------- Workspaces ----------
 export const useWorkspaces = () => {
   const query = useQuery({
     queryKey: queryKeys.workspaces.all,
@@ -26,7 +23,6 @@ export const useWorkspace = (workspaceSlug: string) =>
     },
   });
 
-// ---------- Projects ----------
 export const useProjects = (workspaceSlug: string) => {
   const query = useQuery({
     queryKey: queryKeys.projects.all(workspaceSlug),
@@ -47,7 +43,6 @@ export const useProject = (workspaceSlug: string, projectId: string) =>
     },
   });
 
-// ---------- States & labels ----------
 export const useStates = (workspaceSlug: string, projectId: string) => {
   const query = useQuery({
     queryKey: queryKeys.states(workspaceSlug, projectId),
@@ -72,7 +67,6 @@ export const useLabels = (workspaceSlug: string, projectId: string) => {
   return { ...query, data: query.data ?? [] };
 };
 
-// ---------- Members ----------
 export const useWorkspaceMembers = (workspaceSlug: string) => {
   const query = useQuery({
     queryKey: queryKeys.workspaces.members(workspaceSlug),
@@ -84,7 +78,6 @@ export const useWorkspaceMembers = (workspaceSlug: string) => {
   return { ...query, data: query.data ?? [] };
 };
 
-/** Просто пользователи workspace — для выпадающих списков «Assignee», «Lead» */
 export const useMemberUsers = (workspaceSlug: string) => {
   const { data: members, ...rest } = useWorkspaceMembers(workspaceSlug);
   return { ...rest, data: members.map((m) => m.user) };
@@ -101,6 +94,5 @@ export const useProjectMembers = (workspaceSlug: string, projectId: string) => {
   return { ...query, data: query.data ?? [] };
 };
 
-/** Цвет точки проекта (в API у проекта нет цвета — берём по порядку) */
 const projectColors = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#06B6D4"];
 export const projectColor = (index: number) => projectColors[index % projectColors.length];

@@ -1,10 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/shared/lib/utils";
 
-/**
- * Ссылка в тёмном сайдбаре. Активная — с жёлтой разметкой слева.
- * Используют фичи, которые вставляют свои ссылки в слоты AppShell.
- */
 export function SidebarLink({
   href,
   active,

@@ -44,7 +44,7 @@ export function Board() {
     const children = boardIssues.filter((i) => i.parent_id === issue.id);
     return {
       subTasks: { done: children.filter((c) => doneStateIds.has(c.state_id)).length, total: children.length },
-      commentCount: 0, // бэкенд не присылает количество комментариев в списке задач
+      commentCount: 0,
     };
   };
 
@@ -112,7 +112,6 @@ export function Board() {
           />
         ))}
 
-        {/* Пустой проект */}
         {issues.length === 0 && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
             <div className="pointer-events-auto w-full max-w-md rounded-2xl border border-line bg-white p-8 text-center shadow-[0_24px_60px_-24px_rgba(30,34,42,.35)]">

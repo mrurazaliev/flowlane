@@ -22,15 +22,9 @@ interface IssueListProps {
   workspaceSlug: string;
   projectId: string;
   filter?: IssueListFilter;
-  /** Группировка по статусу (по умолчанию) или одной таблицей */
   groupBy?: "state" | "none";
 }
 
-/**
- * D1.5 Список задач + D1.16 публичный компонент для Dev 2.
- * Dev 2 использует его в цикле и модуле: <IssueList workspaceSlug projectId filter={{ cycle }} />
- * Позже: GET .../issues?cycle=…&module=…&group_by=state&cursor=…; «Load more» — по next_cursor.
- */
 export function IssueList({ workspaceSlug, projectId, filter = {}, groupBy = "state" }: IssueListProps) {
   const t = useT();
   const { data: project } = useProject(workspaceSlug, projectId);
@@ -45,7 +39,6 @@ if (isError) return <p className="p-4 text-red-600">{t("Could not load tasks")}<
 if (issues.length === 0) {
   return <EmptyState title={t("No tasks here yet")} description={t("Tasks you add will show up in this list.")} />;
 }
-
 
   const identifier = project?.identifier ?? "";
   const href = (issue: Issue) => `/w/${workspaceSlug}/p/${projectId}/issues/${issue.id}`;
@@ -108,7 +101,6 @@ if (issues.length === 0) {
 
       {!showAll && (
         <div className="flex justify-center">
-          {/* Позже: показываем, только если в ответе есть next_cursor */}
           <Button variant="secondary">{t("Load more")}</Button>
         </div>
       )}
@@ -116,7 +108,6 @@ if (issues.length === 0) {
   );
 }
 
-/** Порядок групп: сначала то, что в работе */
 function order(group: string) {
   return ["started", "unstarted", "backlog", "completed", "cancelled"].indexOf(group);
 }

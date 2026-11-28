@@ -11,7 +11,6 @@ import { workspaceErrorText } from '../workspace-form'
 import { CreateWorkspaceForm } from './create-workspace-form'
 import { useT } from "@/shared/lib/i18n";
 
-/** D2.1 Выбор и создание workspace */
 export function WorkspacePicker() {
   const t = useT();
   const { data: workspaces, error, isPending, isError, isFetching, refetch } = useWorkspaces()
@@ -24,7 +23,6 @@ export function WorkspacePicker() {
       <p className="mt-1 text-sm text-gray-500">{t("Choose an existing workspace or create a new one.")}</p>
 
       <div className="mt-10 grid w-full gap-6 md:grid-cols-2">
-        {/* Мои workspace */}
         <section>
           <div className="mb-3 flex items-center justify-between text-xs">
             <span className="font-semibold uppercase tracking-wide text-gray-500">
@@ -77,7 +75,6 @@ export function WorkspacePicker() {
           )}
         </section>
 
-        {/* Создать новый */}
         <CreateWorkspaceForm />
       </div>
     </main>

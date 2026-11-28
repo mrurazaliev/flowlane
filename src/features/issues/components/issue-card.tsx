@@ -8,7 +8,7 @@ import { cn, formatDate } from "@/shared/lib/utils";
 
 interface IssueCardProps {
   issue: Issue;
-  identifier: string; // "WEB"
+  identifier: string;
   isDone?: boolean;
   subTasks?: { done: number; total: number };
   commentCount?: number;
@@ -59,7 +59,6 @@ export function IssueCard({
       )}
 
       <div className="flex items-center gap-3 text-xs tabular-nums text-muted">
-        {/* Позже: если срок прошёл и задача не закрыта — красный текст */}
         {issue.due_date && (
           <span className="flex items-center gap-1">
             <CalendarDays className="size-3.5" />

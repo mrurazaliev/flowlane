@@ -32,10 +32,6 @@ const emptyText: Record<State["group"], string> = {
   cancelled: "No cancelled tasks",
 };
 
-/**
- * Колонка доски = полоса движения. Полосы разделены пунктирной разметкой,
- * над полосой «в работе» (group started) — жёлтая линия.
- */
 export function BoardColumn({
   state, issues, identifier, meta, onIssueClick, onAddClick, first,
   states, canMove, draggedIssue, onDragStart, onDragEnd, onMove,

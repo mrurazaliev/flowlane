@@ -22,12 +22,11 @@ import { PasswordInput } from "./password-input";
 const apiErrorText = (error: unknown) =>
   error && isAxiosError(error) ? errorText(error.response?.data) : null;
 
-/** D1.3 Профиль: имя и аватар (PATCH /auth/me) + смена пароля (POST /auth/change-password) */
 export function ProfileSettings() {
   const t = useT();
   const { data: currentUser } = useMe();
 
-  if (!currentUser) return null; // пользователь ещё грузится с бэкенда
+  if (!currentUser) return null;
 
   return (
     <div className="mx-auto max-w-2xl p-6">
@@ -37,7 +36,6 @@ export function ProfileSettings() {
       <PageHeader title={t("profile.title")} description={t("profile.description")} />
 
       <div className="max-w-2xl space-y-6">
-        {/* key: если данные пользователя пришли заново — форма начнётся с них */}
         <PersonalInfoForm key={currentUser.id} user={currentUser} />
         <ChangePasswordForm />
       </div>
@@ -45,24 +43,16 @@ export function ProfileSettings() {
   );
 }
 
-// ---------- Личные данные ----------
-
 const personalSchema = z.object({
   display_name: z.string().trim().min(1, "validation.nameRequired").max(100, "validation.nameTooLong"),
-  avatar_url: z.string(), // картинка в виде data URL (или "" — без фото)
+  avatar_url: z.string(),
 });
 
 type PersonalFormData = z.infer<typeof personalSchema>;
 
-const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 МБ — до сжатия
-const AVATAR_SIZE = 256; // итоговая картинка 256×256
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+const AVATAR_SIZE = 256;
 
-/**
- * У бэкенда нет загрузки файлов для аватара — он хранит только строку avatar_url.
- * Поэтому уменьшаем фото в браузере до 256×256 (обрезаем по центру в квадрат)
- * и превращаем в data URL: "data:image/jpeg;base64,..." — это тоже ссылка, бэкенд её примет.
- * После сжатия картинка весит ~15–30 КБ.
- */
 const resizeToAvatar = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const img = new Image();
@@ -103,10 +93,9 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
   const [copied, setCopied] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
 
-  // Выбрали файл с компьютера → проверяем → сжимаем → кладём в форму (кнопка Save станет активной)
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    e.target.value = ""; // чтобы можно было выбрать тот же файл ещё раз
+    e.target.value = "";
     if (!file) return;
     if (!file.type.startsWith("image/")) return setPhotoError("validation.imageType");
     if (file.size > MAX_PHOTO_SIZE) return setPhotoError("validation.imageSize");
@@ -119,29 +108,24 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
     }
   };
 
-  // Копируем свой ID — его вставляют в «Add member», чтобы добавить тебя в workspace
   const copyId = async () => {
     try {
       await navigator.clipboard.writeText(user.id);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Буфер обмена недоступен — выделяем текст, чтобы можно было скопировать Ctrl+C
       (document.getElementById("user-id") as HTMLInputElement | null)?.select();
     }
   };
 
-
   const onSubmit = async (data: PersonalFormData) => {
     const updated = await editMe.mutateAsync({
       display_name: data.display_name,
-      avatar_url: data.avatar_url || null, // пустое поле → убрать аватар
+      avatar_url: data.avatar_url || null,
     });
-    // Новые значения становятся «исходными» — кнопка снова неактивна, пока не изменишь
     reset({ display_name: updated.display_name, avatar_url: updated.avatar_url ?? "" });
   };
 
-  // Превью аватара меняется сразу, пока печатаешь
   const previewName = watch("display_name") || user.display_name;
   const previewAvatar = watch("avatar_url") || null;
 
@@ -150,7 +134,6 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
       <h2 className="text-base font-semibold text-gray-900">{t("profile.personalInfo")}</h2>
       <ErrorBanner>{apiErrorText(editMe.error)}</ErrorBanner>
 
-      {/* Фото: выбрать с компьютера, превью сразу, сохранится по кнопке Save */}
       <div className="flex items-center gap-4">
         <Avatar name={previewName} src={previewAvatar} size="md" className="size-16 text-lg" />
         <div className="flex-1">
@@ -226,8 +209,6 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
   );
 };
 
-// ---------- Смена пароля ----------
-
 const passwordSchema = z
   .object({
     current_password: z.string().min(1, "validation.currentPasswordRequired"),
@@ -257,7 +238,6 @@ const ChangePasswordForm = () => {
       current_password: data.current_password,
       new_password: data.new_password,
     });
-    // Токены уже удалены в хуке. Оставляем записку для страницы логина и уходим туда
     sessionStorage.setItem("password-changed", "1");
     router.replace("/login");
   };

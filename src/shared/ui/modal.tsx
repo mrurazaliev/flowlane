@@ -17,7 +17,6 @@ interface ModalProps {
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
 
-/** Модалка: закрывается по Esc и клику на фон, фокус не уходит за её пределы (F2.4) */
 export function Modal({ open, onClose, title, icon, children, footer, className }: ModalProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -25,7 +24,6 @@ export function Modal({ open, onClose, title, icon, children, footer, className 
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
     const box = ref.current;
-    // Фокус на первое поле (или на саму модалку)
     const first = box?.querySelector<HTMLElement>("input,textarea,select") ?? box;
     first?.focus();
 

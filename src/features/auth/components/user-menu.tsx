@@ -11,7 +11,6 @@ import { useT } from "@/shared/lib/i18n";
 import { useMe } from "../hooks";
 import { useLogoutMutation } from "../api";
 
-/** Меню профиля внизу сайдбара (слот в AppShell, Dev 1) */
 export function UserMenu() {
   const t = useT();
   const { data: user } = useMe();
@@ -19,7 +18,7 @@ export function UserMenu() {
   const router = useRouter();
   const logout = useLogoutMutation();
 
-  if (!user) return null; // ← после ВСЕХ хуков
+  if (!user) return null;
 
   const handleLogout = () => {
     logout.mutate(undefined, {

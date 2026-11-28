@@ -1,7 +1,3 @@
-// SHARED (F1.4): все ключи TanStack Query. Оба разработчика берут ключи ТОЛЬКО отсюда,
-// чтобы invalidateQueries у одного обновлял данные у другого.
-// Пример: queryClient.invalidateQueries({ queryKey: queryKeys.issues.all })
-
 export const queryKeys = {
   me: ["me"] as const,
 

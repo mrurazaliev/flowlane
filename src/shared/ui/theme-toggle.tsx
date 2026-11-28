@@ -5,7 +5,6 @@ import { useThemeStore } from "@/shared/lib/theme";
 import { useT } from "@/shared/lib/i18n";
 import { cn } from "@/shared/lib/utils";
 
-/** Кнопка смены темы. С withLabel — строка для меню («Тёмная тема»), без — только иконка */
 export const ThemeToggle = ({ withLabel = false, className }: { withLabel?: boolean; className?: string }) => {
   const t = useT();
   const theme = useThemeStore((s) => s.theme);

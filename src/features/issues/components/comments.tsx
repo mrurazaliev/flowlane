@@ -20,13 +20,11 @@ import {
 } from "../api";
 import { useT } from "@/shared/lib/i18n";
 
-/** D1.13 Комментарии + D1.14 история изменений — одной лентой по времени, всё с бэкенда */
 export const Discussion = ({ issueId }: { issueId: string }) => {
   const t = useT();
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const { data: me } = useMe();
 
-  // История хранит id (статуса, человека, лейбла) — чтобы показать имена, берём справочники
   const { data: activityEntries = [] } = useGetActivityQuery(workspaceSlug, projectId, issueId);
   const { data: states } = useStates(workspaceSlug, projectId);
   const { data: members } = useMemberUsers(workspaceSlug);
@@ -37,10 +35,10 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
   const editComment = useEditCommentMutation(workspaceSlug, projectId, issueId);
   const deleteComment = useDeleteCommentMutation(workspaceSlug, projectId, issueId);
 
-  const [text, setText] = useState(""); // новый комментарий
-  const [editingId, setEditingId] = useState<string | null>(null); // какой комментарий сейчас редактируем
+  const [text, setText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null); // «Удалить? Да / Нет»
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +66,6 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
     setConfirmDeleteId(null);
   };
 
-  // Превращаем запись истории в понятную фразу: «changed status from Todo to In Progress»
   const nameOf = {
     state: (id: string | null) => states.find((s) => s.id === id)?.name ?? t("unknown"),
     user: (id: string | null) => members.find((u) => u.id === id)?.display_name ?? t("someone"),
@@ -114,7 +111,7 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
             return field ? t("updated {field}", { field }) : t("updated the task");
         }
       default:
-        return null; // comment.* и прочее — комментарии и так видны в ленте
+        return null;
     }
   };
 
@@ -123,7 +120,6 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
     return text ? [{ id: entry.id, actor: entry.actor.display_name, text, created_at: entry.created_at }] : [];
   });
 
-  // История и комментарии — одной лентой по времени
   const feed = [
     ...activity.map((a) => ({ kind: "activity" as const, at: a.created_at, item: a })),
     ...comments.map((c) => ({ kind: "comment" as const, at: c.created_at, item: c })),
@@ -171,7 +167,6 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                 {comment.deleted_at ? (
                   <p className="mt-0.5 italic text-faint">{t("This comment was deleted")}</p>
                 ) : isEditing ? (
-                  // Режим редактирования
                   <div className="mt-1.5">
                     <textarea
                       autoFocus
@@ -198,7 +193,6 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
                   <p className="mt-0.5 whitespace-pre-line leading-relaxed text-gray-700">{comment.body}</p>
                 )}
 
-                {/* Изменить / удалить — только свои комментарии */}
                 {isMine && !comment.deleted_at && !isEditing && (
                   <div className="mt-1 flex items-center gap-3.5 text-[12.5px] text-faint">
                     {confirmDeleteId === comment.id ? (
@@ -235,7 +229,6 @@ export const Discussion = ({ issueId }: { issueId: string }) => {
 
       {!isLoading && feed.length === 0 && <p className="text-faint">{t("No comments yet. Start the discussion.")}</p>}
 
-      {/* Новый комментарий */}
       <form
         onSubmit={handleSend}
         className="mt-5 flex items-center gap-2 rounded-xl border border-line bg-white p-2 pl-3.5 focus-within:border-asphalt focus-within:ring-[3px] focus-within:ring-marking-soft"

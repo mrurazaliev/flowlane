@@ -28,15 +28,12 @@ export function Textarea({ className, invalid, ...props }: TextareaProps) {
   return <textarea className={cn(fieldBase, "min-h-24 py-2.5 leading-relaxed", invalid && fieldError, className)} {...props} />;
 }
 
-/** Нативный select — только для простых форм. Для свойств задачи используйте <Dropdown> */
 export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return <select className={cn(fieldBase, "h-11 pr-8", className)} {...props} />;
 }
 
-/** Сообщение об ошибке под полем (позже сюда пойдут ошибки Zod) */
 export function FieldError({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
-  // Сообщения Zod пишем по-английски, а переводим здесь — в одном месте для всех форм
   return <p className="mt-1.5 text-[13px] text-red-600">{typeof children === "string" ? translate(children) : children}</p>;
 }
 
@@ -44,7 +41,6 @@ export function FieldHint({ children }: { children: React.ReactNode }) {
   return <p className="mt-1.5 text-[13px] text-muted">{children}</p>;
 }
 
-/** Плашка ошибки над формой (ошибки от API: errorText(error)) */
 export function ErrorBanner({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
   return (

@@ -23,7 +23,6 @@ interface CreateIssueModalProps {
   members: User[];
   labels: LabelType[];
   defaultStateId?: string;
-  /** Если передан — создаём подзадачу этой задачи */
   parentId?: string;
 }
 
@@ -32,7 +31,7 @@ const issueSchema = z.object({
   description: z.string(),
   state_id: z.string().min(1, "Choose a status"),
   priority: z.enum(["urgent", "high", "medium", "low", "none"]),
-  assignee_id: z.string(), // "none" или id пользователя
+  assignee_id: z.string(),
   label_id: z.string().nullable(),
   start_date: z.string(),
   due_date: z.string(),
@@ -68,7 +67,6 @@ export const CreateIssueModal = ({ open, onClose, states, members, labels, defau
     formState: { errors },
   } = useForm<IssueFormData>({ resolver: zodResolver(issueSchema), defaultValues: emptyForm });
 
-  // Каждый раз при открытии — чистая форма (и нужный статус, если нажали «+» в колонке)
   useEffect(() => {
     if (open) {
       reset(emptyForm);

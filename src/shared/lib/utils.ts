@@ -6,7 +6,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** "Alex Rivera" → "AR" */
 export function initials(name: string) {
   return name
     .split(" ")
@@ -16,7 +15,6 @@ export function initials(name: string) {
     .toUpperCase();
 }
 
-/** ISO-дата → "Dec 12" / "12 дек." (в UTC, чтобы сервер и браузер рисовали одинаково) */
 export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(currentLocale() === "ru" ? "ru-RU" : "en-US", {
     month: "short",
@@ -25,14 +23,6 @@ export function formatDate(iso: string) {
   });
 }
 
-/** 48200 → "47 KB" */
-export function formatFileSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-/** Даты цикла/модуля: "Nov 23 → Dec 6" или "No dates" */
 export function formatDateRange(start: string | null, end: string | null) {
   if (!start && !end) return translate("No dates");
   return `${start ? formatDate(start) : "…"} → ${end ? formatDate(end) : "…"}`;

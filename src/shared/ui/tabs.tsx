@@ -9,7 +9,6 @@ interface TabsProps<T extends string> {
   className?: string;
 }
 
-/** Вкладки-переключатели внутри страницы (активная — с жёлтой разметкой снизу) */
 export function Tabs<T extends string>({ tabs, value, onChange, className }: TabsProps<T>) {
   return (
     <div role="tablist" className={cn("flex gap-6 border-b border-line", className)}>

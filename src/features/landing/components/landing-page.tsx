@@ -11,7 +11,6 @@ import { Logo } from "@/shared/ui/logo";
 import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { LanguageSwitcher } from "@/shared/ui/language-switcher";
 
-/** Жёлтая кнопка «Начать работу» → регистрация */
 function StartButton({ className }: { className?: string }) {
   const t = useT();
   return (
@@ -24,7 +23,6 @@ function StartButton({ className }: { className?: string }) {
   );
 }
 
-/** Главная для тех, кто зашёл впервые. Вошедших сразу отправляем к их пространствам */
 export function LandingPage() {
   const t = useT();
   const router = useRouter();
@@ -109,7 +107,6 @@ export function LandingPage() {
       </section>
 
       <section className="relative overflow-hidden bg-asphalt px-6 py-14 text-white sm:px-10">
-        {/* Горизонтальная разметка по низу блока */}
         <div aria-hidden className="absolute inset-x-0 bottom-5 h-[3px] bg-[linear-gradient(90deg,var(--color-marking)_55%,transparent_0)] bg-[length:36px_3px] opacity-60" />
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 sm:flex-row sm:items-center">
           <div>
@@ -136,7 +133,6 @@ function Feature({ icon, title, text, children }: { icon: React.ReactNode; title
   );
 }
 
-/** Окно приложения: доска-«дорога», одна задача сама переезжает из «В работе» в «Готово» */
 function BoardPreview() {
   const t = useT();
   const [moved, setMoved] = useState(false);
@@ -190,7 +186,6 @@ function BoardPreview() {
               )}
             >
               <p className={cn("mb-2.5 text-[12px]", col.color)}>{col.name}</p>
-              {/* В колонке «В работе» оставляем место под едущую карточку */}
               {i === 2 && <div className="h-[58px]" />}
               {col.cards.map(([key, title]) => (
                 <PreviewCard key={key} id={key} title={title} />
