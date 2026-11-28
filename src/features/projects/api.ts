@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api } from '@/shared/api/client'
 import { queryKeys } from '@/shared/api/queryKeys'
-import type { Project, ProjectMember } from '@/shared/api/types'
+import type { Label, Project, ProjectMember, State } from '@/shared/api/types'
 
 type ProjectPayload = Pick<Project, 'name' | 'identifier'> & { description?: string; lead_id?: string }
 type EditProjectPayload = Partial<Pick<Project, 'name' | 'description' | 'lead_id' | 'is_archived'>>
 type ProjectMemberPayload = Pick<ProjectMember, 'user_id' | 'role'>
+type LabelPayload = Pick<Label, 'name' | 'color'>
+type StatePayload = LabelPayload & Pick<State, 'group' | 'order' | 'is_default'>
 
 function projectsPath(slug: string) {
   return `/workspaces/${encodeURIComponent(slug)}/projects/`
@@ -141,5 +143,69 @@ export function useRemoveProjectMember(slug: string, id: string) {
       client.setQueryData<ProjectMember[]>(queryKey, (current) => current?.filter((member) => member.user_id !== userId))
       void client.invalidateQueries({ queryKey, exact: true })
     },
+  })
+}
+
+function refreshProjectStates(client: QueryClient, slug: string, id: string) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: queryKeys.states(slug, id), exact: true }),
+    client.invalidateQueries({ queryKey: [...queryKeys.issues.all, slug, id] }),
+    client.invalidateQueries({ queryKey: queryKeys.cycles.all(slug, id) }),
+    client.invalidateQueries({ queryKey: queryKeys.modules.all(slug, id) }),
+  ])
+}
+
+function refreshProjectLabels(client: QueryClient, slug: string, id: string) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: queryKeys.labels(slug, id), exact: true }),
+    client.invalidateQueries({ queryKey: [...queryKeys.issues.all, slug, id] }),
+  ])
+}
+
+export function useSaveProjectState(slug: string, id: string) {
+  const client = useQueryClient()
+  const path = `${projectPath(slug, id)}/states/`
+  return useMutation({
+    mutationFn: async (change: { stateId: string; payload: Partial<StatePayload> } | { payload: StatePayload }) => {
+      const { data } = 'stateId' in change
+        ? await api.patch<State>(`${path}${encodeURIComponent(change.stateId)}`, change.payload)
+        : await api.post<State>(path, change.payload)
+      return data
+    },
+    onSuccess: () => refreshProjectStates(client, slug, id),
+  })
+}
+
+export function useDeleteProjectState(slug: string, id: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ stateId, transferToStateId }: { stateId: string; transferToStateId: string }) =>
+      api.delete(`${projectPath(slug, id)}/states/${encodeURIComponent(stateId)}`, {
+        data: transferToStateId ? { transfer_to_state_id: transferToStateId } : {},
+      }),
+    onSuccess: () => refreshProjectStates(client, slug, id),
+  })
+}
+
+export function useSaveProjectLabel(slug: string, id: string) {
+  const client = useQueryClient()
+  const path = `${projectPath(slug, id)}/labels/`
+  return useMutation({
+    mutationFn: async (change: { labelId: string; payload: Partial<LabelPayload> } | { payload: LabelPayload }) => {
+      const { data } = 'labelId' in change
+        ? await api.patch<Label>(`${path}${encodeURIComponent(change.labelId)}`, change.payload)
+        : await api.post<Label>(path, change.payload)
+      return data
+    },
+    onSuccess: () => refreshProjectLabels(client, slug, id),
+  })
+}
+
+export function useDeleteProjectLabel(slug: string, id: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (labelId: string) =>
+      api.delete(`${projectPath(slug, id)}/labels/${encodeURIComponent(labelId)}`),
+    onSuccess: () => refreshProjectLabels(client, slug, id),
   })
 }

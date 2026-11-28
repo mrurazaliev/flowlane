@@ -17,14 +17,14 @@ function useProjectParams() {
   return useParams<{ workspaceSlug: string; projectId: string }>()
 }
 
-/** Меню настроек проекта: General & members / States / Labels */
+/** Меню настроек проекта: General & members / Statuses / Labels */
 function SettingsLayout({ children }: { children: React.ReactNode }) {
   const { workspaceSlug, projectId } = useProjectParams()
   const pathname = usePathname()
   const base = `/w/${workspaceSlug}/p/${projectId}/settings`
   const links = [
     { href: base, label: 'General & members' },
-    { href: `${base}/states`, label: 'States' },
+    { href: `${base}/states`, label: 'Statuses' },
     { href: `${base}/labels`, label: 'Labels' },
   ]
 
@@ -35,6 +35,7 @@ function SettingsLayout({ children }: { children: React.ReactNode }) {
           <Link
             key={link.href}
             href={link.href}
+            aria-current={pathname === link.href ? 'page' : undefined}
             className={cn(
               'block shrink-0 rounded-lg px-3 py-2 text-sm',
               pathname === link.href ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-600 hover:bg-gray-100',
@@ -86,9 +87,10 @@ export function ProjectSettingsPage() {
 /** D2.9 .../settings/states */
 export function StatesSettingsPage() {
   const { workspaceSlug, projectId } = useProjectParams()
+  const { canManage } = useProjectAccess(workspaceSlug)
   return (
     <SettingsLayout>
-      <StatesSettings workspaceSlug={workspaceSlug} projectId={projectId} />
+      <StatesSettings key={projectId} workspaceSlug={workspaceSlug} projectId={projectId} canManage={canManage} />
     </SettingsLayout>
   )
 }
@@ -96,9 +98,10 @@ export function StatesSettingsPage() {
 /** D2.10 .../settings/labels */
 export function LabelsSettingsPage() {
   const { workspaceSlug, projectId } = useProjectParams()
+  const { canManage } = useProjectAccess(workspaceSlug)
   return (
     <SettingsLayout>
-      <LabelsSettings workspaceSlug={workspaceSlug} projectId={projectId} />
+      <LabelsSettings key={projectId} workspaceSlug={workspaceSlug} projectId={projectId} canManage={canManage} />
     </SettingsLayout>
   )
 }
