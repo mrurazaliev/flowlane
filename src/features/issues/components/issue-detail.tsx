@@ -16,7 +16,7 @@ import { Modal } from "@/shared/ui/modal";
 import { formatDate } from "@/shared/lib/utils";
 import { Attachments } from "./attachments";
 import { Discussion } from "./comments";
-import { activity, attachments } from "../mocks"; // история и файлы — следующие задачи
+import { attachments } from "../mocks"; // файлы — следующая задача
 import {
   useAddAssigneeMutation,
   useAddLabelMutation,
@@ -229,7 +229,7 @@ export function IssueDetail() {
 
           <Attachments attachments={attachments.filter((a) => a.issue_id === issue.id)} />
 
-          <Discussion issueId={issue.id} activity={activity.filter((a) => a.issue_id === issue.id)} />
+          <Discussion issueId={issue.id} />
         </div>
       </article>
 
