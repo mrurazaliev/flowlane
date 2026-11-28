@@ -75,6 +75,16 @@ export const en = {
   "profile.updating": "Updating...",
   "validation.avatarUrl": "Enter a full link, starting with https://",
   "validation.currentPasswordRequired": "Enter your current password",
+  "profile.userId": "Your user ID",
+  "profile.userIdHint": "Send this ID to a workspace admin so they can add you as a member.",
+  "profile.copy": "Copy",
+  "profile.copied": "Copied",
+  "profile.uploadPhoto": "Upload photo",
+  "profile.changePhoto": "Change photo",
+  "profile.removePhoto": "Remove",
+  "profile.photoHint": "JPG, PNG or WebP, up to 5 MB. It will be cropped to a square.",
+  "validation.imageType": "Choose an image file (JPG, PNG or WebP)",
+  "validation.imageSize": "The image must be smaller than 5 MB",
   "login.passwordChanged": "Password changed. Log in with your new password.",
 } as const;
 
