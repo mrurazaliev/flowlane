@@ -11,6 +11,7 @@ import { ErrorBanner, FieldError, FieldHint, Input, Label } from "@/shared/ui/fo
 import { errorText } from "@/shared/lib/errors";
 import { useRegisterMutation } from "../api";
 import { PasswordInput } from "./password-input";
+import { GoogleButton } from "./google-button";
 import { useT } from "@/shared/lib/i18n";
 
 const registerSchema = z
@@ -116,6 +117,8 @@ export const RegisterForm = () => {
           {registerUser.isPending ? t("register.submitting") : t("register.submit")}
         </Button>
       </form>
+
+      <GoogleButton />
 
       <p className="mt-6 text-center text-muted">
         {t("register.haveAccount")}{" "}

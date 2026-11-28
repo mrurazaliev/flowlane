@@ -75,6 +75,8 @@ export const en = {
   "validation.imageType": "Choose an image file (JPG, PNG or WebP)",
   "validation.imageSize": "The image must be smaller than 5 MB",
   "login.passwordChanged": "Password changed. Log in with your new password.",
+  "auth.or": "or",
+  "auth.googleError": "Could not sign in with Google. Try again.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

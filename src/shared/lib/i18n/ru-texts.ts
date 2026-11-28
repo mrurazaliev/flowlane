@@ -436,4 +436,6 @@ export const ruTexts: Record<string, string> = {
   "Feature": "Фича",
   "Bug": "Баг",
   "Design": "Дизайн",
+  "Invalid Google token": "Google не подтвердил вход. Попробуйте ещё раз.",
+  "Google sign-in is not configured": "Вход через Google не настроен на сервере.",
 };
