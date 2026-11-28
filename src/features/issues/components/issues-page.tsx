@@ -10,6 +10,7 @@ import { CreateIssueModal } from "./create-issue-modal";
 import { IssueFilters, emptyFilters, toIssueQuery, type FilterSelection } from "./issue-filters";
 import { useT } from "@/shared/lib/i18n";
 import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
+import { useUrlSearch } from "../use-url-search";
 import { IssueList } from "./issue-list";
 
 export function IssuesPage() {
@@ -17,7 +18,7 @@ export function IssuesPage() {
   const { workspaceSlug, projectId } = useParams<{ workspaceSlug: string; projectId: string }>();
   const [createOpen, setCreateOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<"state" | "none">("state");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useUrlSearch();
   const debouncedSearch = useDebouncedValue(search.trim());
   const [selected, setSelected] = useState<FilterSelection>(emptyFilters);
 

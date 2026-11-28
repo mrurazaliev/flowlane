@@ -16,6 +16,7 @@ import { IssueFilters, emptyFilters, toIssueQuery, type FilterSelection } from "
 import { useGetIssuesQuery, useMoveIssueMutation } from "../api";
 import { useT } from "@/shared/lib/i18n";
 import { useDebouncedValue } from "@/shared/lib/use-debounced-value";
+import { useUrlSearch } from "../use-url-search";
 
 export function Board() {
   const t = useT();
@@ -24,7 +25,7 @@ export function Board() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createInState, setCreateInState] = useState<string | undefined>();
   const [draggedIssue, setDraggedIssue] = useState<Issue | null>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useUrlSearch();
   const debouncedSearch = useDebouncedValue(search.trim());
   const [selected, setSelected] = useState<FilterSelection>(emptyFilters);
   const query = toIssueQuery(selected, debouncedSearch);
