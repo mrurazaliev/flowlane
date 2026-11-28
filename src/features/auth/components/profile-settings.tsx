@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { isAxiosError } from "axios";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Copy, ImageUp, Trash2 } from "lucide-react";
 import type { User } from "@/shared/api/types";
 import { errorText } from "@/shared/lib/errors";
 import { useT } from "@/shared/lib/i18n";
@@ -48,10 +49,41 @@ export function ProfileSettings() {
 
 const personalSchema = z.object({
   display_name: z.string().trim().min(1, "validation.nameRequired").max(100, "validation.nameTooLong"),
-  avatar_url: z.union([z.literal(""), z.string().trim().url("validation.avatarUrl")]),
+  avatar_url: z.string(), // картинка в виде data URL (или "" — без фото)
 });
 
 type PersonalFormData = z.infer<typeof personalSchema>;
+
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 МБ — до сжатия
+const AVATAR_SIZE = 256; // итоговая картинка 256×256
+
+/**
+ * У бэкенда нет загрузки файлов для аватара — он хранит только строку avatar_url.
+ * Поэтому уменьшаем фото в браузере до 256×256 (обрезаем по центру в квадрат)
+ * и превращаем в data URL: "data:image/jpeg;base64,..." — это тоже ссылка, бэкенд её примет.
+ * После сжатия картинка весит ~15–30 КБ.
+ */
+const resizeToAvatar = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const side = Math.min(img.width, img.height);
+      const canvas = document.createElement("canvas");
+      canvas.width = AVATAR_SIZE;
+      canvas.height = AVATAR_SIZE;
+      canvas
+        .getContext("2d")
+        ?.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read the image"));
+    };
+    img.src = url;
+  });
 
 const PersonalInfoForm = ({ user }: { user: User }) => {
   const t = useT();
@@ -62,11 +94,43 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<PersonalFormData>({
     resolver: zodResolver(personalSchema),
     defaultValues: { display_name: user.display_name, avatar_url: user.avatar_url ?? "" },
   });
+  const [copied, setCopied] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // Выбрали файл с компьютера → проверяем → сжимаем → кладём в форму (кнопка Save станет активной)
+  const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // чтобы можно было выбрать тот же файл ещё раз
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return setPhotoError("validation.imageType");
+    if (file.size > MAX_PHOTO_SIZE) return setPhotoError("validation.imageSize");
+    try {
+      const dataUrl = await resizeToAvatar(file);
+      setValue("avatar_url", dataUrl, { shouldDirty: true });
+      setPhotoError(null);
+    } catch {
+      setPhotoError("validation.imageType");
+    }
+  };
+
+  // Копируем свой ID — его вставляют в «Add member», чтобы добавить тебя в workspace
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(user.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Буфер обмена недоступен — выделяем текст, чтобы можно было скопировать Ctrl+C
+      (document.getElementById("user-id") as HTMLInputElement | null)?.select();
+    }
+  };
+
 
   const onSubmit = async (data: PersonalFormData) => {
     const updated = await editMe.mutateAsync({
@@ -86,18 +150,29 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
       <h2 className="text-base font-semibold text-gray-900">{t("profile.personalInfo")}</h2>
       <ErrorBanner>{apiErrorText(editMe.error)}</ErrorBanner>
 
-      <div className="flex items-start gap-4">
-        <Avatar name={previewName} src={previewAvatar} size="md" className="size-14 text-base" />
+      {/* Фото: выбрать с компьютера, превью сразу, сохранится по кнопке Save */}
+      <div className="flex items-center gap-4">
+        <Avatar name={previewName} src={previewAvatar} size="md" className="size-16 text-lg" />
         <div className="flex-1">
-          <Label htmlFor="avatar">{t("profile.avatarUrl")}</Label>
-          <Input
-            id="avatar"
-            type="url"
-            placeholder="https://…/photo.jpg"
-            invalid={!!errors.avatar_url}
-            {...register("avatar_url")}
-          />
-          <FieldError>{errors.avatar_url?.message && t(errors.avatar_url.message)}</FieldError>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-medium hover:bg-gray-50 focus-within:ring-[3px] focus-within:ring-marking-soft">
+              <ImageUp className="size-4" />
+              {previewAvatar ? t("profile.changePhoto") : t("profile.uploadPhoto")}
+              <input type="file" accept="image/*" onChange={(e) => void handlePhoto(e)} className="sr-only" />
+            </label>
+            {previewAvatar && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setValue("avatar_url", "", { shouldDirty: true })}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <Trash2 className="size-4" /> {t("profile.removePhoto")}
+              </Button>
+            )}
+          </div>
+          {photoError ? <FieldError>{t(photoError)}</FieldError> : <FieldHint>{t("profile.photoHint")}</FieldHint>}
         </div>
       </div>
 
@@ -110,6 +185,31 @@ const PersonalInfoForm = ({ user }: { user: User }) => {
       <div>
         <Label htmlFor="profile-email">{t("field.email")}</Label>
         <Input id="profile-email" value={user.email} readOnly className="bg-gray-50 text-gray-500" />
+      </div>
+
+      <div>
+        <Label htmlFor="user-id">{t("profile.userId")}</Label>
+        <div className="flex gap-2">
+          <Input
+            id="user-id"
+            value={user.id}
+            readOnly
+            onFocus={(e) => e.currentTarget.select()}
+            className="flex-1 bg-gray-50 font-mono text-[13px] text-gray-500"
+          />
+          <Button type="button" variant="secondary" onClick={() => void copyId()} className="shrink-0">
+            {copied ? (
+              <>
+                <Check className="size-4 text-[#3a9a6b]" /> {t("profile.copied")}
+              </>
+            ) : (
+              <>
+                <Copy className="size-4" /> {t("profile.copy")}
+              </>
+            )}
+          </Button>
+        </div>
+        <FieldHint>{t("profile.userIdHint")}</FieldHint>
       </div>
 
       <div className="flex items-center justify-end gap-3">
