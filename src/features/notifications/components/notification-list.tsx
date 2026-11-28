@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { isAxiosError } from 'axios'
 import { CheckCheck } from 'lucide-react'
-import { IncomingInvites } from '@/features/workspaces'
-import type { NotificationType } from '@/shared/api/types'
+import type { Notification, NotificationType } from '@/shared/api/types'
 import { errorText } from '@/shared/lib/errors'
 import { cn, formatDate } from '@/shared/lib/utils'
 import { Avatar } from '@/shared/ui/avatar'
@@ -14,8 +13,8 @@ import { ErrorBanner } from '@/shared/ui/form'
 import { EmptyState, PageHeader } from '@/shared/ui/page'
 import { Tabs } from '@/shared/ui/tabs'
 import {
-  useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications,
-  type NotificationFilter, type NotificationItem,
+  useFindNotificationProject, useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications,
+  type NotificationFilter,
 } from '../api'
 import { useT } from "@/shared/lib/i18n";
 
@@ -38,26 +37,35 @@ export function NotificationList() {
   const notificationsQuery = useNotifications(workspaceSlug, filter)
   const readMutation = useMarkNotificationRead(workspaceSlug)
   const readAllMutation = useMarkAllNotificationsRead(workspaceSlug)
+  const findProject = useFindNotificationProject(workspaceSlug)
   const notifications = notificationsQuery.data?.pages.flatMap((page) => page.data) ?? []
   const unreadCount = notificationsQuery.data?.pages[0]?.unread_count
   const totalCount = filter === 'all' && notificationsQuery.isSuccess && !notificationsQuery.hasNextPage
     ? notifications.length
     : undefined
-  const busy = readMutation.isPending || readAllMutation.isPending
+  const busy = readMutation.isPending || readAllMutation.isPending || findProject.isPending
 
-  async function handleOpenNotification(notification: NotificationItem) {
+  async function handleOpenNotification(notification: Notification) {
     if (busy) return
     setActionError('')
     try {
-      const item = notification.is_read ? notification : await readMutation.mutateAsync(notification.id)
-      if (item.issue && item.issue_id) {
-        const slug = encodeURIComponent(workspaceSlug)
-        const projectId = encodeURIComponent(item.issue.project_id)
-        const issueId = encodeURIComponent(item.issue_id)
-        router.push(`/w/${slug}/p/${projectId}/issues/${issueId}`)
-      }
+      if (!notification.is_read) await readMutation.mutateAsync(notification.id)
     } catch (error) {
       setActionError(notificationError(error, t("Could not mark the notification as read.")))
+      return
+    }
+
+    if (!notification.issue_id) return
+    try {
+      const projectId = await findProject.mutateAsync(notification.issue_id)
+      if (!projectId) {
+        setActionError(t("This task is no longer available."))
+        return
+      }
+      const slug = encodeURIComponent(workspaceSlug)
+      router.push(`/w/${slug}/p/${encodeURIComponent(projectId)}/issues/${encodeURIComponent(notification.issue_id)}`)
+    } catch (error) {
+      setActionError(notificationError(error, t("Could not open the task.")))
     }
   }
 
@@ -82,8 +90,6 @@ export function NotificationList() {
           </Button>
         }
       />
-
-      <IncomingInvites className="mb-6 max-w-3xl" />
 
       <Tabs
         className="mb-4"
@@ -116,13 +122,14 @@ export function NotificationList() {
         {notifications.length > 0 && (
           <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
             {notifications.map((notification) => {
-              const { issue, actor, is_read, created_at, type, id } = notification
+              const { actor, is_read, created_at, type, id, issue_id } = notification
               return (
                 <li key={id}>
                   <button
                     type="button"
-                    disabled={busy || (is_read && (!issue || !notification.issue_id))}
-                    aria-busy={readMutation.isPending && readMutation.variables === id}
+                    disabled={busy || (is_read && !issue_id)}
+                    aria-busy={(readMutation.isPending && readMutation.variables === id) ||
+                      (findProject.isPending && findProject.variables === issue_id)}
                     onClick={() => void handleOpenNotification(notification)}
                     className={cn('flex w-full items-start gap-3 px-4 py-3 text-left enabled:hover:bg-gray-50', !is_read && 'bg-indigo-50/40')}
                   >
@@ -130,11 +137,7 @@ export function NotificationList() {
                     <div className="min-w-0 flex-1 text-sm">
                       <p className="text-gray-700">
                         <span className="font-medium text-gray-900">{actor.display_name}</span> {t(texts[type])}{' '}
-                        {issue ? (
-                          <span className="font-medium text-indigo-600">
-                            {issue.project_identifier}-{issue.sequence_id} · {issue.title}
-                          </span>
-                        ) : t('a task')}
+                        {t('a task')}
                       </p>
                       <p className="mt-0.5 text-xs text-gray-400">{formatDate(created_at)}</p>
                     </div>

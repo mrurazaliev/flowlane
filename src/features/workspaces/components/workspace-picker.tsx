@@ -9,7 +9,6 @@ import { Logo } from '@/shared/ui/logo'
 import { useWorkspaces } from '../api'
 import { workspaceErrorText } from '../workspace-form'
 import { CreateWorkspaceForm } from './create-workspace-form'
-import { IncomingInvites } from './incoming-invites'
 import { useT } from "@/shared/lib/i18n";
 
 /** D2.1 Выбор и создание workspace */
@@ -23,7 +22,6 @@ export function WorkspacePicker() {
       <Logo withText={false} />
       <h1 className="mt-4 text-2xl font-semibold text-gray-900">{t("Select a workspace")}</h1>
       <p className="mt-1 text-sm text-gray-500">{t("Choose an existing workspace or create a new one.")}</p>
-      <IncomingInvites className="mt-8 w-full" />
 
       <div className="mt-10 grid w-full gap-6 md:grid-cols-2">
         {/* Мои workspace */}

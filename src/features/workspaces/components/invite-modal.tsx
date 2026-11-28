@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useState, type FormEvent } from 'react'
-import { UserPlus } from 'lucide-react'
+import { useCallback, useRef, useState, type FormEvent } from 'react'
+import { Check, Copy, UserPlus } from 'lucide-react'
 import { z } from 'zod'
 import { Button } from '@/shared/ui/button'
 import { ErrorBanner, FieldError, FieldHint, Input, Label, Select } from '@/shared/ui/form'
@@ -20,6 +20,10 @@ export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string;
   const [role, setRole] = useState<AssignableWorkspaceRole>('member')
   const [emailError, setEmailError] = useState('')
   const [actionError, setActionError] = useState('')
+  const [inviteLink, setInviteLink] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState(false)
+  const linkField = useRef<HTMLDivElement>(null)
   const busy = inviteMutation.isPending
 
   const close = useCallback(() => {
@@ -39,11 +43,42 @@ export function InviteModal({ workspaceSlug, onClose }: { workspaceSlug: string;
 
     setEmailError('')
     try {
-      await inviteMutation.mutateAsync({ email: result.data, role })
-      onClose()
+      const invite = await inviteMutation.mutateAsync({ email: result.data, role })
+      setInviteLink(new URL(`/invites/${encodeURIComponent(invite.token)}`, window.location.origin).href)
     } catch (error) {
       setActionError(workspaceErrorText(error, t("Could not create the invitation. Please try again.")))
     }
+  }
+
+  async function handleCopyLink() {
+    setCopyError(false)
+    try {
+      await navigator.clipboard.writeText(inviteLink)
+      setCopied(true)
+    } catch {
+      const input = linkField.current?.querySelector('input')
+      input?.focus()
+      input?.select()
+      setCopyError(true)
+    }
+  }
+
+  if (inviteLink) {
+    return (
+      <Modal open onClose={close} title={t("Invitation link")} icon={<UserPlus className="size-5 text-indigo-600" />}
+        footer={<Button onClick={close}>{t("Close")}</Button>}>
+        <Label htmlFor="invite-link">{t("Invitation link")}</Label>
+        <div className="flex gap-2" ref={linkField}>
+          <Input id="invite-link" value={inviteLink} readOnly autoFocus
+            onFocus={(event) => event.currentTarget.select()} />
+          <Button variant="secondary" className="h-11 shrink-0" onClick={() => void handleCopyLink()}>
+            {copied ? <><Check className="size-4" /> {t("profile.copied")}</> : <><Copy className="size-4" /> {t("Copy link")}</>}
+          </Button>
+        </div>
+        {copyError && <div role="status"><FieldHint>{t("Copy the selected link manually.")}</FieldHint></div>}
+        <FieldHint>{t("Share this link with the person you invited.")}</FieldHint>
+      </Modal>
+    )
   }
 
   return (
