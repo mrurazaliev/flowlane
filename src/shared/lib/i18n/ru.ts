@@ -7,11 +7,10 @@ export const ru: Record<TranslationKey, string> = {
   "theme.light": "Светлая тема",
   "theme.toggle": "Сменить тему",
 
-  "auth.hero.title": "У каждой задачи своя полоса.",
-  "auth.hero.subtitle": "Планируйте спринты, двигайте работу вперёд и видьте, кто чем занят.",
-  "auth.lane.todo": "К выполнению",
-  "auth.lane.inProgress": "В работе",
-  "auth.lane.done": "Готово",
+  "auth.hero.title": "Начните работу с командой",
+  "auth.hero.subtitle": "Одно пространство для задач, спринтов и людей.",
+  "auth.register.heroTitle": "Flowlane — здесь начинается ваш путь.",
+  "auth.register.heroSubtitle": "Создайте аккаунт, пригласите команду и отправьте первую задачу по своей полосе. Регистрация занимает минуту.",
 
   "field.email": "Email",
   "field.password": "Пароль",

@@ -1,61 +1,35 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { Logo } from "@/shared/ui/logo";
-import { StateIcon } from "@/shared/ui/issue-icons";
 import { cn } from "@/shared/lib/utils";
-import { useT, type TranslationKey } from "@/shared/lib/i18n";
+import { useT } from "@/shared/lib/i18n";
 import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { LanguageSwitcher } from "@/shared/ui/language-switcher";
 
-const lanes: { name: TranslationKey; group: "unstarted" | "started" | "completed"; color: string; cards: string[][] }[] = [
-  { name: "auth.lane.todo", group: "unstarted", color: "#9aa1ad", cards: [["WEB-3", "Revamp hero section"], ["WEB-5", "Fix footer links"]] },
-  { name: "auth.lane.inProgress", group: "started", color: "#e0a21b", cards: [["WEB-6", "Fix token refresh on 401"]] },
-  { name: "auth.lane.done", group: "completed", color: "#3a9a6b", cards: [["WEB-8", "Design tokens"], ["WEB-9", "CI pipeline"]] },
-];
-
-/** Экран входа/регистрации: слева «дорога» с полосами задач, справа форма */
+/**
+ * Экран входа/регистрации. Вход: тёмная панель слева, форма справа.
+ * Регистрация: наоборот — форма слева, панель справа (зеркально).
+ */
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   const t = useT();
+  const isRegister = usePathname().startsWith("/register");
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
-      <section className="relative hidden flex-col overflow-hidden bg-asphalt px-13 py-11 text-white lg:flex">
+      <section className={cn("relative hidden flex-col bg-asphalt px-13 py-11 text-white lg:flex", isRegister && "lg:order-2")}>
         <Logo light />
 
-        <div className="mt-20 grid grid-cols-3" aria-hidden>
-          {lanes.map((lane, i) => (
-            <div
-              key={lane.name}
-              className={cn(
-                "min-h-[420px] px-4",
-                i > 0 && "bg-[length:2px_26px] bg-repeat-y",
-                i === 1 && "bg-[linear-gradient(#4a515d_55%,transparent_0)]",
-                i === 2 && "bg-[linear-gradient(var(--color-marking)_55%,transparent_0)]",
-              )}
-            >
-              <p className="mb-3 flex items-center gap-2 text-[12.5px] text-[#8c93a0]">
-                <StateIcon group={lane.group} color={lane.color} />
-                {t(lane.name)}
-              </p>
-              {lane.cards.map(([key, title]) => (
-                <div
-                  key={key}
-                  className={cn(
-                    "mb-3 rounded-[10px] border border-asphalt-line bg-asphalt-2 px-3 py-2.5 text-[13px] text-[#d7dae0]",
-                    lane.group === "started" && "border-marking shadow-[0_0_0_3px_rgba(242,182,48,.15)]",
-                  )}
-                >
-                  <span className="mb-0.5 block text-[11.5px] text-[#8c93a0]">{key}</span>
-                  {title}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-auto max-w-md">
-          <p className="text-[30px] font-semibold leading-tight tracking-tight">{t("auth.hero.title")}</p>
-          <p className="mt-2.5 text-[15px] text-[#a3a9b4]">{t("auth.hero.subtitle")}</p>
+        {/* Жёлтая пунктирная разметка слева от текста — как полоса на дороге */}
+        <div className="my-auto flex max-w-lg gap-7">
+          <div
+            aria-hidden
+            className="w-[3px] shrink-0 bg-[linear-gradient(var(--color-marking)_55%,transparent_0)] bg-[length:3px_26px] bg-repeat-y"
+          />
+          <div className="py-2">
+            <p className="text-[44px] font-semibold leading-[1.1] tracking-tight">{t(isRegister ? "auth.register.heroTitle" : "auth.hero.title")}</p>
+            <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-[#a3a9b4]">{t(isRegister ? "auth.register.heroSubtitle" : "auth.hero.subtitle")}</p>
+          </div>
         </div>
       </section>
 
