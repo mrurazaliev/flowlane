@@ -12,15 +12,15 @@ export type LabelInput = {
 };
 
 const labelsUrl = (workspaceSlug: string, projectId: string) =>
-  `/workspaces/${workspaceSlug}/projects/${projectId}/labels`;
+  `/workspaces/${encodeURIComponent(workspaceSlug)}/projects/${encodeURIComponent(projectId)}/labels`;
 
 // После изменения обновляем и список лейблов, и задачи (на карточках видны имена и цвета лейблов)
 const useRefreshLabels = (workspaceSlug: string, projectId: string) => {
   const queryClient = useQueryClient();
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.labels(workspaceSlug, projectId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.issues.all });
-  };
+  return () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.labels(workspaceSlug, projectId), exact: true }),
+    queryClient.invalidateQueries({ queryKey: [...queryKeys.issues.all, workspaceSlug, projectId] }),
+  ]);
 };
 
 // POST
@@ -28,7 +28,7 @@ export const useAddLabelMutation = (workspaceSlug: string, projectId: string) =>
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({
     mutationFn: async (newLabel: LabelInput) => {
-      const { data } = await api.post<Label>(labelsUrl(workspaceSlug, projectId), newLabel);
+      const { data } = await api.post<Label>(`${labelsUrl(workspaceSlug, projectId)}/`, newLabel);
       return data;
     },
     onSuccess: refresh,
@@ -40,7 +40,7 @@ export const useEditLabelMutation = (workspaceSlug: string, projectId: string) =
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({
     mutationFn: async ({ labelId, ...changes }: Partial<LabelInput> & { labelId: string }) => {
-      const { data } = await api.patch<Label>(`${labelsUrl(workspaceSlug, projectId)}/${labelId}`, changes);
+      const { data } = await api.patch<Label>(`${labelsUrl(workspaceSlug, projectId)}/${encodeURIComponent(labelId)}`, changes);
       return data;
     },
     onSuccess: refresh,
@@ -51,7 +51,7 @@ export const useEditLabelMutation = (workspaceSlug: string, projectId: string) =
 export const useDeleteLabelMutation = (workspaceSlug: string, projectId: string) => {
   const refresh = useRefreshLabels(workspaceSlug, projectId);
   return useMutation({
-    mutationFn: (labelId: string) => api.delete(`${labelsUrl(workspaceSlug, projectId)}/${labelId}`),
+    mutationFn: (labelId: string) => api.delete(`${labelsUrl(workspaceSlug, projectId)}/${encodeURIComponent(labelId)}`),
     onSuccess: refresh,
   });
 };
